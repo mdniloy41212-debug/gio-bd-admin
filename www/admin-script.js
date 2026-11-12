@@ -109,8 +109,8 @@ onAuthStateChanged(auth, async (user) => {
   isAdmin = false;
 
   if (!user) {
-    if (loginPage) loginPage.hidden = false;
-    if (adminPage) adminPage.hidden = true;
+    if (loginPage) { loginPage.hidden = false; loginPage.classList.add("active"); }
+    if (adminPage) { adminPage.hidden = true; adminPage.classList.remove("active"); }
     if (logoutBtn) logoutBtn.hidden = true;
     if (authStatus) authStatus.textContent = "আপনি লগইন করেননি";
     return;
@@ -126,8 +126,8 @@ onAuthStateChanged(auth, async (user) => {
 
   isAdmin = true;
 
-  if (loginPage) loginPage.hidden = true;
-  if (adminPage) adminPage.hidden = false;
+  if (loginPage) { loginPage.hidden = true; loginPage.classList.remove("active"); }
+  if (adminPage) { adminPage.hidden = false; adminPage.classList.add("active"); }
   if (logoutBtn) logoutBtn.hidden = false;
   if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
 
