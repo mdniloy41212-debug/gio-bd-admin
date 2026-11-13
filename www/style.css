@@ -374,3 +374,20 @@ footer {
     padding: 14px;
   }
 }
+
+
+/* Free in-app notification center */
+.notification-card { position: relative; }
+.notification-status {
+  display: inline-block;
+  margin-left: 9px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #168b50;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.notification-card p { margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notification-card small { color: #b9a9cc; display: block; margin-top: 5px; }
+#adminInboxBack { margin-top: 14px; }
