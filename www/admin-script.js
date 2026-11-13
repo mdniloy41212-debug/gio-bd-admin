@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
   getAuth,
@@ -17,6 +17,7 @@ import {
   doc,
   addDoc,
   updateDoc,
+  setDoc,
   deleteDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
@@ -31,7 +32,7 @@ const firebaseConfig = {
   measurementId: "G-B3J9DTP6M9"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -176,13 +177,21 @@ async function loadAdminOrders() {
 
       card.appendChild(details);
 
-      card.appendChild(makeButton("Approve", () =>
-        updateOrderStatus(item.id, "Approved")
-      ));
+      
+      ["Pending", "Processing", "Completed", "Rejected", "Cancelled"].forEach((status) => {
+        card.appendChild(makeButton(status, () =>
+          updateOrderStatus(item.id, status)
+        ));
+      });
 
-      card.appendChild(makeButton("Reject", () =>
-        updateOrderStatus(item.id, "Rejected")
-      ));
+      if (data.paymentScreenshotUrl) {
+        const link = document.createElement("a");
+        link.href = data.paymentScreenshotUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
+        card.appendChild(link);
+      }
 
       container.appendChild(card);
     });
@@ -196,12 +205,108 @@ async function updateOrderStatus(orderId, status) {
   if (!isAdmin) return;
 
   try {
-    await updateDoc(doc(db, "orders", orderId), { status });
+    await updateDoc(doc(db, "orders", orderId), { status, updatedAt: serverTimestamp() });
     await loadAdminOrders();
   } catch (error) {
     console.error("Update order error:", error);
     alert("অর্ডারের অবস্থা পরিবর্তন করা যায়নি।");
   }
+}
+
+
+async function loadDashboardStats() {
+  const container = $("dashboardStats");
+  if (!container || !isAdmin) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, "orders"));
+    const counts = {
+      total: snapshot.size,
+      Pending: 0,
+      Processing: 0,
+      Completed: 0,
+      Rejected: 0,
+      Cancelled: 0
+    };
+
+    snapshot.forEach(item => {
+      const status = item.data().status || "Pending";
+      if (counts[status] !== undefined) counts[status]++;
+    });
+
+    container.replaceChildren();
+
+    Object.entries({
+      "মোট অর্ডার": counts.total,
+      Pending: counts.Pending,
+      Processing: counts.Processing,
+      Completed: counts.Completed,
+      Rejected: counts.Rejected,
+      Cancelled: counts.Cancelled
+    }).forEach(([label, value]) => {
+      const card = document.createElement("div");
+      card.className = "order-card";
+      const heading = document.createElement("strong");
+      heading.textContent = label;
+      const number = document.createElement("p");
+      number.textContent = String(value);
+      card.append(heading, number);
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error("Dashboard error:", error);
+    container.textContent = "পরিসংখ্যান লোড করা যায়নি।";
+  }
+}
+
+async function loadPaymentSettings() {
+  if (!isAdmin) return;
+
+  try {
+    const result = await getDoc(doc(db, "settings", "paymentMethods"));
+    const data = result.exists() ? result.data() : {};
+
+    ["bkash", "nagad", "rocket"].forEach(method => {
+      const number = $(method + "Number");
+      const enabled = $(method + "Enabled");
+
+      if (number) number.value = data[method]?.number || "";
+      if (enabled) enabled.checked = data[method]?.enabled !== false;
+    });
+  } catch (error) {
+    console.error("Payment settings load:", error);
+    showMessage($("paymentMessage"), "পেমেন্ট সেটিংস লোড হয়নি।");
+  }
+}
+
+const paymentSettingsForm = $("paymentSettingsForm");
+
+if (paymentSettingsForm) {
+  paymentSettingsForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!isAdmin) return;
+
+    const settings = {};
+
+    ["bkash", "nagad", "rocket"].forEach(method => {
+      settings[method] = {
+        number: $(method + "Number")?.value.trim() || "",
+        enabled: Boolean($(method + "Enabled")?.checked)
+      };
+    });
+
+    try {
+      await setDoc(doc(db, "settings", "paymentMethods"), {
+        ...settings,
+        updatedAt: serverTimestamp()
+      });
+
+      showMessage($("paymentMessage"), "পেমেন্ট নম্বর সংরক্ষণ হয়েছে।", true);
+    } catch (error) {
+      console.error("Payment save:", error);
+      showMessage($("paymentMessage"), "সংরক্ষণ হয়নি। Firestore Rules পরীক্ষা করুন।");
+    }
+  });
 }
 
 async function loadAdminPackages() {

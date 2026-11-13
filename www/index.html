@@ -33,9 +33,29 @@
   </section>
   <section id="adminPage" class="page">
     <h2>GIO BD Admin Dashboard</h2>
+  <h3>ড্যাশবোর্ড পরিসংখ্যান</h3>
+  <div id="dashboardStats">তথ্য লোড হচ্ছে...</div>
     <h3>সব অর্ডার</h3>
     <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
-    <h3>নতুন প্যাকেজ যোগ করুন</h3>
+    <h3>পেমেন্ট নম্বর সেটিংস</h3>
+  <form id="paymentSettingsForm">
+    <label>বিকাশ নম্বর</label>
+    <input id="bkashNumber" type="tel" placeholder="বিকাশ নম্বর">
+    <label><input id="bkashEnabled" type="checkbox" checked> বিকাশ চালু</label>
+
+    <label>নগদ নম্বর</label>
+    <input id="nagadNumber" type="tel" placeholder="নগদ নম্বর">
+    <label><input id="nagadEnabled" type="checkbox" checked> নগদ চালু</label>
+
+    <label>রকেট নম্বর</label>
+    <input id="rocketNumber" type="tel" placeholder="রকেট নম্বর">
+    <label><input id="rocketEnabled" type="checkbox" checked> রকেট চালু</label>
+
+    <button type="submit">নম্বর সংরক্ষণ করুন</button>
+  </form>
+  <p id="paymentMessage"></p>
+
+  <h3>নতুন প্যাকেজ যোগ করুন</h3>
     <form id="packageForm">
       <label for="newPackageName">প্যাকেজের নাম</label>
       <input id="newPackageName" type="text" placeholder="যেমন: 1000 Diamonds" required>
@@ -51,6 +71,7 @@
 <footer>
   <p>© <span id="year"></span> GIO BD Admin</p>
 </footer>
+<script type="module" src="inbox.js"></script>
 <script type="module" src="admin-script.js"></script>
 </body>
 </html>

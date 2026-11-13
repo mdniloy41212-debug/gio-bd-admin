@@ -281,3 +281,96 @@ footer {
     min-height: 42px;
   }
 }
+
+/* GIO BD Admin Dashboard & Payment Settings */
+
+#dashboardStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+#dashboardStats > div,
+#dashboardStats .stat-card {
+  background: linear-gradient(145deg, #302044, #1c2945);
+  border: 1px solid rgba(130, 110, 190, .4);
+  border-radius: 15px;
+  padding: 17px 12px;
+  text-align: center;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .2);
+  overflow-wrap: anywhere;
+}
+
+#paymentSettingsForm {
+  background: linear-gradient(145deg, #241936, #17243b);
+  border: 1px solid #554477;
+  border-radius: 16px;
+  padding: 18px;
+  margin: 14px 0 25px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .2);
+}
+
+#paymentSettingsForm input[type="tel"],
+#paymentSettingsForm input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  background: #171225;
+  color: #fff;
+  border: 1px solid #665184;
+  border-radius: 10px;
+  padding: 13px;
+  margin: 8px 0 12px;
+  font-size: 15px;
+}
+
+#paymentSettingsForm input:focus {
+  outline: 2px solid #8b65d6;
+  border-color: #a88aff;
+}
+
+#paymentSettingsForm input[type="checkbox"] {
+  width: 19px;
+  height: 19px;
+  accent-color: #8b65d6;
+  vertical-align: middle;
+  margin: 8px;
+}
+
+#paymentSettingsForm label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #e5d9f5;
+  margin: 4px 0 10px;
+}
+
+#paymentSettingsForm button {
+  width: 100%;
+  margin-top: 12px;
+  background: linear-gradient(110deg, #6541a5, #2866ad);
+  border: 0;
+  border-radius: 11px;
+  padding: 13px;
+  color: white;
+  font-weight: 700;
+}
+
+#paymentSettingsForm button:active {
+  transform: scale(.98);
+}
+
+#paymentMessage {
+  overflow-wrap: anywhere;
+  margin-top: 10px;
+}
+
+@media (max-width: 480px) {
+  #dashboardStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #paymentSettingsForm {
+    padding: 14px;
+  }
+}
