@@ -143,121 +143,110 @@ if (logoutBtn) {
   });
 }
 
+
 async function loadAdminOrders() {
-  const container = $("adminOrders");
-  if (!container || !isAdmin) return;
-
-  container.textContent = "অর্ডার লোড হচ্ছে...";
-
+  if (!isAdmin) return;
+  const activeBox = $("adminOrders");
+  const historyBox = $("adminOrderHistory");
+  const archivedBox = $("adminArchivedOrders");
   try {
     const snapshot = await getDocs(collection(db, "orders"));
-    container.replaceChildren();
-
-    if (snapshot.empty) {
-      container.textContent = "এখনো কোনো অর্ডার নেই।";
-      return;
-    }
-
-    snapshot.forEach((item) => {
+    const active = [], history = [], archived = [];
+    snapshot.forEach(item => {
       const data = item.data();
-      const card = document.createElement("div");
-      card.className = "order-card";
-
-      const details = document.createElement("p");
-      details.textContent =
-        "অর্ডার: " + item.id +
-        " | কাস্টমার: " + (data.customerName || "নেই") +
-        " | ইমেইল: " + (data.customerEmail || "নেই") +
-        " | ফোন: " + (data.customerPhone || "নেই") +
-        " | IMO ID: " + (data.imoId || "নেই") +
-        " | প্যাকেজ: " + (data.packageName || "নেই") +
-        " | মূল্য: ৳" + (data.price ?? "নেই") +
-        " | পেমেন্ট: " + (data.paymentMethod || "নেই") +
-        " | Transaction ID: " + (data.transactionId || "নেই") +
-        " | অবস্থা: " + (data.status || "Pending");
-
-      card.appendChild(details);
-
-      
-      ["Pending", "Processing", "Completed", "Rejected", "Cancelled"].forEach((status) => {
-        card.appendChild(makeButton(status, () =>
-          updateOrderStatus(item.id, status)
-        ));
-      });
-
-      if (data.paymentScreenshotUrl) {
-        const link = document.createElement("a");
-        link.href = data.paymentScreenshotUrl;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
-        card.appendChild(link);
-      }
-
-      container.appendChild(card);
+      const row = { id: item.id, data };
+      if (data.isArchived === true) archived.push(row);
+      else if (["Approved", "Completed", "Rejected", "Cancelled"].includes(data.status)) history.push(row);
+      else active.push(row);
     });
+    const renderRows = (box, rows, empty, canChange, canArchive) => {
+      if (!box) return;
+      box.replaceChildren();
+      if (!rows.length) { box.textContent = empty; return; }
+      rows.sort((x,y) => (y.data.createdAt?.toMillis?.() || 0) - (x.data.createdAt?.toMillis?.() || 0));
+      rows.forEach(({id, data}) => {
+        const card = document.createElement("article");
+        card.className = "order-card";
+        const details = document.createElement("p");
+        details.textContent = "অর্ডার: " + id + " | কাস্টমার: " + (data.customerName || "নেই") +
+          " | ইমেইল: " + (data.customerEmail || "নেই") + " | ফোন: " + (data.customerPhone || "নেই") +
+          " | IMO ID: " + (data.imoId || "নেই") + " | প্যাকেজ: " + (data.packageName || "নেই") +
+          " | মূল্য: ৳" + (data.price ?? "নেই") + " | পেমেন্ট: " + (data.paymentMethod || "নেই") +
+          " | Transaction ID: " + (data.transactionId || "নেই") + " | অবস্থা: " + (data.status || "Pending");
+        card.appendChild(details);
+        if (data.paymentScreenshotUrl) {
+          const link = document.createElement("a");
+          link.href = data.paymentScreenshotUrl; link.target = "_blank";
+          link.rel = "noopener noreferrer"; link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
+          card.appendChild(link);
+        }
+        if (canChange) ["Pending","Processing","Approved","Completed","Rejected","Cancelled"].forEach(status =>
+          card.appendChild(makeButton(status, () => updateOrderStatus(id, status))));
+        if (canArchive) card.appendChild(makeButton("Delete / Archive", () => archiveOrder(id)));
+        if (box === archivedBox) card.appendChild(makeButton("Restore", () => restoreOrder(id)));
+        box.appendChild(card);
+      });
+    };
+    renderRows(activeBox, active, "কোনো Pending বা Processing অর্ডার নেই।", true, true);
+    renderRows(historyBox, history, "এখনো কোনো Order History নেই।", false, true);
+    renderRows(archivedBox, archived, "Deleted / Archived অর্ডার নেই।", false, false);
   } catch (error) {
     console.error("Orders error:", error);
-    container.textContent = "অর্ডার লোড করা যায়নি। Firestore Rules পরীক্ষা করুন।";
+    [activeBox, historyBox, archivedBox].filter(Boolean).forEach(box => box.textContent = "অর্ডার লোড করা যায়নি। Firestore Rules পরীক্ষা করুন।");
   }
 }
 
 async function updateOrderStatus(orderId, status) {
   if (!isAdmin) return;
-
   try {
-    await updateDoc(doc(db, "orders", orderId), { status, updatedAt: serverTimestamp() });
-    await loadAdminOrders();
-  } catch (error) {
-    console.error("Update order error:", error);
-    alert("অর্ডারের অবস্থা পরিবর্তন করা যায়নি।");
-  }
+    await updateDoc(doc(db, "orders", orderId), { status, isArchived: false, updatedAt: serverTimestamp() });
+    await loadAdminOrders(); await loadDashboardStats();
+  } catch (error) { console.error("Update order error:", error); alert("অর্ডারের অবস্থা পরিবর্তন করা যায়নি।"); }
+}
+
+async function archiveOrder(orderId) {
+  if (!isAdmin || !confirm("অর্ডারটি সামনের তালিকা থেকে সরিয়ে Archive-এ রাখবেন?")) return;
+  try {
+    await updateDoc(doc(db, "orders", orderId), { isArchived: true, archivedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    await loadAdminOrders(); await loadDashboardStats();
+  } catch (error) { console.error("Archive order error:", error); alert("অর্ডার Archive করা যায়নি।"); }
+}
+
+async function restoreOrder(orderId) {
+  if (!isAdmin) return;
+  try {
+    await updateDoc(doc(db, "orders", orderId), { isArchived: false, restoredAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    await loadAdminOrders(); await loadDashboardStats();
+  } catch (error) { console.error("Restore order error:", error); alert("অর্ডার ফিরিয়ে আনা যায়নি।"); }
 }
 
 
 async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
-
   try {
     const snapshot = await getDocs(collection(db, "orders"));
-    const counts = {
-      total: snapshot.size,
-      Pending: 0,
-      Processing: 0,
-      Completed: 0,
-      Rejected: 0,
-      Cancelled: 0
-    };
-
+    const counts = { total:snapshot.size, Pending:0, Processing:0, Approved:0, Completed:0, Rejected:0, Cancelled:0, archived:0 };
+    let sales = 0;
     snapshot.forEach(item => {
-      const status = item.data().status || "Pending";
+      const data=item.data(), status=data.status || "Pending";
       if (counts[status] !== undefined) counts[status]++;
+      if (data.isArchived === true) counts.archived++;
+      if (status === "Completed" && data.isArchived !== true) sales += Number(data.price) || 0;
     });
-
     container.replaceChildren();
-
-    Object.entries({
-      "মোট অর্ডার": counts.total,
-      Pending: counts.Pending,
-      Processing: counts.Processing,
-      Completed: counts.Completed,
-      Rejected: counts.Rejected,
-      Cancelled: counts.Cancelled
-    }).forEach(([label, value]) => {
-      const card = document.createElement("div");
-      card.className = "order-card";
-      const heading = document.createElement("strong");
-      heading.textContent = label;
-      const number = document.createElement("p");
-      number.textContent = String(value);
-      card.append(heading, number);
-      container.appendChild(card);
-    });
-  } catch (error) {
-    console.error("Dashboard error:", error);
-    container.textContent = "পরিসংখ্যান লোড করা যায়নি।";
-  }
+    [["মোট অর্ডার",counts.total],["Pending",counts.Pending],["Processing",counts.Processing],
+     ["Approved",counts.Approved],["Completed",counts.Completed],
+     ["Rejected / Cancelled",counts.Rejected+counts.Cancelled],["Archived",counts.archived],
+     ["Total Sales (Completed)","৳"+sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
+       const card=document.createElement("div"); card.className="order-card dashboard-stat-card";
+       const title=document.createElement("strong"); title.textContent=label;
+       const number=document.createElement("p"); number.textContent=String(value);
+       card.append(title,number); container.appendChild(card);
+     });
+    const balance=$("imoBalanceInfo");
+    if(balance) balance.textContent="IMO Wallet Balance সরাসরি দেখাতে IMO-এর অনুমোদিত API প্রয়োজন। আসল ব্যালেন্স দেখতে IMO Reseller Account খুলুন।";
+  } catch(error) { console.error("Dashboard error:",error); container.textContent="পরিসংখ্যান লোড করা যায়নি।"; }
 }
 
 async function loadPaymentSettings() {
