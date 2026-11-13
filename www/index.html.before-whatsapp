@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100b25">
+  <title>GIO BD Admin</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+  <div class="logo">GIO <span>BD</span> ADMIN</div>
+  <nav>
+    <button data-page="loginPage" id="loginNav">অ্যাডমিন লগইন</button>
+    <button data-page="adminPage" id="adminNav" hidden>ড্যাশবোর্ড</button>
+    <button id="logoutBtn" hidden>লগআউট</button>
+  </nav>
+  <p id="authStatus">আপনি লগইন করেননি</p>
+</header>
+<main>
+  <section id="loginPage" class="page active">
+    <h2>অ্যাডমিন লগইন</h2>
+    <p>শুধুমাত্র অনুমোদিত অ্যাডমিন প্রবেশ করতে পারবেন।</p>
+    <form id="loginForm">
+      <label for="adminEmail">অ্যাডমিন ইমেইল</label>
+      <input id="adminEmail" type="email" placeholder="Admin Email" required>
+      <label for="adminPassword">পাসওয়ার্ড</label>
+      <input id="adminPassword" type="password" placeholder="Password" required>
+      <button type="submit">লগইন করুন</button>
+    </form>
+    <p id="loginMessage"></p>
+  </section>
+  <section id="adminPage" class="page">
+    <h2>GIO BD Admin Dashboard</h2>
+  <h3>ড্যাশবোর্ড পরিসংখ্যান</h3>
+  <div id="dashboardStats">তথ্য লোড হচ্ছে...</div>
+    <h3>সব অর্ডার</h3>
+    <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
+    <h3>পেমেন্ট নম্বর সেটিংস</h3>
+  <form id="paymentSettingsForm">
+    <label>বিকাশ নম্বর</label>
+    <input id="bkashNumber" type="tel" placeholder="বিকাশ নম্বর">
+    <label><input id="bkashEnabled" type="checkbox" checked> বিকাশ চালু</label>
+
+    <label>নগদ নম্বর</label>
+    <input id="nagadNumber" type="tel" placeholder="নগদ নম্বর">
+    <label><input id="nagadEnabled" type="checkbox" checked> নগদ চালু</label>
+
+    <label>রকেট নম্বর</label>
+    <input id="rocketNumber" type="tel" placeholder="রকেট নম্বর">
+    <label><input id="rocketEnabled" type="checkbox" checked> রকেট চালু</label>
+
+    <button type="submit">নম্বর সংরক্ষণ করুন</button>
+  </form>
+  <p id="paymentMessage"></p>
+
+  <h3>নতুন প্যাকেজ যোগ করুন</h3>
+    <form id="packageForm">
+      <label for="newPackageName">প্যাকেজের নাম</label>
+      <input id="newPackageName" type="text" placeholder="যেমন: 1000 Diamonds" required>
+      <label for="newPackagePrice">প্যাকেজের মূল্য</label>
+      <input id="newPackagePrice" type="number" min="1" placeholder="মূল্য লিখুন" required>
+      <button type="submit">প্যাকেজ যোগ করুন</button>
+    </form>
+    <p id="packageMessage"></p>
+    <h3>প্যাকেজ পরিচালনা</h3>
+    <div id="adminPackages">প্যাকেজ লোড হচ্ছে...</div>
+  </section>
+</main>
+<footer>
+  <p>© <span id="year"></span> GIO BD Admin</p>
+</footer>
+<script type="module" src="inbox.js"></script>
+<script type="module" src="admin-script.js"></script>
+</body>
+</html>

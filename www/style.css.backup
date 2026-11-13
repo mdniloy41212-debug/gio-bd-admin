@@ -1,0 +1,283 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #10091f;
+  color: #ffffff;
+  line-height: 1.6;
+}
+
+header {
+  text-align: center;
+  padding: 25px 10px;
+  background: linear-gradient(135deg, #25104b, #6414a8);
+}
+
+header h1 {
+  font-size: 30px;
+  color: #ffd700;
+}
+
+header p {
+  color: #eeeeee;
+}
+
+#authStatus {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #1b1030;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 15px;
+  background: #8b35e8;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #a957ff;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+main {
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+  padding: 18px;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+h2 {
+  margin-bottom: 15px;
+  color: #ffd700;
+}
+
+h3 {
+  margin-bottom: 12px;
+}
+
+.banner {
+  background: linear-gradient(135deg, #39136b, #8b35e8);
+  padding: 28px 18px;
+  border-radius: 14px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.banner p {
+  margin-top: 8px;
+}
+
+.panel {
+  background: #211534;
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #493066;
+}
+
+label {
+  display: block;
+  margin: 13px 0 6px;
+  color: #e6d8ff;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #63458a;
+  border-radius: 8px;
+  background: #120b20;
+  color: white;
+  font-size: 15px;
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: #b56cff;
+}
+
+form button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px;
+  font-weight: bold;
+}
+
+.packages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.package-card {
+  background: #25183a;
+  border: 1px solid #7545a8;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.package-card h3 {
+  color: #ffd700;
+}
+
+.package-card p {
+  margin: 7px 0;
+}
+
+.package-card button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.notice {
+  background: #291d38;
+  border-left: 4px solid #ffd700;
+  padding: 12px;
+  border-radius: 5px;
+  color: #e8dcf7;
+}
+
+.form-message {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: #b9a9cc;
+}
+
+/* Customer Authentication */
+
+#customerAuthPage .panel {
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#customerAuthPage .panel h3 {
+  color: #ffd700;
+}
+
+#googleLoginBtn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px;
+  background: #ffffff;
+  color: #252525;
+  border: 1px solid #dddddd;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+#googleLoginBtn:hover {
+  background: #eeeeee;
+}
+
+#customerLoginBtn {
+  background: #8b35e8;
+}
+
+#customerRegisterBtn {
+  background: #18864b;
+}
+
+#customerRegisterBtn:hover {
+  background: #20a45e;
+}
+
+#resetPasswordBtn {
+  background: #49345f;
+}
+
+#resetPasswordBtn:hover {
+  background: #634783;
+}
+
+#customerAuthMessage,
+#loginMessage,
+#orderMessage,
+#packageMessage {
+  overflow-wrap: anywhere;
+}
+
+/* Admin and Orders */
+
+.order-card {
+  background: #2a1c3d;
+  border: 1px solid #60427c;
+  padding: 14px;
+  border-radius: 10px;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+
+.order-card button {
+  margin: 8px 5px 0 0;
+}
+
+footer {
+  text-align: center;
+  padding: 22px 10px;
+  margin-top: 30px;
+  background: #1b1030;
+  color: #b9a9cc;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 12px;
+  }
+
+  nav button {
+    flex: 1 1 40%;
+  }
+
+  .banner {
+    padding: 22px 12px;
+  }
+
+  #customerAuthPage .panel {
+    padding: 15px;
+  }
+
+  button {
+    min-height: 42px;
+  }
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100b25">
+  <title>GIO BD - IMO Diamond Recharge</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">GIO <span>BD</span></div>
+  <nav>
+    <button data-page="homePage">হোম</button>
+    <button data-page="orderPage">অর্ডার</button>
+    <button data-page="trackPage">অর্ডার ট্র্যাক</button>
+    <button id="customerLoginNav" data-page="customerAuthPage">কাস্টমার লগইন</button>
+    <button id="loginNav" data-page="loginPage">অ্যাডমিন লগইন</button>
+    <button id="adminNav" data-page="adminPage" hidden>অ্যাডমিন প্যানেল</button>
+    <button id="logoutBtn" hidden>লগআউট</button>
+  </nav>
+  <p id="authStatus">আপনি লগইন করেননি</p>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <section id="homePage" class="page active">
+    <h1>GIO BD</h1>
+    <h2>IMO Diamond Recharge</h2>
+    <p>সহজে এবং নিরাপদে IMO Diamond রিচার্জ করুন।</p>
+    <button data-page="orderPage">এখনই অর্ডার করুন</button>
+    <h2>আমাদের ডায়মন্ড প্যাকেজ</h2>
+    <div id="packageList" class="packages">প্যাকেজ লোড হচ্ছে...</div>
+  </section>
+
+  <!-- CUSTOMER LOGIN / REGISTER -->
+  <section id="customerAuthPage" class="page">
+    <h2>কাস্টমার অ্যাকাউন্ট</h2>
+    <p>লগইন করুন অথবা নতুন অ্যাকাউন্ট তৈরি করুন।</p>
+
+    <form id="customerAuthForm">
+      <label for="customerEmail">ইমেইল</label>
+      <input id="customerEmail" type="email" placeholder="আপনার ইমেইল" required>
+
+      <label for="customerPassword">পাসওয়ার্ড</label>
+      <input id="customerPassword" type="password" placeholder="পাসওয়ার্ড" required>
+
+      <button id="customerLoginBtn" type="submit">লগইন করুন</button>
+    </form>
+
+    <button id="customerRegisterBtn" type="button">নতুন অ্যাকাউন্ট তৈরি করুন</button>
+    <button id="googleLoginBtn" type="button">Google দিয়ে লগইন</button>
+    <button id="resetPasswordBtn" type="button">পাসওয়ার্ড ভুলে গেছেন?</button>
+
+    <p id="customerAuthMessage"></p>
+  </section>
+
+  <!-- ORDER -->
+  <section id="orderPage" class="page">
+    <h2>ডায়মন্ড অর্ডার করুন</h2>
+    <p>অর্ডার করতে প্রথমে কাস্টমার অ্যাকাউন্টে লগইন করুন।</p>
+
+    <form id="orderForm">
+      <label for="customerName">আপনার নাম</label>
+      <input id="customerName" type="text" placeholder="আপনার নাম" required>
+
+      <label for="customerPhone">মোবাইল নম্বর</label>
+      <input id="customerPhone" type="tel" placeholder="01XXXXXXXXX" required>
+
+      <label for="imoId">IMO ID</label>
+      <input id="imoId" type="text" placeholder="আপনার IMO ID" required>
+
+      <label for="packageSelect">ডায়মন্ড প্যাকেজ</label>
+      <select id="packageSelect" required>
+        <option value="">প্যাকেজ নির্বাচন করুন</option>
+      </select>
+
+      <label for="paymentMethod">পেমেন্ট মাধ্যম</label>
+      <select id="paymentMethod" required>
+        <option value="">পেমেন্ট নির্বাচন করুন</option>
+        <option value="bKash">বিকাশ</option>
+        <option value="Nagad">নগদ</option>
+        <option value="Rocket">রকেট</option>
+      </select>
+
+      <label for="transactionId">Transaction ID</label>
+      <input id="transactionId" type="text" placeholder="ট্রানজেকশন আইডি" required>
+
+      <button type="submit">অর্ডার জমা দিন</button>
+    </form>
+    <p id="orderMessage"></p>
+  </section>
+
+  <!-- TRACK ORDER -->
+  <section id="trackPage" class="page">
+    <h2>অর্ডার ট্র্যাক করুন</h2>
+    <form id="trackForm">
+      <label for="trackOrderId">অর্ডার আইডি</label>
+      <input id="trackOrderId" type="text" placeholder="আপনার অর্ডার আইডি" required>
+      <button type="submit">ট্র্যাক করুন</button>
+    </form>
+    <div id="trackResult"></div>
+  </section>
+
+  <!-- ADMIN LOGIN -->
+  <section id="loginPage" class="page">
+    <h2>অ্যাডমিন লগইন</h2>
+    <p>শুধুমাত্র অনুমোদিত অ্যাডমিন প্রবেশ করতে পারবেন।</p>
+
+    <form id="loginForm">
+      <label for="adminEmail">অ্যাডমিন ইমেইল</label>
+      <input id="adminEmail" type="email" placeholder="Admin Email" required>
+
+      <label for="adminPassword">পাসওয়ার্ড</label>
+      <input id="adminPassword" type="password" placeholder="Password" required>
+
+      <button type="submit">লগইন করুন</button>
+    </form>
+    <p id="loginMessage"></p>
+  </section>
+
+  <!-- ADMIN PANEL -->
+  <section id="adminPage" class="page">
+    <h2>GIO BD Admin Panel</h2>
+
+    <h3>সব অর্ডার</h3>
+    <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
+
+    <h3>নতুন প্যাকেজ যোগ করুন</h3>
+    <form id="packageForm">
+      <label for="newPackageName">প্যাকেজের নাম</label>
+      <input id="newPackageName" type="text" placeholder="যেমন: 1000 Diamonds" required>
+
+      <label for="newPackagePrice">প্যাকেজের মূল্য</label>
+      <input id="newPackagePrice" type="number" min="1" placeholder="মূল্য লিখুন" required>
+
+      <button type="submit">প্যাকেজ যোগ করুন</button>
+    </form>
+    <p id="packageMessage"></p>
+
+    <h3>প্যাকেজ পরিচালনা</h3>
+    <div id="adminPackages">প্যাকেজ লোড হচ্ছে...</div>
+  </section>
+
+</main>
+
+<footer>
+  <p>© <span id="year"></span> GIO BD. All Rights Reserved.</p>
+</footer>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
