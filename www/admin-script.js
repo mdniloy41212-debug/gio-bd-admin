@@ -225,8 +225,13 @@ async function loadAdminOrders() {
           link.rel = "noopener noreferrer"; link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
           card.appendChild(link);
         }
-        if (canChange) ["Pending","Processing","Approved","Completed","Rejected","Cancelled"].forEach(status =>
-          card.appendChild(makeButton(status, () => updateOrderStatus(id, status))));
+        if (canChange) {
+          if (data.paymentVerified !== true && data.status !== "Rejected" && data.status !== "Cancelled") {
+            card.appendChild(makeButton("Payment Verified", () => verifyPayment(id)));
+          }
+          ["Pending","Processing","Approved","Completed","Rejected","Cancelled"].forEach(status =>
+            card.appendChild(makeButton(status, () => updateOrderStatus(id, status))));
+        }
         if (canArchive) card.appendChild(makeButton("Delete / Archive", () => archiveOrder(id)));
         if (box === archivedBox) card.appendChild(makeButton("Restore", () => restoreOrder(id)));
         box.appendChild(card);
@@ -242,6 +247,21 @@ async function loadAdminOrders() {
   }
 }
 
+async function verifyPayment(orderId) {
+  if (!isAdmin) return;
+  try {
+    await updateDoc(doc(db, "orders", orderId), {
+      paymentVerified: true,
+      paymentVerifiedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    await loadAdminOrders();
+  } catch (error) {
+    console.error("Payment verification error:", error);
+    alert("পেমেন্ট যাচাই করা যায়নি: " + (error.message || "অজানা সমস্যা"));
+  }
+}
+
 async function updateOrderStatus(orderId, status) {
   if (!isAdmin) return;
   try {
@@ -250,8 +270,15 @@ async function updateOrderStatus(orderId, status) {
       const orderSnap = await transaction.get(orderRef);
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
       const order = orderSnap.data();
-      const shouldDeduct = ["Approved", "Completed"].includes(status)
-        && ["Pending", "Processing"].includes(order.status || "Pending")
+      if (status === "Completed" && order.status !== "Approved") {
+        throw new Error("প্রথমে Payment Verified করে অর্ডার Approved করুন, তারপর Completed করুন।");
+      }
+      if (status === "Completed" && order.paymentVerified !== true) {
+        throw new Error("Payment Verified না করে অর্ডার Completed করা যাবে না।");
+      }
+      const shouldDeduct = status === "Completed"
+        && order.status === "Approved"
+        && order.paymentVerified === true
         && order.stockDeducted !== true;
       if (shouldDeduct) {
         const quantity = Number(order.diamondQuantity)
