@@ -675,3 +675,26 @@ button{background:linear-gradient(135deg,#1c65a0,#9c6a2b)!important;border:1px s
 button:hover{filter:brightness(1.14)}
 input,select{background:#08182d!important;border-color:#54799a!important}
 h2,h3{color:#ffdf8a!important}
+
+/* GIO BD premium auth presentation */
+body{background:radial-gradient(ellipse at 50% 0%,#063c9c 0%,#071747 42%,#050b25 100%);font-family:'Hind Siliguri',Arial,sans-serif}
+header.header{background:linear-gradient(120deg,#06164a,#073d91 55%,#07133b);border-bottom:1px solid #46dfff55}
+.gio-login-brand{max-width:520px;margin:12px auto 20px;padding:20px 14px;text-align:center;border:1px solid #55dfff66;border-radius:24px;background:radial-gradient(circle at 50% 35%,#0877d966,#06123deF 68%);box-shadow:0 0 35px #00baff40,inset 0 0 28px #0a6ad533}
+.gio-diamond-mark{width:88px;height:76px;margin:0 auto 8px;filter:drop-shadow(0 0 15px #00d9ff)}
+.gio-diamond-mark svg{width:100%;height:100%}
+.gio-brand-name{font-size:clamp(34px,8vw,52px);font-weight:900;line-height:1.1;letter-spacing:-1px;color:#f5fbff;text-shadow:0 0 16px #39caff}
+.gio-brand-name span{color:#ffc928}
+.gio-brand-subtitle{font-size:16px;font-weight:800;letter-spacing:2px;color:#eaf7ff}
+.gio-brand-glow{margin-top:8px;color:#ffe45e;font-size:13px;font-weight:700}
+#loginPage,#customerAuthPage{max-width:560px;margin:18px auto;padding:20px;border:1px solid #4ccfff66;border-radius:24px;background:linear-gradient(160deg,#071a50f5,#0a1034f7);box-shadow:0 18px 48px #0008,0 0 26px #007bff25}
+#loginPage h2,#customerAuthPage h2{color:#fff;text-align:center;font-size:25px}
+#loginPage>p,#customerAuthPage>p{text-align:center;color:#c9eaff}
+#loginForm,#customerAuthForm{margin-top:18px}
+#loginPage input,#customerAuthPage input{border:1px solid #36caff77;background:#030d2c;color:#fff;border-radius:13px}
+#loginPage form button,#customerLoginBtn{background:linear-gradient(100deg,#08b8ef,#135ce0);border:1px solid #8deeff;box-shadow:0 7px 22px #008cff55;border-radius:13px;font-weight:900}
+#googleLoginBtn{border-radius:13px}
+#customerRegisterBtn{width:100%;margin-top:12px;background:linear-gradient(100deg,#f5bf24,#d88909);color:#101b45;font-weight:900;border-radius:13px}
+#resetPasswordBtn{width:100%;margin-top:10px;border-radius:13px}
+.gio-hero-card{border:1px solid #4ddfff88!important;background:radial-gradient(circle at 75% 25%,#0876d8 0%,#08275f 42%,#071338 100%)!important;box-shadow:0 15px 40px #001c57aa,0 0 25px #00bfff25}
+.gio-quick-card,.package-card,.gio-settings-card{border-color:#36caff66!important;background:linear-gradient(145deg,#102e65,#10183d)!important}
+.gio-bottom-nav button,.gio-admin-bottom-nav button{border:1px solid #53dfff66!important}
