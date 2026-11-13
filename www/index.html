@@ -66,11 +66,15 @@
     </div>
     <h3>Pending / Processing Orders</h3>
     <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
-    <h3>Order History (Approved / Completed / Rejected)</h3>
-    <div id="adminOrderHistory">হিস্টোরি লোড হচ্ছে...</div>
-    <h3>Deleted / Archived Orders</h3>
-    <p class="muted">Delete করলে অর্ডার স্থায়ীভাবে মুছবে না; এখান থেকে Restore করা যাবে।</p>
-    <div id="adminArchivedOrders">Archive লোড হচ্ছে...</div>
+    <details class="inbox-folder">
+      <summary>📥 Order History Inbox (Approved / Completed / Rejected)</summary>
+      <div id="adminOrderHistory">হিস্টোরি লোড হচ্ছে...</div>
+    </details>
+    <details class="inbox-folder">
+      <summary>🗑 Deleted / Archived Orders Inbox</summary>
+      <p class="muted">Delete করলে অর্ডার স্থায়ীভাবে মুছবে না; এখান থেকে Restore করা যাবে।</p>
+      <div id="adminArchivedOrders">Archive লোড হচ্ছে...</div>
+    </details>
     <h3>My Account</h3>
     <div class="order-card">
       <strong>IMO Account Login</strong>
