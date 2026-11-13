@@ -32,7 +32,7 @@ main{max-width:760px;padding:12px 14px 110px;margin:0 auto}
 .admin-blank-hero:before,.admin-blank-hero:after{content:"";position:absolute;width:140px;height:140px;border:1px solid rgba(135,206,255,.12);transform:rotate(45deg);animation:gioCrystal 9s ease-in-out infinite}
 .admin-blank-hero:before{left:8%;top:25%}.admin-blank-hero:after{right:10%;top:15%;animation-delay:-4s}
 @keyframes gioCrystal{50%{transform:translateY(-12px) rotate(65deg);opacity:.45}}
-#dashboardStats{display:none}
+#dashboardStats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}#dashboardStats>div{min-width:0;background:linear-gradient(120deg,rgba(255,210,86,.98),rgba(255,172,51,.96));color:#2b1741;border:1px solid #fff1b4;border-radius:18px;padding:15px 12px;box-shadow:0 10px 26px #0004}#dashboardStats>div strong{font-size:12px;color:#55351b}#dashboardStats>div p{color:#24133b;font-size:clamp(20px,5.8vw,27px);font-weight:900}
 #diamondStockForm{display:none}
 #adminPage h2,#adminPage>h3{color:#fff}
 .order-filters{margin:12px 0 16px}
@@ -67,3 +67,6 @@ footer{display:none}
 #loginPage h2{color:#ffe08a}
 @media(min-width:650px){main{padding-top:24px}.admin-bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(100%,760px);border-radius:20px 20px 0 0}}
 @media(prefers-reduced-motion:reduce){body:before,.admin-blank-hero:before,.admin-blank-hero:after,.social-main-button{animation:none!important}}
+
+#adminSettingsButton{display:none!important}
+.admin-bottom-nav[hidden],.admin-floating-social[hidden]{display:none!important}
