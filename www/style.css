@@ -439,3 +439,7 @@ footer {
 .order-filters { display:grid; grid-template-columns:minmax(0,2fr) minmax(130px,1fr); gap:10px; margin:12px 0; }
 .balance-card { border-color:rgba(90,220,190,.45); }
 @media(max-width:520px){ .order-filters { grid-template-columns:1fr; } }
+
+.inbox-folder { margin:14px 0; padding:12px; border:1px solid rgba(169,133,255,.28); border-radius:12px; background:rgba(25,17,48,.55); }
+.inbox-folder summary { cursor:pointer; color:#d9c8ff; font-weight:700; padding:5px 2px; }
+.inbox-folder[open] summary { margin-bottom:12px; }
