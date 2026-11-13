@@ -276,7 +276,7 @@ async function loadAdminOrders() {
         }
         if (canChange) {
           if (data.paymentVerified !== true && data.status !== "Rejected" && data.status !== "Cancelled") {
-            card.appendChild(makeButton("Payment Verified", () => verifyPayment(id)));
+            card.appendChild(makeButton("Verify Transaction ID", () => verifyPayment(id)));
           }
           ["Pending","Processing","Approved","Completed","Rejected","Cancelled"].forEach(status =>
             card.appendChild(makeButton(status, () => updateOrderStatus(id, status))));
