@@ -443,3 +443,127 @@ footer {
 .inbox-folder { margin:14px 0; padding:12px; border:1px solid rgba(169,133,255,.28); border-radius:12px; background:rgba(25,17,48,.55); }
 .inbox-folder summary { cursor:pointer; color:#d9c8ff; font-weight:700; padding:5px 2px; }
 .inbox-folder[open] summary { margin-bottom:12px; }
+
+/* GIO BD AGENT: lightweight, endlessly looping homepage character animation */
+.gio-agent-hero {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:310px;
+  margin:24px 0 28px;
+  padding:20px 12px 10px;
+  border:1px solid rgba(112,231,255,.55);
+  border-radius:24px;
+  background:
+    radial-gradient(ellipse at 50% 72%,rgba(22,188,255,.25),transparent 48%),
+    radial-gradient(circle at 80% 12%,rgba(164,91,255,.25),transparent 38%),
+    linear-gradient(145deg,#07163c 0%,#17105a 52%,#080d2a 100%);
+  box-shadow:0 16px 38px rgba(0,0,0,.3),0 0 28px rgba(36,185,255,.18),inset 0 1px 0 rgba(255,255,255,.22);
+}
+.gio-agent-hero::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  opacity:.35;
+  background-image:radial-gradient(#a7f5ff 1px,transparent 1px);
+  background-size:24px 24px;
+  mask-image:linear-gradient(to bottom,black,transparent 88%);
+}
+.gio-agent-copy {
+  z-index:2;
+  color:#fff;
+  font-size:clamp(25px,7vw,42px);
+  font-weight:900;
+  letter-spacing:2px;
+  line-height:1.1;
+  text-align:center;
+  text-shadow:0 0 9px #37dfff,0 0 24px #398cff,0 3px 0 #172b73;
+}
+.gio-agent-scene {
+  position:relative;
+  width:min(100%,330px);
+  height:238px;
+  margin-top:3px;
+}
+.gio-agent-boy {
+  position:absolute;
+  width:100%;
+  height:100%;
+  inset:0;
+  overflow:visible;
+  filter:drop-shadow(0 8px 15px rgba(0,0,0,.28));
+}
+.agent-jump {
+  transform-box:fill-box;
+  transform-origin:50% 100%;
+  animation:gioAgentJump 1.15s ease-in-out infinite;
+}
+.agent-legs {
+  transform-box:fill-box;
+  transform-origin:50% 0;
+  animation:gioAgentLegs .58s ease-in-out infinite alternate;
+}
+.agent-phone-arm {
+  transform-box:fill-box;
+  transform-origin:0 0;
+  animation:gioAgentWave .85s ease-in-out infinite alternate;
+}
+.agent-phone {
+  transform-box:fill-box;
+  transform-origin:50% 55%;
+  animation:gioAgentPhone 1.15s ease-in-out infinite;
+}
+.agent-phone-aura {
+  animation:gioAgentGlow 1.4s ease-in-out infinite alternate;
+}
+.gio-agent-orbit {
+  position:absolute;
+  left:50%;
+  top:55%;
+  width:205px;
+  height:75px;
+  border:1px solid rgba(100,229,255,.32);
+  border-radius:50%;
+  transform:translate(-50%,-50%) rotate(-13deg);
+  box-shadow:0 0 16px rgba(48,198,255,.18);
+}
+.orbit-two { width:250px;height:100px;transform:translate(-50%,-50%) rotate(19deg);border-color:rgba(181,115,255,.25); }
+.gio-agent-spark { position:absolute;color:#b8fbff;text-shadow:0 0 12px #38cfff;animation:gioAgentSpark 1.8s ease-in-out infinite alternate; }
+.spark-one { top:32px;left:17%;font-size:24px; }
+.spark-two { top:76px;right:14%;font-size:29px;animation-delay:.6s; }
+@keyframes gioAgentJump {
+  0%,100% { transform:translateY(5px) rotate(-1deg); }
+  50% { transform:translateY(-13px) rotate(1deg); }
+}
+@keyframes gioAgentLegs {
+  from { transform:rotate(-5deg) translateY(0); }
+  to { transform:rotate(6deg) translateY(-3px); }
+}
+@keyframes gioAgentWave {
+  from { transform:rotate(-7deg); }
+  to { transform:rotate(9deg); }
+}
+@keyframes gioAgentPhone {
+  0%,100% { transform:translateY(0) rotate(-3deg); }
+  50% { transform:translateY(-7px) rotate(4deg); }
+}
+@keyframes gioAgentGlow {
+  from { opacity:.48; }
+  to { opacity:1; }
+}
+@keyframes gioAgentSpark {
+  from { opacity:.35;transform:scale(.75) rotate(-12deg); }
+  to { opacity:1;transform:scale(1.18) rotate(12deg); }
+}
+@media(max-width:480px) {
+  .gio-agent-hero { min-height:280px;padding:18px 8px 5px;border-radius:18px; }
+  .gio-agent-scene { height:210px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .agent-jump,.agent-legs,.agent-phone-arm,.agent-phone,.agent-phone-aura,.gio-agent-spark { animation:none; }
+}
