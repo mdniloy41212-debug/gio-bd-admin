@@ -290,6 +290,11 @@ async function loadAdminOrders() {
 async function verifyPayment(orderId) {
   if (!isAdmin) return;
   try {
+    const orderSnapshot = await getDoc(doc(db, "orders", orderId));
+    if (!orderSnapshot.exists()) throw new Error("অর্ডার পাওয়া যায়নি।");
+    if (!String(orderSnapshot.data().transactionId || "").trim()) {
+      throw new Error("Transaction ID না থাকলে পেমেন্ট Verified করা যাবে না।");
+    }
     await updateDoc(doc(db, "orders", orderId), {
       paymentVerified: true,
       paymentVerifiedAt: serverTimestamp(),
