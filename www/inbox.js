@@ -53,6 +53,7 @@ function showAdminTab(tab){
  if(tab==="inbox"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
 }
 adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
+document.querySelector("header nav")?.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
 let stopOrderAlertsListening = null;
 let unreadOrderIds = new Set();
 let orderAlertIds = new Set();
