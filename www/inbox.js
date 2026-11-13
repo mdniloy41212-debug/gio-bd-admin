@@ -24,6 +24,93 @@ let currentMessages = [];
 let currentAdminUid = null;
 let readNotificationIds = new Set();
 
+function createVoiceRecorder(onReady, statusElement) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "voice-record-button";
+  button.textContent = "🎙️ ভয়েস রেকর্ড";
+  let recorder = null;
+  let stream = null;
+  let chunks = [];
+  let timer = null;
+  let busy = false;
+
+  button.addEventListener("click", async () => {
+    if (busy) return;
+    if (recorder && recorder.state === "recording") {
+      recorder.stop();
+      button.textContent = "অডিও তৈরি হচ্ছে...";
+      button.disabled = true;
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      statusElement.textContent = "এই ডিভাইসে ভয়েস রেকর্ডিং সমর্থিত নয়।";
+      return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks = [];
+      const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
+      const mimeType = preferred.find(type => MediaRecorder.isTypeSupported(type));
+      recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 24000 })
+        : new MediaRecorder(stream, { audioBitsPerSecond: 24000 });
+      recorder.ondataavailable = event => {
+        if (event.data && event.data.size) chunks.push(event.data);
+      };
+      recorder.onstop = async () => {
+        clearTimeout(timer);
+        stream?.getTracks().forEach(track => track.stop());
+        stream = null;
+        busy = true;
+        try {
+          const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+          if (!blob.size) throw new Error("কোনো অডিও রেকর্ড হয়নি।");
+          const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error("অডিও পড়া যায়নি।"));
+            reader.readAsDataURL(blob);
+          });
+          if (dataUrl.length > 180000) throw new Error("অডিও ফাইলটি বড় হয়েছে। আবার ছোট করে রেকর্ড করুন।");
+          await onReady(dataUrl, blob.type || recorder.mimeType || "audio/webm");
+          statusElement.textContent = "ভয়েস মেসেজ পাঠানো হয়েছে।";
+        } catch (error) {
+          statusElement.textContent = "ভয়েস মেসেজ পাঠানো যায়নি: " + error.message;
+        } finally {
+          busy = false;
+          button.disabled = false;
+          button.textContent = "🎙️ আবার রেকর্ড";
+          recorder = null;
+          chunks = [];
+        }
+      };
+      recorder.start();
+      button.textContent = "⏹️ রেকর্ড বন্ধ করুন";
+      statusElement.textContent = "রেকর্ড হচ্ছে... সর্বোচ্চ ১৫ সেকেন্ড।";
+      timer = setTimeout(() => {
+        if (recorder?.state === "recording") recorder.stop();
+      }, 15000);
+    } catch (error) {
+      stream?.getTracks().forEach(track => track.stop());
+      stream = null;
+      statusElement.textContent = "মাইক্রোফোন চালু হয়নি: " + error.message;
+    }
+  });
+  return button;
+}
+
+function appendVoicePlayer(card, data) {
+  if (!data.audioData) return;
+  const player = document.createElement("audio");
+  player.controls = true;
+  player.preload = "none";
+  player.className = "voice-message-player";
+  player.src = data.audioData;
+  card.appendChild(player);
+}
+
+
 function readStorage(uid) {
   try {
     const value = JSON.parse(localStorage.getItem("gioAdminReadNotifications:" + uid) || "[]");
@@ -61,7 +148,7 @@ function renderMessages() {
   const unread = currentMessages.filter(item =>
     item.data().senderRole === "customer" && !readNotificationIds.has(item.id)
   ).length;
-  button.textContent = unread ? "🔔 নোটিফিকেশন (" + unread + ")" : "🔔 নোটিফিকেশন";
+  button.innerHTML = '🔔 নোটিফিকেশন' + (unread ? ' <span class="notification-count">' + unread + '</span>' : '');
 
   list.replaceChildren();
   if (!currentMessages.length) {
@@ -84,7 +171,7 @@ function renderMessages() {
     const date = data.createdAt?.toDate?.();
     time.textContent = date ? date.toLocaleString("bn-BD") : "সময়: সদ্য";
 
-    card.append(heading, status, message, time);
+    card.append(heading, status, message, time);\n    appendVoicePlayer(card, data);
 
     if (data.senderRole === "customer") {
       const reply = document.createElement("textarea");
@@ -111,7 +198,22 @@ function renderMessages() {
           send.disabled = false;
         }
       });
-      card.append(reply, send);
+      const voiceStatus = document.createElement("p");
+      voiceStatus.className = "voice-status";
+      const voiceButton = createVoiceRecorder(async (audioData, audioMimeType) => {
+        if (!data.userUid) throw new Error("কাস্টমার UID পাওয়া যায়নি।");
+        await addDoc(collection(db, "supportMessages"), {
+          userUid: data.userUid,
+          senderRole: "admin",
+          senderName: "GIO BD Admin",
+          text: "🎤 ভয়েস মেসেজ",
+          audioData,
+          audioMimeType,
+          audioDurationLimit: 15,
+          createdAt: serverTimestamp()
+        });
+      }, voiceStatus);
+      card.append(reply, send, voiceButton, voiceStatus);
     }
 
     list.appendChild(card);
