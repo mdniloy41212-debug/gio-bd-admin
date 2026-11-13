@@ -171,7 +171,8 @@ function renderMessages() {
     const date = data.createdAt?.toDate?.();
     time.textContent = date ? date.toLocaleString("bn-BD") : "সময়: সদ্য";
 
-    card.append(heading, status, message, time);\n    appendVoicePlayer(card, data);
+    card.append(heading, status, message, time);
+    appendVoicePlayer(card, data);
 
     if (data.senderRole === "customer") {
       const reply = document.createElement("textarea");
