@@ -655,3 +655,10 @@ footer {
 }
 .admin-profile-strip strong { color: #a9f4ff; letter-spacing: 1px; }
 .admin-profile-strip p { color: #fff; font-size: 13px; margin-top: 2px; }
+
+
+/* GIO BD Owner: subtle animated dimensional dashboard background */
+body{position:relative;isolation:isolate;background:#080d28}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 14% 18%,rgba(0,173,255,.18),transparent 38%),radial-gradient(ellipse at 86% 78%,rgba(128,64,255,.17),transparent 42%),linear-gradient(135deg,#080d28,#10113a 48%,#080d28);background-size:160% 160%;animation:gioOwnerAmbientDrift 18s ease-in-out infinite alternate}
+@keyframes gioOwnerAmbientDrift{0%{background-position:0% 0%}100%{background-position:100% 100%}}
+@media(prefers-reduced-motion:reduce){body::before{animation:none}}
