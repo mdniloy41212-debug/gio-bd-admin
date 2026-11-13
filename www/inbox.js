@@ -23,6 +23,7 @@ let stopListening;
 let currentMessages = [];
 let currentAdminUid = null;
 let readNotificationIds = new Set();
+let activeInboxTab = "customer";
 
 function createVoiceRecorder(onReady, statusElement) {
   const button = document.createElement("button");
@@ -140,23 +141,22 @@ function markIncomingAsRead() {
   renderMessages();
 }
 
+
 function renderMessages() {
   const list = document.getElementById("adminInboxList");
   const button = document.getElementById("adminInboxButton");
   if (!list || !button) return;
-
-  const unread = currentMessages.filter(item =>
-    item.data().senderRole === "customer" && !readNotificationIds.has(item.id)
-  ).length;
-  button.innerHTML = '🔔 নোটিফিকেশন' + (unread ? ' <span class="notification-count">' + unread + '</span>' : '');
-
+  const unread = currentMessages.filter(item => item.data().senderRole === "customer" && !readNotificationIds.has(item.id)).length;
+  button.innerHTML = "📥 Inbox" + (unread ? ' <span class="notification-count">' + unread + "</span>" : "");
+  const visible = currentMessages.filter(item => activeInboxTab === "customer"
+    ? item.data().senderRole === "customer"
+    : item.data().senderRole === "admin");
   list.replaceChildren();
-  if (!currentMessages.length) {
-    list.textContent = "এখনো কোনো মেসেজ বা নোটিফিকেশন নেই।";
+  if (!visible.length) {
+    list.textContent = activeInboxTab === "customer" ? "কাস্টমারের কোনো মেসেজ নেই।" : "আপনার পাঠানো কোনো মেসেজ নেই।";
     return;
   }
-
-  currentMessages.forEach(item => {
+  visible.forEach(item => {
     const data = item.data();
     const card = document.createElement("article");
     card.className = "order-card notification-card";
@@ -170,10 +170,8 @@ function renderMessages() {
     const time = document.createElement("small");
     const date = data.createdAt?.toDate?.();
     time.textContent = date ? date.toLocaleString("bn-BD") : "সময়: সদ্য";
-
     card.append(heading, status, message, time);
     appendVoicePlayer(card, data);
-
     if (data.senderRole === "customer") {
       const reply = document.createElement("textarea");
       reply.placeholder = "কাস্টমারকে উত্তর লিখুন";
@@ -186,37 +184,28 @@ function renderMessages() {
         send.disabled = true;
         try {
           await addDoc(collection(db, "supportMessages"), {
-            userUid: data.userUid,
-            senderRole: "admin",
-            senderName: "GIO BD Admin",
-            text: reply.value.trim(),
-            createdAt: serverTimestamp()
+            userUid: data.userUid, senderRole: "admin", senderName: "GIO BD Admin",
+            text: reply.value.trim(), createdAt: serverTimestamp()
           });
           reply.value = "";
-        } catch (error) {
-          alert("উত্তর পাঠানো যায়নি: " + error.message);
-        } finally {
-          send.disabled = false;
-        }
+          activeInboxTab = "admin";
+          renderMessages();
+        } catch (error) { alert("উত্তর পাঠানো যায়নি: " + error.message); }
+        finally { send.disabled = false; }
       });
       const voiceStatus = document.createElement("p");
       voiceStatus.className = "voice-status";
       const voiceButton = createVoiceRecorder(async (audioData, audioMimeType) => {
         if (!data.userUid) throw new Error("কাস্টমার UID পাওয়া যায়নি।");
         await addDoc(collection(db, "supportMessages"), {
-          userUid: data.userUid,
-          senderRole: "admin",
-          senderName: "GIO BD Admin",
-          text: "🎤 ভয়েস মেসেজ",
-          audioData,
-          audioMimeType,
-          audioDurationLimit: 15,
+          userUid: data.userUid, senderRole: "admin", senderName: "GIO BD Admin",
+          text: "🎤 ভয়েস মেসেজ", audioData, audioMimeType, audioDurationLimit: 15,
           createdAt: serverTimestamp()
         });
+        activeInboxTab = "admin";
       }, voiceStatus);
       card.append(reply, send, voiceButton, voiceStatus);
     }
-
     list.appendChild(card);
   });
 }
@@ -233,9 +222,11 @@ if (main && !document.getElementById("adminInboxPage")) {
   section.id = "adminInboxPage";
   section.className = "page";
   section.hidden = true;
-  section.innerHTML = '<h2>নোটিফিকেশন ও মেসেজ হিস্টোরি</h2><p class="muted">কাস্টমারের নতুন মেসেজ এখানে দেখা যাবে। অ্যাপ খোলা থাকলে নতুন মেসেজ স্বয়ংক্রিয়ভাবে আপডেট হবে।</p><div id="adminInboxList">মেসেজ লোড হচ্ছে...</div><button id="adminInboxBack" type="button">ড্যাশবোর্ডে ফিরুন</button>';
+  section.innerHTML = '<h2>Inbox</h2><p class="muted">কাস্টমারের মেসেজ ও আপনার পাঠানো মেসেজ আলাদা ট্যাবে থাকবে।</p><div class="inbox-tabs"><button type="button" id="customerMessagesTab">Customer Messages</button><button type="button" id="myMessagesTab">My Messages</button></div><div id="adminInboxList">মেসেজ লোড হচ্ছে...</div><button id="adminInboxBack" type="button">ড্যাশবোর্ডে ফিরুন</button>';
   main.appendChild(section);
 
+  document.getElementById("customerMessagesTab").addEventListener("click", () => { activeInboxTab = "customer"; renderMessages(); });
+  document.getElementById("myMessagesTab").addEventListener("click", () => { activeInboxTab = "admin"; renderMessages(); });
   button.addEventListener("click", () => {
     adminPage.classList.remove("active");
     adminPage.hidden = true;
