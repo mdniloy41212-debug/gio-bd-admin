@@ -4,7 +4,8 @@
   "description": "",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx --yes esbuild@0.25.12 www/admin-script.js --bundle --format=esm --target=es2022 --outfile=www/admin-script.bundle.js"
   },
   "keywords": [],
   "author": "",
