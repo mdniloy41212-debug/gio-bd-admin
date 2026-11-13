@@ -52,6 +52,18 @@
     <h2>GIO BD Admin Dashboard</h2>
   <h3>ড্যাশবোর্ড পরিসংখ্যান</h3>
   <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
+    <div class="order-filters">
+      <input id="orderSearch" type="search" placeholder="অর্ডার ID, কাস্টমার, IMO ID, ফোন বা Transaction ID খুঁজুন">
+      <select id="orderStatusFilter">
+        <option value="all">সব Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Processing">Processing</option>
+        <option value="Approved">Approved</option>
+        <option value="Completed">Completed</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
     <h3>Pending / Processing Orders</h3>
     <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
     <h3>Order History (Approved / Completed / Rejected)</h3>
