@@ -165,6 +165,12 @@ async function loadAdminOrders() {
       if (!box) return;
       box.replaceChildren();
       if (!rows.length) { box.textContent = empty; return; }
+      const term = $("orderSearch")?.value.trim().toLowerCase() || "";
+      const chosenStatus = $("orderStatusFilter")?.value || "all";
+      rows = rows.filter(({id, data}) => {
+        const searchable = [id, data.customerName, data.customerEmail, data.customerPhone, data.imoId, data.transactionId, data.packageName].join(" ").toLowerCase();
+        return (!term || searchable.includes(term)) && (chosenStatus === "all" || data.status === chosenStatus || (chosenStatus === "Archived" && data.isArchived === true));
+      });
       rows.sort((x,y) => (y.data.createdAt?.toMillis?.() || 0) - (x.data.createdAt?.toMillis?.() || 0));
       rows.forEach(({id, data}) => {
         const card = document.createElement("article");
@@ -380,6 +386,9 @@ if (packageForm) {
     }
   });
 }
+
+$("orderSearch")?.addEventListener("input", loadAdminOrders);
+$("orderStatusFilter")?.addEventListener("change", loadAdminOrders);
 
 const year = $("year");
 if (year) year.textContent = new Date().getFullYear();
