@@ -19,7 +19,8 @@ import {
   updateDoc,
   setDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -151,14 +152,16 @@ async function loadAdminOrders() {
   const activeBox = $("adminOrders");
   const historyBox = $("adminOrderHistory");
   const archivedBox = $("adminArchivedOrders");
+  const rejectedBox = $("adminRejectedOrders");
   try {
     const snapshot = await getDocs(collection(db, "orders"));
-    const active = [], history = [], archived = [];
+    const active = [], history = [], rejected = [], archived = [];
     snapshot.forEach(item => {
       const data = item.data();
       const row = { id: item.id, data };
       if (data.isArchived === true) archived.push(row);
-      else if (["Approved", "Completed", "Rejected", "Cancelled"].includes(data.status)) history.push(row);
+      else if (data.status === "Rejected") rejected.push(row);
+      else if (["Approved", "Completed", "Cancelled"].includes(data.status)) history.push(row);
       else active.push(row);
     });
     const renderRows = (box, rows, empty, canChange, canArchive) => {
@@ -196,20 +199,53 @@ async function loadAdminOrders() {
       });
     };
     renderRows(activeBox, active, "কোনো Pending বা Processing অর্ডার নেই।", true, true);
-    renderRows(historyBox, history, "এখনো কোনো Order History নেই।", false, true);
+    renderRows(historyBox, history, "এখনো কোনো Approved / Completed অর্ডার নেই।", false, true);
+    renderRows(rejectedBox, rejected, "Rejected অর্ডার নেই।", false, true);
     renderRows(archivedBox, archived, "Deleted / Archived অর্ডার নেই।", false, false);
   } catch (error) {
     console.error("Orders error:", error);
-    [activeBox, historyBox, archivedBox].filter(Boolean).forEach(box => box.textContent = "অর্ডার লোড করা যায়নি। Firestore Rules পরীক্ষা করুন।");
+    [activeBox, historyBox, rejectedBox, archivedBox].filter(Boolean).forEach(box => box.textContent = "অর্ডার লোড করা যায়নি। Firestore Rules পরীক্ষা করুন।");
   }
 }
 
 async function updateOrderStatus(orderId, status) {
   if (!isAdmin) return;
   try {
-    await updateDoc(doc(db, "orders", orderId), { status, isArchived: false, updatedAt: serverTimestamp() });
+    await runTransaction(db, async transaction => {
+      const orderRef = doc(db, "orders", orderId);
+      const orderSnap = await transaction.get(orderRef);
+      if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
+      const order = orderSnap.data();
+      const shouldDeduct = ["Approved", "Completed"].includes(status)
+        && ["Pending", "Processing"].includes(order.status || "Pending")
+        && order.stockDeducted !== true;
+      if (shouldDeduct) {
+        const quantity = Number(order.diamondQuantity)
+          || Number(String(order.packageName || "").match(/[0-9]+/)?.[0]) || 0;
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          throw new Error("এই অর্ডারের Diamond quantity পাওয়া যায়নি। প্যাকেজের পরিমাণ ঠিক করুন।");
+        }
+        const stockRef = doc(db, "settings", "diamondStock");
+        const stockSnap = await transaction.get(stockRef);
+        const currentStock = Number(stockSnap.exists() ? stockSnap.data().quantity : 0);
+        if (currentStock < quantity) throw new Error("পর্যাপ্ত Diamond Stock নেই। বর্তমান স্টক: " + currentStock);
+        transaction.set(stockRef, {
+          quantity: currentStock - quantity,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        transaction.update(orderRef, {
+          status, stockDeducted: true, stockDeductedQuantity: quantity,
+          stockDeductedAt: serverTimestamp(), isArchived: false, updatedAt: serverTimestamp()
+        });
+      } else {
+        transaction.update(orderRef, { status, isArchived: false, updatedAt: serverTimestamp() });
+      }
+    });
     await loadAdminOrders(); await loadDashboardStats();
-  } catch (error) { console.error("Update order error:", error); alert("অর্ডারের অবস্থা পরিবর্তন করা যায়নি।"); }
+  } catch (error) {
+    console.error("Update order error:", error);
+    alert("অর্ডারের অবস্থা পরিবর্তন করা যায়নি: " + (error.message || "অজানা সমস্যা"));
+  }
 }
 
 async function archiveOrder(orderId) {
@@ -233,28 +269,58 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const snapshot = await getDocs(collection(db, "orders"));
-    const counts = { total:snapshot.size, Pending:0, Processing:0, Approved:0, Completed:0, Rejected:0, Cancelled:0, archived:0 };
+    const [ordersSnapshot, stockSnapshot] = await Promise.all([
+      getDocs(collection(db, "orders")),
+      getDoc(doc(db, "settings", "diamondStock"))
+    ]);
     let sales = 0;
-    snapshot.forEach(item => {
-      const data=item.data(), status=data.status || "Pending";
-      if (data.isArchived === true) counts.archived++;
-      else if (counts[status] !== undefined) counts[status]++;
-      if (status === "Completed") sales += Number(data.price) || 0;
+    ordersSnapshot.forEach(item => {
+      const data = item.data();
+      if (data.status === "Completed") sales += Number(data.price) || 0;
     });
+    const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
     container.replaceChildren();
-    [["মোট অর্ডার",counts.total],["Pending",counts.Pending],["Processing",counts.Processing],
-     ["Approved",counts.Approved],["Completed",counts.Completed],
-     ["Rejected / Cancelled",counts.Rejected+counts.Cancelled],["Archived",counts.archived],
-     ["Total Sales (Completed)","৳"+sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
-       const card=document.createElement("div"); card.className="order-card dashboard-stat-card";
-       const title=document.createElement("strong"); title.textContent=label;
-       const number=document.createElement("p"); number.textContent=String(value);
-       card.append(title,number); container.appendChild(card);
-     });
-    const balance=$("imoBalanceInfo");
-    if(balance) balance.textContent="IMO Wallet Balance সরাসরি দেখাতে IMO-এর অনুমোদিত API প্রয়োজন। আসল ব্যালেন্স দেখতে IMO Reseller Account খুলুন।";
-  } catch(error) { console.error("Dashboard error:",error); container.textContent="পরিসংখ্যান লোড করা যায়নি।"; }
+    [["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
+      const card = document.createElement("div");
+      card.className = "order-card dashboard-stat-card";
+      const title = document.createElement("strong");
+      title.textContent = label;
+      const number = document.createElement("p");
+      number.textContent = String(value);
+      card.append(title, number);
+      container.appendChild(card);
+    });
+    const stockInput = $("diamondStockQuantity");
+    if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
+  } catch(error) {
+    console.error("Dashboard error:", error);
+    container.textContent = "ড্যাশবোর্ডের তথ্য লোড করা যায়নি।";
+  }
+}
+
+const diamondStockForm = $("diamondStockForm");
+if (diamondStockForm) {
+  diamondStockForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!isAdmin) return;
+    const quantity = Number($("diamondStockQuantity")?.value);
+    if (!Number.isSafeInteger(quantity) || quantity < 0) {
+      showMessage($("diamondStockMessage"), "০ বা তার বেশি পূর্ণসংখ্যা Diamond Stock দিন।");
+      return;
+    }
+    try {
+      await setDoc(doc(db, "settings", "diamondStock"), {
+        quantity,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser?.uid || ""
+      });
+      showMessage($("diamondStockMessage"), "Diamond Stock সংরক্ষণ হয়েছে।", true);
+      await loadDashboardStats();
+    } catch (error) {
+      console.error("Stock save error:", error);
+      showMessage($("diamondStockMessage"), "Stock সংরক্ষণ হয়নি। Firestore Rules পরীক্ষা করুন।");
+    }
+  });
 }
 
 async function loadPaymentSettings() {
@@ -361,10 +427,11 @@ if (packageForm) {
     if (!isAdmin) return;
 
     const name = $("newPackageName")?.value.trim();
+    const diamondQuantity = Number($("newPackageQuantity")?.value) || Number(String(name || "").match(/[0-9]+/)?.[0]) || 0;
     const price = Number($("newPackagePrice")?.value);
     const message = $("packageMessage");
 
-    if (!name || !Number.isFinite(price) || price <= 0) {
+    if (!name || !Number.isFinite(price) || price <= 0 || !Number.isFinite(diamondQuantity) || diamondQuantity <= 0) {
       showMessage(message, "সঠিক প্যাকেজের নাম ও মূল্য দিন।");
       return;
     }
@@ -372,6 +439,7 @@ if (packageForm) {
     try {
       await addDoc(collection(db, "packages"), {
         name,
+        diamondQuantity,
         price,
         active: true,
         createdAt: serverTimestamp()
