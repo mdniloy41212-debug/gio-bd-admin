@@ -209,7 +209,7 @@ async function loadAdminOrders() {
         const details = document.createElement("p");
         details.textContent = "অর্ডার: " + id + " | কাস্টমার: " + (data.customerName || "নেই") +
           " | ইমেইল: " + (data.customerEmail || "নেই") + " | ফোন: " + (data.customerPhone || "নেই") +
-          " | IMO ID: " + (data.imoId || "নেই") + " | প্যাকেজ: " + (data.packageName || "নেই") +
+          " | IMO ID: " + (data.imoId || "নেই") + " | প্যাকেজ: " + (data.packageName || "নেই") + " | Diamond: " + (Number(data.diamondQuantity) || Number(String(data.packageName || "").match(/[0-9]+/)?.[0]) || "নেই") +
           " | মূল্য: ৳" + (data.price ?? "নেই") + " | পেমেন্ট: " + (data.paymentMethod || "নেই") +
           " | Transaction ID: " + (data.transactionId || "নেই") + " | অবস্থা: " + (data.status || "Pending");
         card.appendChild(details);
@@ -227,7 +227,7 @@ async function loadAdminOrders() {
       });
     };
     renderRows(activeBox, active, "কোনো Pending বা Processing অর্ডার নেই।", true, true);
-    renderRows(historyBox, history, "এখনো কোনো Approved / Completed অর্ডার নেই।", false, true);
+    renderRows(historyBox, history, "এখনো কোনো Approved / Completed অর্ডার নেই।", true, true);
     renderRows(rejectedBox, rejected, "Rejected অর্ডার নেই।", false, true);
     renderRows(archivedBox, archived, "Deleted / Archived অর্ডার নেই।", false, false);
   } catch (error) {
