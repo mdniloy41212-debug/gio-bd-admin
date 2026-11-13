@@ -630,3 +630,28 @@ footer {
   #dashboardStats .dashboard-stat-card p { font-size: 21px; }
   .floating-settings-button { right: 12px; bottom: 16px; }
 }
+
+
+/* Admin identity header */
+.admin-profile-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 18px;
+  padding: 13px;
+  border: 1px solid rgba(115,220,255,.35);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15,70,105,.78), rgba(45,27,91,.82));
+}
+.admin-profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(145deg,#1aa5d4,#6741c8);
+  border: 1px solid rgba(175,240,255,.55);
+  font-size: 24px;
+}
+.admin-profile-strip strong { color: #a9f4ff; letter-spacing: 1px; }
+.admin-profile-strip p { color: #fff; font-size: 13px; margin-top: 2px; }
