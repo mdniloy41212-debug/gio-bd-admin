@@ -1,0 +1,72 @@
+/* GIO BD Admin dashboard redesign — reference-based fixed mobile layout */
+:root{--gio-ink:#10091f;--gio-panel:rgba(20,18,48,.82);--gio-purple:#7b45e8;--gio-blue:#167ce5;--gio-gold:#ffd76a;--gio-line:rgba(180,158,255,.24)}
+html,body{min-height:100%;font-family:'Hind Siliguri',Arial,sans-serif}
+body{background:radial-gradient(ellipse at 18% 8%,rgba(91,42,166,.48),transparent 36%),radial-gradient(ellipse at 88% 34%,rgba(0,117,224,.32),transparent 38%),linear-gradient(155deg,#09091c,#17102e 54%,#080d23);background-attachment:fixed;padding-bottom:92px}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.3;background-image:radial-gradient(circle,rgba(161,226,255,.65) 1px,transparent 1.8px),radial-gradient(circle,rgba(255,215,106,.4) 1px,transparent 1.8px);background-size:68px 68px,113px 113px;background-position:0 0,31px 47px;animation:gioStarDrift 22s linear infinite}
+@keyframes gioStarDrift{to{background-position:68px 136px,144px 160px}}
+.header{display:none!important}.gio-agent-image{display:none!important}
+main{max-width:760px;padding:12px 14px 110px;margin:0 auto}
+#adminPage{padding-top:2px}
+.admin-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 2px 16px}
+.admin-brand-lockup{display:flex;align-items:center;gap:10px;color:#fff;font-weight:900;letter-spacing:.7px}
+.admin-brand-gem{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#e9ffff,#62cfff 42%,#7045dc 78%,#25145a);box-shadow:0 0 22px rgba(58,185,255,.45);color:#101b50;font-size:23px}
+.admin-brand-lockup small{display:block;color:#a9dfff;font-size:10px;letter-spacing:2px;font-weight:700}
+.admin-profile-trigger{width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,215,106,.9);background:linear-gradient(145deg,#35266d,#111a43);font-size:22px;box-shadow:0 0 18px rgba(255,215,106,.18)}
+.admin-profile-menu{display:none;position:absolute;right:16px;top:70px;z-index:40;min-width:190px;padding:14px;border:1px solid var(--gio-line);border-radius:16px;background:#17132f;box-shadow:0 16px 38px #0009}
+.admin-profile-menu.open{display:grid;gap:8px}
+.admin-profile-menu strong{color:var(--gio-gold)}
+.admin-profile-menu button{width:100%}
+#authStatus{font-size:12px;color:#a9c9ed;text-align:left;margin:0 0 12px}
+.admin-welcome{font-size:22px;color:#fff;margin:4px 0 12px}
+.admin-welcome span{color:var(--gio-gold)}
+.admin-search{position:relative;margin:12px 0 16px}
+.admin-search:before{content:"⌕";position:absolute;left:15px;top:5px;color:#c8d9ff;font-size:28px;pointer-events:none}
+.admin-search input{padding:14px 14px 14px 46px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(201,216,255,.18);color:#fff;box-shadow:inset 0 1px 0 #ffffff14}
+.admin-search input::placeholder{color:#c1c7df}
+.admin-balance-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;border-radius:22px;background:linear-gradient(115deg,rgba(255,204,64,.97),rgba(255,165,44,.94) 52%,rgba(255,219,114,.96));color:#29163b;border:1px solid #fff2b5;box-shadow:0 12px 30px rgba(0,0,0,.28),0 0 24px rgba(255,196,62,.18);margin:8px 0 14px}
+.admin-balance-panel .balance-title{font-size:12px;font-weight:800;opacity:.8}
+.admin-balance-panel .balance-value{font-size:clamp(20px,6vw,28px);font-weight:900;line-height:1.2;margin-top:4px;overflow-wrap:anywhere}
+.admin-balance-panel .balance-cell+ .balance-cell{border-left:1px solid #754a272e;padding-left:12px}
+.admin-balance-panel .balance-caption{font-size:11px;margin-top:4px;opacity:.75}
+.admin-blank-hero{height:clamp(150px,27vh,245px);margin:12px 0 16px;border-radius:22px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 115%,rgba(0,190,255,.2),transparent 55%),linear-gradient(145deg,rgba(30,16,67,.18),rgba(8,14,43,.12));}
+.admin-blank-hero:before,.admin-blank-hero:after{content:"";position:absolute;width:140px;height:140px;border:1px solid rgba(135,206,255,.12);transform:rotate(45deg);animation:gioCrystal 9s ease-in-out infinite}
+.admin-blank-hero:before{left:8%;top:25%}.admin-blank-hero:after{right:10%;top:15%;animation-delay:-4s}
+@keyframes gioCrystal{50%{transform:translateY(-12px) rotate(65deg);opacity:.45}}
+#dashboardStats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}#dashboardStats>div{min-width:0;background:linear-gradient(120deg,rgba(255,210,86,.98),rgba(255,172,51,.96));color:#2b1741;border:1px solid #fff1b4;border-radius:18px;padding:15px 12px;box-shadow:0 10px 26px #0004}#dashboardStats>div strong{font-size:12px;color:#55351b}#dashboardStats>div p{color:#24133b;font-size:clamp(20px,5.8vw,27px);font-weight:900}
+#diamondStockForm{display:none}
+#adminPage h2,#adminPage>h3{color:#fff}
+.order-filters{margin:12px 0 16px}
+#adminOrders{padding-bottom:12px}
+.order-card{background:rgba(23,21,52,.88);border:1px solid var(--gio-line);border-radius:17px;box-shadow:0 9px 22px #0003}
+.admin-bottom-nav{position:fixed;z-index:60;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:8px 5px calc(8px + env(safe-area-inset-bottom));background:rgba(12,12,31,.96);border-top:1px solid rgba(181,168,255,.2);backdrop-filter:blur(18px);box-shadow:0 -10px 30px #0005}
+.admin-bottom-nav button{min-width:0;min-height:58px;padding:5px 2px;background:transparent;border-radius:13px;color:#aeb1c9;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.admin-bottom-nav button .nav-icon{font-size:21px;line-height:1.1}
+.admin-bottom-nav button.active{color:#ffe08a;background:linear-gradient(180deg,rgba(130,78,232,.23),rgba(32,97,185,.08))}
+.admin-bottom-nav button.active .nav-icon{filter:drop-shadow(0 0 7px rgba(255,215,106,.55))}
+.admin-floating-social{position:fixed;z-index:70;right:17px;bottom:calc(88px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.social-options{display:none;flex-direction:column;gap:9px;align-items:flex-end}
+.social-options.open{display:flex}
+.social-options a{display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:25px;background:rgba(22,19,49,.96);border:1px solid var(--gio-line);color:#fff;text-decoration:none;box-shadow:0 8px 20px #0007;font-weight:700;animation:gioPop .22s ease-out}
+.social-options a span:first-child{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,#7a4be8,#087fd1)}
+.social-main-button{width:58px;height:58px;border-radius:50%;padding:0;font-size:25px;background:linear-gradient(145deg,#ffdb75,#8b4be8 55%,#087fd1);border:2px solid #fff7c8;box-shadow:0 0 0 5px rgba(131,91,226,.18),0 8px 25px #0008;animation:gioBounce 1.8s ease-in-out infinite}
+@keyframes gioBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes gioPop{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
+#adminSettingsPage,#adminInboxPage{padding-bottom:24px}
+#adminSettingsPage h2,#adminInboxPage h2{color:#ffe08a}
+#adminSettingsBack,#adminInboxBack{margin:12px 0}
+#adminSettingsPage .inbox-folder{background:rgba(24,20,51,.9);border-color:var(--gio-line);border-radius:16px;padding:14px}
+#adminSettingsPage .inbox-folder summary{color:#ffe08a}
+#adminInboxButton{display:none!important}
+#adminInboxPage .inbox-tabs button{background:linear-gradient(120deg,#7146d8,#147bc4)}
+.admin-profile-strip{display:none}
+footer{display:none}
+.page.active{animation:gioPageIn .2s ease-out}
+@keyframes gioPageIn{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}
+#loginPage{margin:30px auto 0;padding:18px;border-radius:22px;background:rgba(18,16,44,.88);border:1px solid var(--gio-line)}
+#loginPage .gio-login-brand{margin-bottom:20px}
+#loginPage h2{color:#ffe08a}
+@media(min-width:650px){main{padding-top:24px}.admin-bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(100%,760px);border-radius:20px 20px 0 0}}
+@media(prefers-reduced-motion:reduce){body:before,.admin-blank-hero:before,.admin-blank-hero:after,.social-main-button{animation:none!important}}
+
+#adminSettingsButton{display:none!important}
+.admin-bottom-nav[hidden],.admin-floating-social[hidden]{display:none!important}
