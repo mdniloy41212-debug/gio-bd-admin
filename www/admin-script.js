@@ -135,6 +135,8 @@ onAuthStateChanged(auth, async (user) => {
   if (adminSettingsPage) { adminSettingsPage.hidden = true; adminSettingsPage.classList.remove("active"); }
   if (logoutBtn) logoutBtn.hidden = false;
   if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
+  const adminDisplayName = $("adminDisplayName");
+  if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Admin";
 
   await loadAdminOrders();
   await loadDashboardStats();
