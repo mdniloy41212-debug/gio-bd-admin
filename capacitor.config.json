@@ -1,5 +1,12 @@
 {
   "appId": "com.giobd.admin",
   "appName": "GIO BD Owner",
-  "webDir": "www"
+  "webDir": "www",
+  "plugins": {
+    "FirebaseAuthentication": {
+      "providers": [
+        "google.com"
+      ]
+    }
+  }
 }
