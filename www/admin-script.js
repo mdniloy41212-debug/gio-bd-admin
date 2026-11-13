@@ -112,6 +112,8 @@ onAuthStateChanged(auth, async (user) => {
   isAdmin = false;
 
   if (!user) {
+    document.querySelector(".gio-admin-bottom-nav")?.setAttribute("hidden", "");
+    document.querySelector(".gio-admin-help")?.setAttribute("hidden", "");
     if (loginPage) { loginPage.hidden = false; loginPage.classList.add("active"); }
     if (adminPage) { adminPage.hidden = true; adminPage.classList.remove("active"); }
     if (adminSettingsPage) { adminSettingsPage.hidden = true; adminSettingsPage.classList.remove("active"); }
@@ -129,6 +131,8 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   isAdmin = true;
+  document.querySelector(".gio-admin-bottom-nav")?.removeAttribute("hidden");
+  document.querySelector(".gio-admin-help")?.removeAttribute("hidden");
 
   if (loginPage) { loginPage.hidden = true; loginPage.classList.remove("active"); }
   if (adminPage) { adminPage.hidden = false; adminPage.classList.add("active"); }
