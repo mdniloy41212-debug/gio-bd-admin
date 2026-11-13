@@ -505,6 +505,24 @@ async function loadAdminPackages() {
         (data.name || "নাম নেই") + " (" + (Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || "পরিমাণ নেই") + " Diamond) - ৳" + (data.price ?? "নেই");
 
       card.appendChild(details);
+      card.appendChild(makeButton("Edit Quantity / Price", async () => {
+        const currentQuantity = Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || 0;
+        const nextQuantity = Number(prompt("নতুন Diamond Quantity লিখুন:", String(currentQuantity)));
+        if (!Number.isSafeInteger(nextQuantity) || nextQuantity <= 0) return alert("সঠিক পূর্ণসংখ্যা Diamond Quantity দিন।");
+        const nextPrice = Number(prompt("নতুন প্যাকেজ মূল্য লিখুন:", String(data.price ?? "")));
+        if (!Number.isFinite(nextPrice) || nextPrice <= 0) return alert("সঠিক প্যাকেজ মূল্য দিন।");
+        try {
+          await updateDoc(doc(db, "packages", item.id), {
+            diamondQuantity: nextQuantity,
+            price: nextPrice,
+            updatedAt: serverTimestamp()
+          });
+          await loadAdminPackages();
+        } catch (error) {
+          console.error("Edit package error:", error);
+          alert("প্যাকেজ আপডেট করা যায়নি: " + (error.message || "অজানা সমস্যা"));
+        }
+      }));
       card.appendChild(makeButton("Delete", async () => {
         if (!confirm("এই প্যাকেজটি মুছে ফেলবেন?")) return;
 
