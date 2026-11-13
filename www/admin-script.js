@@ -309,6 +309,12 @@ async function updateOrderStatus(orderId, status) {
       const orderSnap = await transaction.get(orderRef);
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
       const order = orderSnap.data();
+      if (status === "Approved" && order.paymentVerified !== true) {
+        throw new Error("প্রথমে Transaction ID ও পেমেন্ট যাচাই করে Payment Verified করুন।");
+      }
+      if (order.status === "Completed" && status !== "Completed") {
+        throw new Error("Completed অর্ডারের স্ট্যাটাস পরিবর্তন করা যাবে না।");
+      }
       if (status === "Completed" && order.status !== "Approved") {
         throw new Error("প্রথমে Payment Verified করে অর্ডার Approved করুন, তারপর Completed করুন।");
       }
