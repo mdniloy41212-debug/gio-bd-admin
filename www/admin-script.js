@@ -3,6 +3,9 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import {
   getAuth,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
   onAuthStateChanged,
   signOut,
   setPersistence,
@@ -104,6 +107,42 @@ if (loginForm) {
     } catch (error) {
       console.error("Login error:", error);
       showMessage(loginMessage, "লগইন হয়নি। ইমেইল ও পাসওয়ার্ড পরীক্ষা করুন।");
+    }
+  });
+}
+
+
+const adminGoogleLoginButton = $("adminGoogleLoginBtn");
+if (adminGoogleLoginButton) {
+  adminGoogleLoginButton.addEventListener("click", async () => {
+    const email = $("adminEmail")?.value.trim();
+    adminGoogleLoginButton.disabled = true;
+    showMessage(loginMessage, "Google Owner Login হচ্ছে...", true);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Google admin login error:", error);
+      showMessage(loginMessage, "Google Login হয়নি: " + (error.message || "সমস্যা হয়েছে"));
+      adminGoogleLoginButton.disabled = false;
+    }
+  });
+}
+const adminResetPasswordButton = $("adminResetPasswordBtn");
+if (adminResetPasswordButton) {
+  adminResetPasswordButton.addEventListener("click", async () => {
+    const email = $("adminEmail")?.value.trim();
+    if (!email) {
+      showMessage(loginMessage, "প্রথমে Owner Gmail লিখুন।");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showMessage(loginMessage, "Password Reset Link Owner Gmail-এ পাঠানো হয়েছে।", true);
+    } catch (error) {
+      console.error("Admin password reset error:", error);
+      showMessage(loginMessage, "Reset Link পাঠানো যায়নি: " + (error.message || "সমস্যা হয়েছে"));
     }
   });
 }
