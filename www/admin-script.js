@@ -390,10 +390,22 @@ async function updateOrderStatus(orderId, status) {
       if (status === "Completed" && order.paymentVerified !== true) {
         throw new Error("Payment Verified না করে অর্ডার Completed করা যাবে না।");
       }
-      const shouldDeduct = status === "Completed"
-        && order.status === "Approved"
+      if (status === "Completed" && order.stockDeducted !== true) {
+        throw new Error("অর্ডার Approved হওয়ার সময় Diamond Stock কাটা হয়নি। আগে Stock ও Approval যাচাই করুন।");
+      }
+
+      // Deduct stock exactly once when Admin approves an already payment-verified order.
+      const shouldDeduct = status === "Approved"
+        && order.status !== "Approved"
         && order.paymentVerified === true
         && order.stockDeducted !== true;
+
+      // If an approved, not-yet-completed order is cancelled/rejected, return its reserved stock.
+      const shouldRestore = ["Cancelled", "Rejected"].includes(status)
+        && order.status === "Approved"
+        && order.stockDeducted === true
+        && order.stockRestored !== true;
+
       if (shouldDeduct) {
         const quantity = Number(order.diamondQuantity)
           || Number(String(order.packageName || "").match(/[0-9]+/)?.[0]) || 0;
@@ -403,14 +415,36 @@ async function updateOrderStatus(orderId, status) {
         const stockRef = doc(db, "settings", "diamondStock");
         const stockSnap = await transaction.get(stockRef);
         const currentStock = Number(stockSnap.exists() ? stockSnap.data().quantity : 0);
-        if (currentStock < quantity) throw new Error("পর্যাপ্ত Diamond Stock নেই। বর্তমান স্টক: " + currentStock);
+        if (!Number.isFinite(currentStock) || currentStock < quantity) {
+          throw new Error("পর্যাপ্ত Diamond Stock নেই। বর্তমান স্টক: " + currentStock);
+        }
         transaction.set(stockRef, {
           quantity: currentStock - quantity,
           updatedAt: serverTimestamp()
         }, { merge: true });
         transaction.update(orderRef, {
           status, stockDeducted: true, stockDeductedQuantity: quantity,
-          stockDeductedAt: serverTimestamp(), isArchived: false, updatedAt: serverTimestamp()
+          stockDeductedAt: serverTimestamp(), stockRestored: false,
+          isArchived: false, updatedAt: serverTimestamp()
+        });
+      } else if (shouldRestore) {
+        const quantity = Number(order.stockDeductedQuantity)
+          || Number(order.diamondQuantity)
+          || Number(String(order.packageName || "").match(/[0-9]+/)?.[0]) || 0;
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          throw new Error("ফেরত দেওয়ার Diamond quantity পাওয়া যায়নি। Admin-এর সহায়তা নিন।");
+        }
+        const stockRef = doc(db, "settings", "diamondStock");
+        const stockSnap = await transaction.get(stockRef);
+        const currentStock = Number(stockSnap.exists() ? stockSnap.data().quantity : 0);
+        transaction.set(stockRef, {
+          quantity: currentStock + quantity,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        transaction.update(orderRef, {
+          status, stockDeducted: false, stockRestored: true,
+          stockRestoredQuantity: quantity, stockRestoredAt: serverTimestamp(),
+          isArchived: false, updatedAt: serverTimestamp()
         });
       } else {
         transaction.update(orderRef, { status, isArchived: false, updatedAt: serverTimestamp() });
