@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import {
   getAuth,
   signInWithEmailAndPassword,
+  signInWithCredential,
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
@@ -119,9 +120,17 @@ if (adminGoogleLoginButton) {
     adminGoogleLoginButton.disabled = true;
     showMessage(loginMessage, "Google Owner Login হচ্ছে...", true);
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      await signInWithPopup(auth, provider);
+      if (Capacitor.isNativePlatform()) {
+        const nativeResult = await FirebaseAuthentication.signInWithGoogle();
+        const idToken = nativeResult.credential?.idToken;
+        if (!idToken) throw new Error("Google ID Token পাওয়া যায়নি। Firebase Android configuration পরীক্ষা করুন।");
+        const credential = GoogleAuthProvider.credential(idToken);
+        await signInWithCredential(auth, credential);
+      } else {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        await signInWithPopup(auth, provider);
+      }
     } catch (error) {
       console.error("Google admin login error:", error);
       showMessage(loginMessage, "Google Login হয়নি: " + (error.message || "সমস্যা হয়েছে"));
