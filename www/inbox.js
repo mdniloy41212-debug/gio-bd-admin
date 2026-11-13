@@ -22,6 +22,7 @@ const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
 adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">🏠<span>Home</span></button><button type="button" data-admin-tab="inbox">🎁<span>Messages</span></button><button type="button" data-admin-tab="manage">▦<span>Management</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button><button type="button" data-admin-tab="profile">👤<span>Profile</span></button>';
+adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const adminProfilePage = document.createElement("section");
 adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
@@ -33,6 +34,7 @@ document.head.appendChild(adminNavStyle);
 const adminHelp = document.createElement("button"); adminHelp.type="button"; adminHelp.className="gio-admin-help"; adminHelp.textContent="☎ Help";
 const adminHelpPanel = document.createElement("div"); adminHelpPanel.className="gio-admin-help-panel"; adminHelpPanel.hidden=true;
 adminHelpPanel.innerHTML='<strong>GIO BD Owner Support</strong><a id="gioOwnerWhatsApp" href="#" target="_blank" rel="noopener">WhatsApp</a><a href="https://www.facebook.com/profile.php?id=61582121766890" target="_blank" rel="noopener">Facebook Page</a><a href="mailto:mdniloy41212@gmail.com">Gmail</a>';
+adminHelp.hidden = true;
 document.body.append(adminHelp,adminHelpPanel);
 adminHelp.addEventListener("click",()=>{adminHelpPanel.hidden=!adminHelpPanel.hidden;});
 async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
