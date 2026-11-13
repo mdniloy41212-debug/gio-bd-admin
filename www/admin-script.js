@@ -43,6 +43,7 @@ const loginForm = $("loginForm");
 const loginMessage = $("loginMessage");
 const adminPage = $("adminPage");
 const loginPage = $("loginPage");
+const adminSettingsPage = $("adminSettingsPage");
 const authStatus = $("authStatus");
 const logoutBtn = $("logoutBtn");
 
@@ -113,6 +114,7 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     if (loginPage) { loginPage.hidden = false; loginPage.classList.add("active"); }
     if (adminPage) { adminPage.hidden = true; adminPage.classList.remove("active"); }
+    if (adminSettingsPage) { adminSettingsPage.hidden = true; adminSettingsPage.classList.remove("active"); }
     if (logoutBtn) logoutBtn.hidden = true;
     if (authStatus) authStatus.textContent = "আপনি লগইন করেননি";
     return;
@@ -130,6 +132,7 @@ onAuthStateChanged(auth, async (user) => {
 
   if (loginPage) { loginPage.hidden = true; loginPage.classList.remove("active"); }
   if (adminPage) { adminPage.hidden = false; adminPage.classList.add("active"); }
+  if (adminSettingsPage) { adminSettingsPage.hidden = true; adminSettingsPage.classList.remove("active"); }
   if (logoutBtn) logoutBtn.hidden = false;
   if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
 
@@ -139,6 +142,31 @@ onAuthStateChanged(auth, async (user) => {
   await loadAdminPackages();
   await loadSupportContact();
 });
+
+const settingsButton = $("adminSettingsButton");
+const settingsBackButton = $("adminSettingsBack");
+if (settingsButton) {
+  settingsButton.addEventListener("click", () => {
+    if (!isAdmin) return;
+    adminPage?.classList.remove("active");
+    if (adminPage) adminPage.hidden = true;
+    if (adminSettingsPage) {
+      adminSettingsPage.hidden = false;
+      adminSettingsPage.classList.add("active");
+    }
+  });
+}
+if (settingsBackButton) {
+  settingsBackButton.addEventListener("click", () => {
+    if (!isAdmin) return;
+    adminSettingsPage?.classList.remove("active");
+    if (adminSettingsPage) adminSettingsPage.hidden = true;
+    if (adminPage) {
+      adminPage.hidden = false;
+      adminPage.classList.add("active");
+    }
+  });
+}
 
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
@@ -395,7 +423,7 @@ async function loadAdminPackages() {
 
       const details = document.createElement("p");
       details.textContent =
-        (data.name || "নাম নেই") + " - ৳" + (data.price ?? "নেই");
+        (data.name || "নাম নেই") + " (" + (Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || "পরিমাণ নেই") + " Diamond) - ৳" + (data.price ?? "নেই");
 
       card.appendChild(details);
       card.appendChild(makeButton("Delete", async () => {
