@@ -335,8 +335,15 @@ function renderCustomerManagement() {
     const history = makeButton("এই কাস্টমারের অর্ডার দেখুন", async () => {
       if (!isAdmin) return;
       try {
-        const orders = await getDocs(query(collection(db,"orders"),where("customerUid","==",uid)));
-        const details = orders.docs.map(order => {
+        const orders = await getDocs(collection(db,"orders"));
+        const email = String(data.email || "").toLowerCase();
+        const phone = String(data.phone || data.mobile || "");
+        const details = orders.docs.filter(order => {
+          const d=order.data();
+          return [d.customerUid,d.userUid,d.uid].some(value => String(value || "") === uid)
+            || (email && [d.customerEmail,d.email].some(value => String(value || "").toLowerCase() === email))
+            || (phone && [d.customerPhone,d.phone].some(value => String(value || "") === phone));
+        }).map(order => {
           const d=order.data(); return order.id + " — " + (d.packageName || "Diamond") + " — " + (d.status || "Pending");
         });
         alert(details.length ? details.join("\n") : "এই কাস্টমারের কোনো অর্ডার পাওয়া যায়নি।");
