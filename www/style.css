@@ -655,3 +655,23 @@ footer {
 }
 .admin-profile-strip strong { color: #a9f4ff; letter-spacing: 1px; }
 .admin-profile-strip p { color: #fff; font-size: 13px; margin-top: 2px; }
+
+
+/* GIO BD OWNER — premium blue / gold 3D identity */
+:root{color-scheme:dark}
+body{font-family:'Hind Siliguri',Arial,sans-serif!important;background:radial-gradient(ellipse at 50% -8%,#174b86 0%,transparent 48%),radial-gradient(ellipse at 100% 55%,#6c263d55,transparent 36%),linear-gradient(145deg,#050d20 0%,#0b1b37 48%,#101025 100%)!important}
+body::before{opacity:.72!important;background-image:linear-gradient(135deg,transparent 46%,#f5d47718 49%,#fff0 53%),linear-gradient(45deg,transparent 46%,#4ccfff20 49%,#fff0 53%);background-size:92px 92px!important}
+.header{background:linear-gradient(115deg,#09254c,#174b79 55%,#633047)!important;border-bottom:1px solid #e5c46a88!important;box-shadow:0 12px 34px #0008!important}
+.logo{font-weight:900;letter-spacing:1.5px;color:#fff!important;text-shadow:0 0 16px #56caff88}
+.logo span{display:inline-block;margin-left:7px;padding:3px 9px;border:1px solid #f3d47a;border-radius:8px;color:#ffe29a!important;background:linear-gradient(135deg,#9d263f,#5c1832);font-size:.68em}
+.gio-login-brand{background:radial-gradient(circle at 50% 8%,#ffe59b55,transparent 36%),linear-gradient(145deg,#061b3d,#124b78 52%,#24172f)!important;border:1px solid #f4d27b!important;box-shadow:0 18px 48px #0009,inset 0 1px #fff8,0 0 30px #4ebfff35!important}
+.gio-login-brand::before,.gio-login-brand::after{border-color:#ffe39a33!important}
+.gio-diamond-mark{filter:drop-shadow(0 0 16px #ffd36c99)!important}
+.gio-brand-name{color:#fff!important;text-shadow:0 3px 15px #000}
+.gio-brand-name span{color:#ffe29a!important}
+.gio-brand-subtitle,.gio-brand-glow{color:#e9d7a4!important}
+.admin-profile-strip,.order-card,#dashboardStats>div,#dashboardStats .stat-card,.inbox-folder,.stock-settings-form{background:linear-gradient(145deg,#122e50ed,#18213bed)!important;border:1px solid #d9b75d66!important;box-shadow:0 12px 28px #0005,inset 0 1px #fff1!important}
+button{background:linear-gradient(135deg,#1c65a0,#9c6a2b)!important;border:1px solid #e6c76c66!important;box-shadow:0 5px 16px #0004}
+button:hover{filter:brightness(1.14)}
+input,select{background:#08182d!important;border-color:#54799a!important}
+h2,h3{color:#ffdf8a!important}
