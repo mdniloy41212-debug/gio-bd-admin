@@ -148,6 +148,7 @@ if (adminResetPasswordButton) {
 }
 
 onAuthStateChanged(auth, async (user) => {
+  if (adminGoogleLoginButton) adminGoogleLoginButton.disabled = false;
   isAdmin = false;
 
   if (!user) {
