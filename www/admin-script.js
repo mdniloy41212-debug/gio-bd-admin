@@ -20,7 +20,8 @@ import {
   setDoc,
   deleteDoc,
   serverTimestamp,
-  runTransaction
+  runTransaction,
+  query, where
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -143,6 +144,7 @@ onAuthStateChanged(auth, async (user) => {
   if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Admin";
 
   await loadAdminOrders();
+  await loadCustomerManagement();
   await loadDashboardStats();
   await loadPaymentSettings();
   await loadAdminPackages();
@@ -298,6 +300,53 @@ async function restoreOrder(orderId) {
   } catch (error) { console.error("Restore order error:", error); alert("অর্ডার ফিরিয়ে আনা যায়নি।"); }
 }
 
+
+
+let customerProfilesCache = [];
+async function loadCustomerManagement() {
+  const box = $("adminCustomerList");
+  if (!box || !isAdmin) return;
+  box.textContent = "কাস্টমার লোড হচ্ছে...";
+  try {
+    const snap = await getDocs(collection(db, "customerProfiles"));
+    customerProfilesCache = snap.docs.map(item => ({ uid: item.id, data: item.data() }));
+    renderCustomerManagement();
+  } catch (error) {
+    console.error("Customer management:", error);
+    box.textContent = "কাস্টমার লোড হয়নি। customerProfiles-এর Firestore Rules পরীক্ষা করুন।";
+  }
+}
+function renderCustomerManagement() {
+  const box = $("adminCustomerList");
+  if (!box) return;
+  const term = ($("customerManagementSearch")?.value || "").trim().toLowerCase();
+  const rows = customerProfilesCache.filter(({uid,data}) =>
+    [uid,data.displayName,data.name,data.email,data.phone,data.mobile].join(" ").toLowerCase().includes(term)
+  );
+  box.replaceChildren();
+  if (!rows.length) { box.textContent = "কোনো কাস্টমার পাওয়া যায়নি।"; return; }
+  rows.forEach(({uid,data}) => {
+    const card = document.createElement("article");
+    card.className = "order-card";
+    const title = document.createElement("strong");
+    title.textContent = data.displayName || data.name || "নাম দেওয়া হয়নি";
+    const info = document.createElement("p");
+    info.textContent = "ইমেইল: " + (data.email || "—") + " | ফোন: " + (data.phone || data.mobile || "—") + " | Customer ID: " + uid;
+    const history = makeButton("এই কাস্টমারের অর্ডার দেখুন", async () => {
+      if (!isAdmin) return;
+      try {
+        const orders = await getDocs(query(collection(db,"orders"),where("customerUid","==",uid)));
+        const details = orders.docs.map(order => {
+          const d=order.data(); return order.id + " — " + (d.packageName || "Diamond") + " — " + (d.status || "Pending");
+        });
+        alert(details.length ? details.join("\n") : "এই কাস্টমারের কোনো অর্ডার পাওয়া যায়নি।");
+      } catch(error) { alert("অর্ডার দেখা যায়নি: " + error.message); }
+    });
+    card.append(title,info,history);
+    box.appendChild(card);
+  });
+}
+$("customerManagementSearch")?.addEventListener("input", renderCustomerManagement);
 
 async function loadDashboardStats() {
   const container = $("dashboardStats");
