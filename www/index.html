@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#100b25">
   <title>GIO BD Admin</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin-dashboard-redesign.css">
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,7 +15,7 @@
   <nav>
     <button data-page="loginPage" id="loginNav">অ্যাডমিন লগইন</button>
     <button data-page="adminPage" id="adminNav" hidden>ড্যাশবোর্ড</button>
-    <button id="logoutBtn" hidden>লগআউট</button>
+    
   </nav>
   <p id="authStatus">আপনি লগইন করেননি</p>
 </header>
@@ -50,7 +51,17 @@
     <p id="loginMessage"></p>
   </section>
   <section id="adminPage" class="page">
-    <div class="admin-profile-strip"><div class="admin-profile-avatar">👤</div><div><strong>GIO BD AGENT</strong><p id="adminDisplayName">Admin</p></div></div>
+    <div class="admin-topbar">
+      <div class="admin-brand-lockup"><div class="admin-brand-gem">◆</div><div>GIO BD<small>ADMIN CONTROL</small></div></div>
+      <button id="adminProfileTrigger" class="admin-profile-trigger" type="button" aria-label="Admin Profile">👤</button>
+      <div id="adminProfileMenu" class="admin-profile-menu">
+        <strong>GIO BD Admin</strong><span id="adminDisplayName">Admin</span>
+        <button id="logoutBtn" type="button">লগআউট</button>
+      </div>
+    </div>
+    <p class="admin-welcome">স্বাগতম, <span>Admin</span></p>
+    <div class="admin-search"><input id="orderSearch" type="search" placeholder="কাস্টমার, IMO ID, Order ID বা Transaction ID খুঁজুন" aria-label="Search orders"></div>
+    <div class="admin-blank-hero" aria-hidden="true"></div>
     <h2>ড্যাশবোর্ড</h2>
     <button id="adminSettingsButton" class="floating-settings-button" type="button">⚙️ Settings</button>
   <h3>ড্যাশবোর্ড</h3>
@@ -62,7 +73,6 @@
   </form>
   <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
     <div class="order-filters">
-      <input id="orderSearch" type="search" placeholder="অর্ডার ID, কাস্টমার, IMO ID, ফোন বা Transaction ID খুঁজুন">
       <select id="orderStatusFilter">
         <option value="all">সব Status</option>
         <option value="Pending">Pending</option>
@@ -138,10 +148,26 @@
   </details>
   </section>
 </main>
+<nav class="admin-bottom-nav" aria-label="Admin navigation" hidden>
+  <button type="button" data-view="home" class="active"><span class="nav-icon">⌂</span><span>Home</span></button>
+  <button type="button" data-view="messages"><span class="nav-icon">🎁</span><span>Messages</span></button>
+  <button type="button" data-view="management"><span class="nav-icon">▦</span><span>Management</span></button>
+  <button type="button" data-view="settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
+  <button type="button" data-view="profile"><span class="nav-icon">♟</span><span>Profile</span></button>
+</nav>
+<div id="adminFloatingSocial" class="admin-floating-social" hidden>
+  <div id="socialOptions" class="social-options">
+    <a href="#" id="adminWhatsappLink"><span>☎</span> WhatsApp</a>
+    <a href="https://www.facebook.com/profile.php?id=61582121766890" target="_blank" rel="noopener noreferrer"><span>f</span> Facebook</a>
+    <a href="mailto:mdniloy41212@gmail.com"><span>✉</span> Gmail</a>
+  </div>
+  <button id="socialMainButton" class="social-main-button" type="button" aria-label="Support links" aria-expanded="false">✦</button>
+</div>
 <footer>
   <p>© <span id="year"></span> GIO BD Admin</p>
 </footer>
 <script type="module" src="inbox.js"></script>
 <script type="module" src="admin-script.js"></script>
+<script src="admin-ui.js"></script>
 </body>
 </html>
