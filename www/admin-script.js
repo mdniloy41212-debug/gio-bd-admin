@@ -134,6 +134,7 @@ onAuthStateChanged(auth, async (user) => {
 
   await loadAdminOrders();
   await loadAdminPackages();
+  await loadSupportContact();
 });
 
 if (logoutBtn) {
@@ -391,3 +392,41 @@ if (packageForm) {
 
 const year = $("year");
 if (year) year.textContent = new Date().getFullYear();
+
+
+// Admin-controlled customer WhatsApp support contact
+async function loadSupportContact() {
+  if (!isAdmin) return;
+  try {
+    const snap = await getDoc(doc(db, "settings", "supportContact"));
+    const data = snap.exists() ? snap.data() : {};
+    const input = $("whatsappNumber");
+    if (input) input.value = data.whatsappNumber || "";
+  } catch (error) {
+    console.error("Support contact load:", error);
+    showMessage($("supportContactMessage"), "WhatsApp সেটিংস লোড হয়নি।");
+  }
+}
+
+const supportContactForm = $("supportContactForm");
+if (supportContactForm) {
+  supportContactForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!isAdmin) return;
+    const whatsappNumber = $("whatsappNumber")?.value.trim() || "";
+    if (!/^[+0-9() -]{8,20}$/.test(whatsappNumber)) {
+      showMessage($("supportContactMessage"), "সঠিক WhatsApp নম্বর দিন।");
+      return;
+    }
+    try {
+      await setDoc(doc(db, "settings", "supportContact"), {
+        whatsappNumber,
+        updatedAt: serverTimestamp()
+      });
+      showMessage($("supportContactMessage"), "WhatsApp নম্বর সংরক্ষণ হয়েছে।", true);
+    } catch (error) {
+      console.error("Support contact save:", error);
+      showMessage($("supportContactMessage"), "নম্বর সংরক্ষণ হয়নি। Firestore Rules পরীক্ষা করুন।");
+    }
+  });
+}
