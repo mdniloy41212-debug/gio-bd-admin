@@ -18,6 +18,7 @@ import {
   collection,
   getDocs,
   getDoc,
+  onSnapshot,
   doc,
   addDoc,
   updateDoc,
@@ -52,6 +53,7 @@ const authStatus = $("authStatus");
 const logoutBtn = $("logoutBtn");
 
 let isAdmin = false;
+let stopOrdersRealtime = null;
 
 async function checkAdmin(user) {
   if (!user) return false;
@@ -196,6 +198,7 @@ if (adminResetPasswordButton) {
 
 onAuthStateChanged(auth, async (user) => {
   if (adminGoogleLoginButton) adminGoogleLoginButton.disabled = false;
+  if (stopOrdersRealtime) { stopOrdersRealtime(); stopOrdersRealtime = null; }
   isAdmin = false;
 
   if (!user) {
@@ -218,6 +221,17 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   isAdmin = true;
+  stopOrdersRealtime = onSnapshot(collection(db, "orders"), snapshot => {
+    const pendingCount = snapshot.docs.filter(item => ["Pending", "Processing"].includes(item.data().status || "Pending") && item.data().isArchived !== true).length;
+    const alertBox = $("adminOrderAlert");
+    if (alertBox) alertBox.textContent = "নতুন / চলমান অর্ডার: " + pendingCount;
+    loadAdminOrders();
+    loadDashboardStats();
+  }, error => {
+    console.error("Realtime orders listener:", error);
+    const alertBox = $("adminOrderAlert");
+    if (alertBox) alertBox.textContent = "অর্ডার নোটিফিকেশন লোড হয়নি।";
+  });
   document.querySelector(".gio-admin-bottom-nav")?.removeAttribute("hidden");
   document.querySelector(".gio-admin-help")?.removeAttribute("hidden");
 
