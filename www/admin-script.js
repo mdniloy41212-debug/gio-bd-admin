@@ -133,6 +133,8 @@ onAuthStateChanged(auth, async (user) => {
   if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
 
   await loadAdminOrders();
+  await loadDashboardStats();
+  await loadPaymentSettings();
   await loadAdminPackages();
   await loadSupportContact();
 });
