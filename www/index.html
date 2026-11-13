@@ -92,7 +92,7 @@
       <div id="adminArchivedOrders">Archive লোড হচ্ছে...</div>
     </details>
 
-    <h3>পেমেন্ট নম্বর সেটিংস</h3>
+    <details class="inbox-folder"><summary>💳 পেমেন্ট নম্বর সেটিংস</summary>
   <form id="paymentSettingsForm">
     <label>বিকাশ নম্বর</label>
     <input id="bkashNumber" type="tel" placeholder="বিকাশ নম্বর">
@@ -109,15 +109,18 @@
     <button type="submit">নম্বর সংরক্ষণ করুন</button>
   </form>
   <p id="paymentMessage"></p>
+  </details>
 
-  <h3>WhatsApp সাপোর্ট নম্বর</h3>
+  <details class="inbox-folder"><summary>📞 WhatsApp সাপোর্ট সেটিংস</summary>
   <form id="supportContactForm">
     <label for="whatsappNumber">WhatsApp নম্বর (দেশের কোডসহ)</label>
     <input id="whatsappNumber" type="tel" placeholder="যেমন: 8801XXXXXXXXX" required>
     <button type="submit">WhatsApp নম্বর সংরক্ষণ করুন</button>
   </form>
   <p id="supportContactMessage"></p>
+  </details>
 
+  <details class="inbox-folder"><summary>💎 প্যাকেজ পরিচালনা</summary>
   <h3>নতুন প্যাকেজ যোগ করুন</h3>
     <form id="packageForm">
       <label for="newPackageName">প্যাকেজের নাম</label>
@@ -131,6 +134,7 @@
     <p id="packageMessage"></p>
     <h3>প্যাকেজ পরিচালনা</h3>
     <div id="adminPackages">প্যাকেজ লোড হচ্ছে...</div>
+  </details>
   </section>
 </main>
 <footer>
