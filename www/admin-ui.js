@@ -17,9 +17,9 @@
  }
  document.addEventListener("click",e=>{
    const b=e.target.closest("[data-view]");
-   if(b){e.preventDefault();if(b.dataset.view==="messages"){ $("adminInboxButton")?.click(); }
-   else if(b.dataset.view==="settings"){ $("adminSettingsButton")?.click(); setTimeout(()=>{const d=[...document.querySelectorAll("#adminSettingsPage details")].find(x=>x.querySelector("summary")?.textContent.includes("পেমেন্ট"));if(d)d.open=true;},80);}
-   else if(b.dataset.view==="management"){ $("adminSettingsButton")?.click(); setTimeout(()=>{const d=[...document.querySelectorAll("#adminSettingsPage details")].find(x=>x.querySelector("summary")?.textContent.includes("প্যাকেজ"));if(d)d.open=true;},80);}
+   if(b){e.preventDefault();if(b.dataset.view==="messages"){ nav?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b)); $("adminInboxButton")?.click(); }
+   else if(b.dataset.view==="settings"){ nav?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b)); $("adminSettingsButton")?.click(); setTimeout(()=>{const d=[...document.querySelectorAll("#adminSettingsPage details")].find(x=>x.querySelector("summary")?.textContent.includes("পেমেন্ট"));if(d)d.open=true;},80);}
+   else if(b.dataset.view==="management"){ nav?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b)); $("adminSettingsButton")?.click(); setTimeout(()=>{const d=[...document.querySelectorAll("#adminSettingsPage details")].find(x=>x.querySelector("summary")?.textContent.includes("প্যাকেজ"));if(d)d.open=true;},80);}
    else if(b.dataset.view==="profile"){profileMenu?.classList.toggle("open");}
    else activate("home");}
    if(e.target.closest("#adminProfileTrigger")) profileMenu?.classList.toggle("open");
@@ -40,9 +40,9 @@
  });
  $("orderSearch")?.addEventListener("input",()=>{if(adminPage&&!adminPage.hidden){}});
  const observer=new MutationObserver(()=>{
-   const loggedIn=adminPage&&!adminPage.hidden&&adminPage.classList.contains("active");
+   const loggedIn=[adminPage,settingsPage,$("adminInboxPage")].some(p=>p&&!p.hidden&&p.classList.contains("active"));
    if(nav)nav.hidden=!loggedIn;
    const social=$("adminFloatingSocial");if(social)social.hidden=!loggedIn;
  });
- if(adminPage)observer.observe(adminPage,{attributes:true,attributeFilter:["hidden","class"]});
+ observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:["hidden","class"]});
 })();
