@@ -89,6 +89,44 @@ function makeButton(label, onClick) {
 
 await setPersistence(auth, browserLocalPersistence);
 
+const adminLanguageToggle = $("adminLanguageToggle");
+let adminLanguage = "bn";
+const adminTranslations = [
+  ["#loginPage h2", "অ্যাডমিন লগইন", "Admin Login"],
+  ["#loginPage > p", "শুধুমাত্র অনুমোদিত অ্যাডমিন প্রবেশ করতে পারবেন।", "Only authorized administrators can sign in."],
+  ['label[for="adminEmail"]', "অ্যাডমিন ইমেইল", "Owner Email"],
+  ['label[for="adminPassword"]', "পাসওয়ার্ড", "Password"],
+  ['#loginForm button[type="submit"]', "লগইন করুন", "Sign In"],
+  ["#adminPage > h2", "ড্যাশবোর্ড", "Dashboard"],
+  ["#adminSettingsPage > h2", "অ্যাডমিন সেটিংস", "Owner Settings"],
+  ['label[for="diamondStockQuantity"]', "মোট Diamond Stock", "Total Diamond Stock"],
+  ['#diamondStockForm button', "Stock সংরক্ষণ করুন", "Save Stock"],
+  ['#orderSearch', "অর্ডার ID, কাস্টমার, IMO ID, ফোন বা Transaction ID খুঁজুন", "Search Order ID, customer, IMO ID, phone or Transaction ID"],
+  ['label[for="bkashNumber"]', "বিকাশ Personal নম্বর", "bKash Personal Number"],
+  ['label[for="nagadNumber"]', "নগদ Personal নম্বর", "Nagad Personal Number"],
+  ['label[for="rocketNumber"]', "রকেট নম্বর", "Rocket Number"],
+  ['#paymentSettingsForm button', "নম্বর সংরক্ষণ করুন", "Save Payment Numbers"],
+  ['label[for="whatsappNumber"]', "WhatsApp নম্বর (দেশের কোডসহ)", "WhatsApp Number (with country code)"],
+  ['#supportContactForm button', "WhatsApp নম্বর সংরক্ষণ করুন", "Save WhatsApp Number"],
+  ['#packageForm button', "প্যাকেজ যোগ করুন", "Add Package"],
+  ['#adminPage h3', "ড্যাশবোর্ড", "Dashboard"]
+];
+function applyAdminLanguage() {
+  adminTranslations.forEach(([selector,bn,en]) => {
+    document.querySelectorAll(selector).forEach(element => {
+      if (element instanceof HTMLInputElement) element.placeholder = adminLanguage === "en" ? en : bn;
+      else element.textContent = adminLanguage === "en" ? en : bn;
+    });
+  });
+  if (adminLanguageToggle) adminLanguageToggle.textContent = adminLanguage === "bn" ? "English" : "বাংলা";
+  document.documentElement.lang = adminLanguage;
+}
+adminLanguageToggle?.addEventListener("click", () => {
+  adminLanguage = adminLanguage === "bn" ? "en" : "bn";
+  applyAdminLanguage();
+});
+
+
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
