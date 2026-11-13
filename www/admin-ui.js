@@ -17,7 +17,11 @@
  }
  document.addEventListener("click",e=>{
    const b=e.target.closest("[data-view]");
-   if(b){e.preventDefault();if(b.dataset.view==="messages"){ $("adminInboxButton")?.click(); } else if(b.dataset.view==="settings"){ $("adminSettingsButton")?.click(); } else activate("home");}
+   if(b){e.preventDefault();if(b.dataset.view==="messages"){ $("adminInboxButton")?.click(); }
+   else if(b.dataset.view==="settings"){ $("adminSettingsButton")?.click(); setTimeout(()=>{const d=[...document.querySelectorAll("#adminSettingsPage details")].find(x=>x.querySelector("summary")?.textContent.includes("পেমেন্ট"));if(d)d.open=true;},80);}
+   else if(b.dataset.view==="management"){ $("adminSettingsButton")?.click(); setTimeout(()=>{const d=[...document.querySelectorAll("#adminSettingsPage details")].find(x=>x.querySelector("summary")?.textContent.includes("প্যাকেজ"));if(d)d.open=true;},80);}
+   else if(b.dataset.view==="profile"){profileMenu?.classList.toggle("open");}
+   else activate("home");}
    if(e.target.closest("#adminProfileTrigger")) profileMenu?.classList.toggle("open");
    else if(profileMenu&&!e.target.closest("#adminProfileMenu"))profileMenu.classList.remove("open");
  });
@@ -26,6 +30,13 @@
  $("socialMainButton")?.addEventListener("click",()=>{
    const menu=$("socialOptions");const open=menu?.classList.toggle("open");
    $("socialMainButton")?.setAttribute("aria-expanded",String(Boolean(open)));
+ });
+ $("adminWhatsappLink")?.addEventListener("click",e=>{
+   e.preventDefault();
+   const raw=$("whatsappNumber")?.value.trim()||"";
+   const phone=raw.replace(/[^0-9]/g,"");
+   if(!phone){alert("আগে Settings থেকে WhatsApp নম্বর সংরক্ষণ করুন।");return;}
+   window.open("https://wa.me/"+phone,"_blank","noopener");
  });
  $("orderSearch")?.addEventListener("input",()=>{if(adminPage&&!adminPage.hidden){}});
  const observer=new MutationObserver(()=>{
