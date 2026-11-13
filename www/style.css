@@ -571,3 +571,62 @@ footer {
 
 /* Fixed GIO BD AGENT dashboard artwork */
 .gio-agent-image{width:100%;margin:18px auto 26px;overflow:hidden;border-radius:18px;border:1px solid rgba(90,190,255,.55);box-shadow:0 12px 32px rgba(0,0,0,.28),0 0 22px rgba(30,150,255,.18);background:#071747;line-height:0}.gio-agent-image img{display:block;width:100%;height:auto;object-fit:contain}
+
+
+/* GIO BD AGENT dashboard and settings layout */
+.stock-settings-form {
+  margin: 14px 0 20px;
+  padding: 16px;
+  border: 1px solid rgba(90, 207, 255, .35);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(13, 40, 76, .78), rgba(31, 20, 68, .8));
+}
+#dashboardStats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#dashboardStats .dashboard-stat-card {
+  min-width: 0;
+  border: 1px solid rgba(103, 220, 255, .38);
+  background: linear-gradient(145deg, rgba(18, 71, 105, .92), rgba(44, 27, 91, .94));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255,255,255,.16);
+}
+#dashboardStats .dashboard-stat-card strong {
+  display: block;
+  color: #a9f4ff;
+  font-size: 14px;
+}
+#dashboardStats .dashboard-stat-card p {
+  margin-top: 8px;
+  color: #fff;
+  font-size: 25px;
+  font-weight: 800;
+}
+.floating-settings-button {
+  position: fixed;
+  right: 16px;
+  bottom: 22px;
+  z-index: 20;
+  border-radius: 999px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #20a7d8, #6945d9);
+  box-shadow: 0 8px 26px rgba(0,0,0,.42), 0 0 18px rgba(81,188,255,.28);
+}
+#adminSettingsPage .inbox-folder {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid rgba(140, 118, 203, .4);
+  border-radius: 14px;
+  background: rgba(29, 22, 54, .8);
+}
+#adminSettingsPage .inbox-folder summary {
+  cursor: pointer;
+  color: #a9f4ff;
+  font-weight: 700;
+  padding: 6px;
+}
+@media (max-width: 480px) {
+  #dashboardStats { grid-template-columns: 1fr 1fr; gap: 8px; }
+  #dashboardStats .dashboard-stat-card { padding: 13px 8px; }
+  #dashboardStats .dashboard-stat-card p { font-size: 21px; }
+  .floating-settings-button { right: 12px; bottom: 16px; }
+}
