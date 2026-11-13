@@ -19,6 +19,34 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const main = document.querySelector("main");
+const adminBottomNav = document.createElement("nav");
+adminBottomNav.className = "gio-admin-bottom-nav";
+adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">🏠<span>Home</span></button><button type="button" data-admin-tab="inbox">🎁<span>Messages</span></button><button type="button" data-admin-tab="manage">▦<span>Management</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button><button type="button" data-admin-tab="profile">👤<span>Profile</span></button>';
+document.body.appendChild(adminBottomNav);
+const adminProfilePage = document.createElement("section");
+adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
+adminProfilePage.innerHTML = '<h2>GIO BD Owner</h2><p>Welcome to GIO BD Owner.</p><p id="gioOwnerProfileEmail">Admin account</p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a>';
+main?.appendChild(adminProfilePage);
+const adminNavStyle = document.createElement("style");
+adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
+document.head.appendChild(adminNavStyle);
+const adminHelp = document.createElement("button"); adminHelp.type="button"; adminHelp.className="gio-admin-help"; adminHelp.textContent="☎ Help";
+const adminHelpPanel = document.createElement("div"); adminHelpPanel.className="gio-admin-help-panel"; adminHelpPanel.hidden=true;
+adminHelpPanel.innerHTML='<strong>GIO BD Owner Support</strong><a id="gioOwnerWhatsApp" href="#" target="_blank" rel="noopener">WhatsApp</a><a href="https://www.facebook.com/profile.php?id=61582121766890" target="_blank" rel="noopener">Facebook Page</a><a href="mailto:mdniloy41212@gmail.com">Gmail</a>';
+document.body.append(adminHelp,adminHelpPanel);
+adminHelp.addEventListener("click",()=>{adminHelpPanel.hidden=!adminHelpPanel.hidden;});
+async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
+refreshOwnerWhatsApp();
+function showAdminTab(tab){
+ const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage");
+ [login,dash,settings,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
+ if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
+ if(tab==="manage"&&settings){settings.hidden=false;settings.classList.add("active");document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
+ if(tab==="settings"&&settings){settings.hidden=false;settings.classList.add("active");}
+ if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";}
+ if(tab==="inbox"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
+}
+adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
 let stopListening;
 let currentMessages = [];
 let currentAdminUid = null;
