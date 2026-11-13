@@ -51,7 +51,13 @@
   </section>
   <section id="adminPage" class="page">
     <h2>GIO BD Admin Dashboard</h2>
-  <h3>ড্যাশবোর্ড পরিসংখ্যান</h3>
+  <h3>ড্যাশবোর্ড</h3>
+  <form id="diamondStockForm" class="stock-settings-form">
+    <label for="diamondStockQuantity">Main Diamond Stock (নিজে সেট করুন)</label>
+    <input id="diamondStockQuantity" type="number" min="0" step="1" placeholder="বর্তমান মোট Diamond Stock" required>
+    <button type="submit">Stock সংরক্ষণ করুন</button>
+    <p id="diamondStockMessage" class="form-message"></p>
+  </form>
   <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
     <div class="order-filters">
       <input id="orderSearch" type="search" placeholder="অর্ডার ID, কাস্টমার, IMO ID, ফোন বা Transaction ID খুঁজুন">
@@ -68,8 +74,12 @@
     <h3>Pending / Processing Orders</h3>
     <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
     <details class="inbox-folder">
-      <summary>📥 Order History Inbox (Approved / Completed / Rejected)</summary>
+      <summary>📥 Order History Inbox (Approved / Completed)</summary>
       <div id="adminOrderHistory">হিস্টোরি লোড হচ্ছে...</div>
+    </details>
+    <details class="inbox-folder">
+      <summary>❌ Rejected Orders Inbox</summary>
+      <div id="adminRejectedOrders">Rejected অর্ডার লোড হচ্ছে...</div>
     </details>
     <details class="inbox-folder">
       <summary>🗑 Deleted / Archived Orders Inbox</summary>
@@ -107,6 +117,8 @@
     <form id="packageForm">
       <label for="newPackageName">প্যাকেজের নাম</label>
       <input id="newPackageName" type="text" placeholder="যেমন: 1000 Diamonds" required>
+      <label for="newPackageQuantity">Diamond পরিমাণ</label>
+      <input id="newPackageQuantity" type="number" min="1" step="1" placeholder="যেমন: 1000" required>
       <label for="newPackagePrice">প্যাকেজের মূল্য</label>
       <input id="newPackagePrice" type="number" min="1" placeholder="মূল্য লিখুন" required>
       <button type="submit">প্যাকেজ যোগ করুন</button>
