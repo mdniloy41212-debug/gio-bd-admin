@@ -292,6 +292,7 @@ onAuthStateChanged(auth, async user => {
     }
 
     currentAdminUid = user.uid;
+    await refreshOwnerWhatsApp();
     readNotificationIds = readStorage(user.uid);
     if (button) button.hidden = false;
     const list = document.getElementById("adminInboxList");
