@@ -426,3 +426,12 @@ footer {
 .voice-record-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; margin:10px 0; min-height:44px; padding:12px 16px; border:1px solid rgba(110,220,255,.45); border-radius:12px; background:linear-gradient(135deg,#087eaa,#5834b5); color:#fff; font-weight:700; box-shadow:0 5px 16px rgba(0,150,220,.2); }
 .voice-message-player { display:block; width:100%; max-width:420px; margin:10px 0; }
 .voice-status { margin:8px 0; color:#9deeff; font-size:13px; overflow-wrap:anywhere; }
+
+
+/* Admin dashboard, order history and inbox navigation */
+.dashboard-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(135px,1fr)); gap:10px; margin:12px 0 22px; }
+.dashboard-stat-card { margin:0; min-width:0; }
+.dashboard-stat-card p { font-size:1.25rem; font-weight:800; color:#ffd700; margin-top:5px; overflow-wrap:anywhere; }
+.imo-account-link { display:inline-flex; margin:10px 0; padding:12px 16px; border-radius:10px; background:linear-gradient(135deg,#087eaa,#5834b5); color:#fff; text-decoration:none; font-weight:700; }
+.inbox-tabs { display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
+.inbox-tabs button { flex:1 1 145px; }
