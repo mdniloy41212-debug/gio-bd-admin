@@ -238,9 +238,9 @@ async function loadDashboardStats() {
     let sales = 0;
     snapshot.forEach(item => {
       const data=item.data(), status=data.status || "Pending";
-      if (counts[status] !== undefined) counts[status]++;
       if (data.isArchived === true) counts.archived++;
-      if (status === "Completed" && data.isArchived !== true) sales += Number(data.price) || 0;
+      else if (counts[status] !== undefined) counts[status]++;
+      if (status === "Completed") sales += Number(data.price) || 0;
     });
     container.replaceChildren();
     [["মোট অর্ডার",counts.total],["Pending",counts.Pending],["Processing",counts.Processing],
