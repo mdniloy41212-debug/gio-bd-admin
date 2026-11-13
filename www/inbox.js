@@ -86,6 +86,7 @@ onAuthStateChanged(auth, async user => {
         send.textContent = "উত্তর পাঠান";
         send.addEventListener("click", async () => {
           if (!reply.value.trim()) return alert("উত্তর লিখুন।");
+          if (!data.userUid) return alert("কাস্টমার UID পাওয়া যায়নি।");
           send.disabled = true;
           try {
             await addDoc(collection(db, "supportMessages"), {
