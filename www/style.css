@@ -567,3 +567,7 @@ footer {
 @media(prefers-reduced-motion:reduce) {
   .agent-jump,.agent-legs,.agent-phone-arm,.agent-phone,.agent-phone-aura,.gio-agent-spark { animation:none; }
 }
+
+
+/* Fixed GIO BD AGENT dashboard artwork */
+.gio-agent-image{width:100%;margin:18px auto 26px;overflow:hidden;border-radius:18px;border:1px solid rgba(90,190,255,.55);box-shadow:0 12px 32px rgba(0,0,0,.28),0 0 22px rgba(30,150,255,.18);background:#071747;line-height:0}.gio-agent-image img{display:block;width:100%;height:auto;object-fit:contain}
