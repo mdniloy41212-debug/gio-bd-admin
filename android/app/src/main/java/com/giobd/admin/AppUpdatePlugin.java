@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -51,9 +52,18 @@ public class AppUpdatePlugin extends Plugin {
     @PluginMethod
     public void getAppVersion(PluginCall call) {
         JSObject result = new JSObject();
-        result.put("versionCode", BuildConfig.VERSION_CODE);
-        result.put("versionName", BuildConfig.VERSION_NAME);
-        call.resolve(result);
+        try {
+            PackageInfo packageInfo = getContext().getPackageManager()
+                .getPackageInfo(getContext().getPackageName(), 0);
+            long versionCode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                ? packageInfo.getLongVersionCode()
+                : packageInfo.versionCode;
+            result.put("versionCode", versionCode);
+            result.put("versionName", packageInfo.versionName);
+            call.resolve(result);
+        } catch (Exception error) {
+            call.reject("অ্যাপের ভার্সন পড়া যায়নি: " + error.getMessage(), error);
+        }
     }
 
     @PluginMethod
