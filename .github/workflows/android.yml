@@ -1,4 +1,4 @@
-name: Build GIO BD Admin APK
+name: Build GIO BD Owner APK
 
 on:
   workflow_dispatch:
@@ -45,5 +45,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GIO-BD-Admin-APK
+          name: GIO-BD-Owner-APK
           path: android/app/build/outputs/apk/debug/*.apk
