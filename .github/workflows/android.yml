@@ -35,6 +35,7 @@ jobs:
       - name: Validate JavaScript modules
         run: |
           node --input-type=module --check < www/admin-script.js
+          node --input-type=module --check < www/appearance.js
           node --input-type=module --check < www/inbox.js
 
       - name: Sync Capacitor
