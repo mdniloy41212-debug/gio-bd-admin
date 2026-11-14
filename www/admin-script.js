@@ -391,13 +391,20 @@ async function loadDashboardStats() {
       getDoc(doc(db, "settings", "diamondStock"))
     ]);
     let sales = 0;
+    let diamondsSold = 0;
     ordersSnapshot.forEach(item => {
       const data = item.data();
       if (data.status === "Completed") sales += Number(data.price) || 0;
+      if (data.stockDeducted === true) {
+        diamondsSold += Number(data.stockDeductedQuantity)
+          || Number(data.diamondQuantity)
+          || Number(String(data.packageName || "").match(/[0-9]+/)?.[0])
+          || 0;
+      }
     });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
     container.replaceChildren();
-    [["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
+    [["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট Diamond বিক্রি", diamondsSold.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
       const card = document.createElement("div");
       card.className = "order-card dashboard-stat-card";
       const title = document.createElement("strong");
