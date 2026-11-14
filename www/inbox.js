@@ -77,7 +77,6 @@ function renderOrderAlertBadge() {
 }
 orderAlertButton.addEventListener("click", async () => {
   if ("Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch {} }
-  if ("Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch {} }
   if (currentAdminUid) {
     try { localStorage.setItem(orderReadKey(currentAdminUid), JSON.stringify([...orderAlertIds])); } catch {}
   }
