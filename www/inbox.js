@@ -62,7 +62,7 @@ orderAlertButton.type = "button";
 orderAlertButton.id = "adminOrderAlertButton";
 orderAlertButton.className = "admin-order-alert";
 orderAlertButton.hidden = true;
-orderAlertButton.innerHTML = '🛎️ New Orders <span id="adminOrderAlertBadge" class="notification-count" hidden>0</span>';
+orderAlertButton.innerHTML = '🔔 <span id="adminOrderAlertBadge" class="notification-count" hidden>0</span>';
 document.getElementById("adminPage")?.insertBefore(orderAlertButton, document.getElementById("adminPage").firstChild);
 const orderReadKey = uid => "gioAdminReadOrders:" + uid;
 function renderOrderAlertBadge() {
@@ -71,9 +71,11 @@ function renderOrderAlertBadge() {
   const count = unreadOrderIds.size;
   badge.textContent = count > 99 ? "99+" : String(count);
   badge.hidden = count === 0;
+  const bell = document.getElementById("adminBellNav"); if (bell) bell.textContent = count ? "🔔 " + (count > 99 ? "99+" : count) : "🔔";
   orderAlertButton.setAttribute("aria-label", count + " unread new orders");
 }
-orderAlertButton.addEventListener("click", () => {
+orderAlertButton.addEventListener("click", async () => {
+  if ("Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch {} }
   if (currentAdminUid) {
     try { localStorage.setItem(orderReadKey(currentAdminUid), JSON.stringify([...orderAlertIds])); } catch {}
   }
@@ -94,7 +96,11 @@ function startOrderAlerts(uid) {
     const saved = JSON.parse(localStorage.getItem(orderReadKey(uid)) || "[]");
     if (Array.isArray(saved)) read = new Set(saved);
   } catch {}
+  let firstSnapshot = true;
   stopOrderAlertsListening = onSnapshot(collection(db,"orders"), snapshot => {
+    const freshPending = snapshot.docs.filter(item => { const d=item.data(); return !firstSnapshot && !d.isArchived && (d.status || "Pending") === "Pending" && !orderAlertIds.has(item.id); });
+    freshPending.forEach(item => { if ("Notification" in window && Notification.permission === "granted") new Notification("GIO BD: নতুন অর্ডার", { body:"নতুন অর্ডার এসেছে: " + item.id }); });
+    firstSnapshot = false;
     orderAlertIds = new Set(snapshot.docs.map(item => item.id));
     unreadOrderIds = new Set(snapshot.docs.filter(item => {
       const d=item.data();
