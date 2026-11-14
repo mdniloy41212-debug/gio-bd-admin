@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "gio-bd"
+  },
+  "targets": {
+    "gio-bd": {
+      "hosting": {
+        "admin": [
+          "gio-bd-admin"
+        ]
+      }
+    }
+  }
+}
