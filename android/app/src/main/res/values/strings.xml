@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GIO BD Admin</string>
-    <string name="title_activity_main">GIO BD Admin</string>
+    <string name="app_name">GIO BD Owner</string>
+    <string name="title_activity_main">GIO BD Owner</string>
     <string name="package_name">com.giobd.admin</string>
     <string name="custom_url_scheme">com.giobd.admin</string>
 </resources>
