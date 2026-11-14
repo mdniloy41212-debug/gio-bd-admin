@@ -91,6 +91,26 @@ function makeButton(label, onClick) {
   return button;
 }
 
+
+function showGioWelcomeAnimation() {
+  const key = "gioWelcomeShown:owner";
+  try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key,"1"); } catch {}
+  const overlay = document.createElement("div");
+  overlay.className = "gio-welcome-overlay";
+  overlay.innerHTML = '<div class="gio-welcome-card"><img alt="GIO BD welcome gift animation"><h2>স্বাগতম, GIO BD Owner!</h2><p>IMO Diamond Recharge</p><button type="button">চালিয়ে যান</button></div>';
+  const image = overlay.querySelector("img");
+  image.src = "https://raw.githubusercontent.com/mdniloy41212-debug/gio-bd-admin/feat/live-agent-owner-sync/www/gio-bd-gift.gif";
+  image.onerror = () => { image.hidden = true; };
+  const style = document.createElement("style");
+  style.textContent = ".gio-welcome-overlay{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:20px;background:rgba(3,10,35,.88);backdrop-filter:blur(10px);animation:gioWelcomeFade .2s ease-out}.gio-welcome-card{width:min(320px,100%);padding:24px 20px;text-align:center;border:1px solid #72eaff88;border-radius:24px;background:linear-gradient(145deg,#102d62,#22144f);box-shadow:0 0 35px #00cfff55;color:#fff}.gio-welcome-card img{display:block;width:112px;height:100px;object-fit:contain;margin:0 auto 8px;image-rendering:auto}.gio-welcome-card h2{margin:8px 0;color:#fff}.gio-welcome-card p{color:#bfeeff;margin-bottom:14px}.gio-welcome-card button{width:100%;border-radius:12px;background:linear-gradient(120deg,#087ecb,#673bd0)}@keyframes gioWelcomeFade{from{opacity:0}to{opacity:1}}";
+  document.head.appendChild(style);
+  const close = () => { overlay.remove(); style.remove(); };
+  overlay.querySelector("button").addEventListener("click",close);
+  overlay.addEventListener("click",event=>{if(event.target===overlay)close();});
+  document.body.appendChild(overlay);
+  setTimeout(close,4200);
+}
+
 await setPersistence(auth, browserLocalPersistence);
 $("toggleAdminPassword")?.addEventListener("click",()=>{const field=$("adminPassword");if(!field)return;field.type=field.type==="password"?"text":"password";$("toggleAdminPassword").textContent=field.type==="password"?"👁":"🙈";});
 $("adminForgotPassword")?.addEventListener("click",async()=>{const email=$("adminEmail")?.value.trim();if(!email){showMessage(loginMessage,"আগে Admin Gmail লিখুন।");return;}try{await sendPasswordResetEmail(auth,email);showMessage(loginMessage,"Password Reset Link Admin Gmail-এ পাঠানো হয়েছে।",true);}catch(error){showMessage(loginMessage,"Reset Link পাঠানো যায়নি: "+error.message);}});
@@ -158,6 +178,7 @@ onAuthStateChanged(auth, async (user) => {
   if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
   const adminDisplayName = $("adminDisplayName");
   if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Admin";
+  showGioWelcomeAnimation();
 
   await loadAdminOrders();
   await loadCustomerManagement();
