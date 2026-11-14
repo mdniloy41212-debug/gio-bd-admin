@@ -13,6 +13,7 @@ import {
   getFirestore,
   collection,
   getDocs,
+  onSnapshot,
   getDoc,
   doc,
   addDoc,
@@ -49,6 +50,7 @@ const authStatus = $("authStatus");
 const logoutBtn = $("logoutBtn");
 
 let isAdmin = false;
+let stopAdminOrdersListener = null;
 
 async function checkAdmin(user) {
   if (!user) return false;
@@ -185,14 +187,15 @@ if (logoutBtn) {
 }
 
 
-async function loadAdminOrders() {
+function loadAdminOrders() {
   if (!isAdmin) return;
+  if (stopAdminOrdersListener) stopAdminOrdersListener();
   const activeBox = $("adminOrders");
   const historyBox = $("adminOrderHistory");
   const archivedBox = $("adminArchivedOrders");
   const rejectedBox = $("adminRejectedOrders");
-  try {
-    const snapshot = await getDocs(collection(db, "orders"));
+
+  stopAdminOrdersListener = onSnapshot(collection(db, "orders"), snapshot => {
     const active = [], history = [], rejected = [], archived = [];
     snapshot.forEach(item => {
       const data = item.data();
@@ -202,6 +205,7 @@ async function loadAdminOrders() {
       else if (["Approved", "Completed", "Cancelled"].includes(data.status)) history.push(row);
       else active.push(row);
     });
+
     const renderRows = (box, rows, empty, canChange, canArchive) => {
       if (!box) return;
       box.replaceChildren();
@@ -240,10 +244,11 @@ async function loadAdminOrders() {
     renderRows(historyBox, history, "এখনো কোনো Approved / Completed অর্ডার নেই।", true, true);
     renderRows(rejectedBox, rejected, "Rejected অর্ডার নেই।", false, true);
     renderRows(archivedBox, archived, "Deleted / Archived অর্ডার নেই।", false, false);
-  } catch (error) {
-    console.error("Orders error:", error);
-    [activeBox, historyBox, rejectedBox, archivedBox].filter(Boolean).forEach(box => box.textContent = "অর্ডার লোড করা যায়নি। Firestore Rules পরীক্ষা করুন।");
-  }
+    loadDashboardStats();
+  }, error => {
+    console.error("Live orders listener:", error);
+    [activeBox, historyBox, rejectedBox, archivedBox].filter(Boolean).forEach(box => box.textContent = "অর্ডার লোড করা যায়নি: " + error.message);
+  });
 }
 
 async function updateOrderStatus(orderId, status) {
