@@ -59,6 +59,12 @@
     <p id="adminOrderAlert" class="form-message">অর্ডার নোটিফিকেশন লোড হচ্ছে...</p>
     <button id="adminSettingsButton" class="floating-settings-button" type="button">⚙️ Settings</button>
   <h3>ড্যাশবোর্ড</h3>
+  <form id="mainBalanceForm" class="stock-settings-form">
+    <label for="mainBalanceAmount">Owner Main Balance (৳)</label>
+    <input id="mainBalanceAmount" type="number" min="0" step="1" placeholder="যেমন: 5000" required>
+    <button type="submit">Main Balance সংরক্ষণ করুন</button>
+    <p id="mainBalanceMessage" class="form-message"></p>
+  </form>
   <form id="diamondStockForm" class="stock-settings-form">
     <label for="diamondStockQuantity">Main Diamond Stock (নিজে সেট করুন)</label>
     <input id="diamondStockQuantity" type="number" min="0" step="1" placeholder="বর্তমান মোট Diamond Stock" required>
