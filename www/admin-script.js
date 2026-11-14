@@ -6,7 +6,9 @@ import {
   onAuthStateChanged,
   signOut,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  browserSessionPersistence,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 import {
@@ -88,6 +90,8 @@ function makeButton(label, onClick) {
 }
 
 await setPersistence(auth, browserLocalPersistence);
+$("toggleAdminPassword")?.addEventListener("click",()=>{const field=$("adminPassword");if(!field)return;field.type=field.type==="password"?"text":"password";$("toggleAdminPassword").textContent=field.type==="password"?"👁":"🙈";});
+$("adminForgotPassword")?.addEventListener("click",async()=>{const email=$("adminEmail")?.value.trim();if(!email){showMessage(loginMessage,"আগে Admin Gmail লিখুন।");return;}try{await sendPasswordResetEmail(auth,email);showMessage(loginMessage,"Password Reset Link Admin Gmail-এ পাঠানো হয়েছে।",true);}catch(error){showMessage(loginMessage,"Reset Link পাঠানো যায়নি: "+error.message);}});
 
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
@@ -104,6 +108,7 @@ if (loginForm) {
     showMessage(loginMessage, "লগইন হচ্ছে...", true);
 
     try {
+      await setPersistence(auth, $("adminRememberMe")?.checked ? browserLocalPersistence : browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       console.error("Login error:", error);
