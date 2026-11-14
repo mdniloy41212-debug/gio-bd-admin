@@ -39,8 +39,7 @@ adminHelpPanel.innerHTML='<strong>GIO BD Owner Support</strong><a id="gioOwnerWh
 adminHelp.hidden = true;
 document.body.append(adminHelp,adminHelpPanel);
 adminHelp.addEventListener("click",()=>{adminHelpPanel.hidden=!adminHelpPanel.hidden;});
-async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
-refreshOwnerWhatsApp();
+onSnapshot(doc(db,"settings","supportContact"),snap=>{const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";},e=>console.warn("WhatsApp contact unavailable",e));
 function showAdminTab(tab){
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage");
  [login,dash,settings,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
