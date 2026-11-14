@@ -46,7 +46,7 @@ function showAdminTab(tab){
  [login,dash,settings,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
  if(tab==="orders"&&dash){dash.hidden=false;dash.classList.add("active");document.getElementById("adminOrders")?.scrollIntoView({behavior:"smooth",block:"start"});}
- if(tab==="offers"&&settings){settings.hidden=false;settings.classList.add("active");document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
+ if(tab==="offers"&&settings){settings.hidden=false;settings.classList.add("active");const folder=[...document.querySelectorAll("#adminSettingsPage details")].find(item=>item.querySelector("summary")?.textContent.includes("প্যাকেজ"));if(folder)folder.open=true;document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
  if(tab==="support"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
  if(tab==="manage"&&settings){settings.hidden=false;settings.classList.add("active");document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
  if(tab==="settings"&&settings){settings.hidden=false;settings.classList.add("active");}
