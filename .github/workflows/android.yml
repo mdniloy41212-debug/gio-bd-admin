@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIO_BD }}
 
     steps:
       - name: Checkout
@@ -57,9 +59,48 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
+      - name: Prepare Admin APK and version manifest
+        run: |
+          set -euo pipefail
+          APK_FILE="$(find android/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          test -n "$APK_FILE"
+          mkdir -p www/downloads www/updates
+          cp "$APK_FILE" www/downloads/admin.apk
+          VERSION_CODE="$(grep -E '^[[:space:]]*versionCode[[:space:]]+[0-9]+' android/app/build.gradle | head -n 1 | awk '{print $2}')"
+          VERSION_NAME="$(sed -nE 's/^[[:space:]]*versionName[[:space:]]+"([^"]+)".*/\1/p' android/app/build.gradle | head -n 1)"
+          test -n "$VERSION_CODE"
+          test -n "$VERSION_NAME"
+          cat > www/updates/admin-version.json <<EOF
+          {
+            "appId": "com.giobd.admin",
+            "appName": "GIO BD Admin",
+            "versionCode": $VERSION_CODE,
+            "versionName": "$VERSION_NAME",
+            "apkUrl": "https://gio-bd-admin.web.app/downloads/admin.apk",
+            "updatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          cat www/updates/admin-version.json
+
       - name: Upload signed release APK
         uses: actions/upload-artifact@v4
         with:
           name: GIO-BD-Admin-Release-APK
           path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+
+      - name: Authenticate Firebase deployment
+        if: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Deploy Admin Hosting
+        if: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
+        run: |
+          npm install --global firebase-tools
+          firebase deploy --only hosting:admin --project gio-bd --non-interactive
+
+      - name: Explain skipped Firebase deployment
+        if: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON == '' }}
+        run: echo "::warning::APK artifact was built, but Firebase deploy was skipped. Add the FIREBASE_SERVICE_ACCOUNT_GIO_BD GitHub Actions secret to enable automatic Hosting deployment."
