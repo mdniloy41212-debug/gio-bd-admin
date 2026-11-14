@@ -29,6 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate JavaScript modules
+        run: |
+          node --input-type=module --check < www/admin-script.js
+          node --input-type=module --check < www/inbox.js
       - name: Sync Capacitor
         run: npx cap sync android
 
