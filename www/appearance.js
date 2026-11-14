@@ -44,6 +44,13 @@ function applyAppearance(data = {}) {
     if (typeof value === "string" && /^#[0-9a-f]{3,8}$/i.test(value.trim())) root.style.setProperty(key, value.trim());
     else root.style.removeProperty(key);
   }
+  const heroImage = safeUrl(data.heroImageUrl);
+  const hero = document.querySelector(".gio-hero-card");
+  if (heroImage && hero) {
+    hero.style.backgroundImage = "linear-gradient(90deg,#06122ddd,#06122d55),url('" + heroImage.replace(/'/g, "%27") + "')";
+    hero.style.backgroundSize = "cover";
+    hero.style.backgroundPosition = "center";
+  }
   const background = safeUrl(data.backgroundImageUrl);
   if (background) {
     document.body.style.backgroundImage = "linear-gradient(#070b1dcc,#070b1dcc),url('" + background.replace(/'/g, "%27") + "')";
@@ -58,6 +65,7 @@ function applyAppearance(data = {}) {
   }
   const mappings = [
     [".gio-main-crystal", data.diamondIconUrl, "Diamond"],
+    [".gio-crystal-stage", data.heroImageUrl, "Home artwork"],
     [".gio-section-gem", data.diamondIconUrl, "Diamond"],
     [".gio-diamond-mark", data.diamondIconUrl, "GIO BD Diamond"],
     [".gio-home-profile", data.profileIconUrl, "Profile"],
