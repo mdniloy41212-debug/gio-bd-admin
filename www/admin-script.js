@@ -235,9 +235,10 @@ function loadAdminOrders() {
           " | মূল্য: ৳" + (data.price ?? "নেই") + " | পেমেন্ট: " + (data.paymentMethod || "নেই") +
           " | Transaction ID: " + (data.transactionId || "নেই") + " | অবস্থা: " + (data.status || "Pending");
         card.appendChild(details);
-        if (data.paymentScreenshotUrl) {
+        const paymentScreenshot = data.paymentScreenshotUrl || data.paymentScreenshotData;
+        if (paymentScreenshot) {
           const link = document.createElement("a");
-          link.href = data.paymentScreenshotUrl; link.target = "_blank";
+          link.href = paymentScreenshot; link.target = "_blank";
           link.rel = "noopener noreferrer"; link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
           card.appendChild(link);
         }
