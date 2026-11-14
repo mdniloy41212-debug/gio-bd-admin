@@ -51,6 +51,7 @@ const logoutBtn = $("logoutBtn");
 
 let isAdmin = false;
 let stopAdminOrdersListener = null;
+let stopAdminPackagesListener = null;
 
 async function checkAdmin(user) {
   if (!user) return false;
@@ -284,7 +285,7 @@ async function updateOrderStatus(orderId, status) {
         transaction.update(orderRef, { status, isArchived: false, updatedAt: serverTimestamp() });
       }
     });
-    await loadAdminOrders(); await loadDashboardStats();
+    await loadDashboardStats();
   } catch (error) {
     console.error("Update order error:", error);
     alert("অর্ডারের অবস্থা পরিবর্তন করা যায়নি: " + (error.message || "অজানা সমস্যা"));
@@ -366,35 +367,16 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const [ordersSnapshot, stockSnapshot] = await Promise.all([
-      getDocs(collection(db, "orders")),
-      getDoc(doc(db, "settings", "diamondStock"))
-    ]);
-    let sales = 0;
-    ordersSnapshot.forEach(item => {
-      const data = item.data();
-      if (data.status === "Completed") sales += Number(data.price) || 0;
-    });
+    const [ordersSnapshot, stockSnapshot] = await Promise.all([getDocs(collection(db, "orders")), getDoc(doc(db, "settings", "diamondStock"))]);
+    let sales = 0, pending = 0;
+    ordersSnapshot.forEach(item => { const data=item.data(); if(data.status === "Completed") sales += Number(data.price)||0; if(!data.isArchived && (data.status||"Pending")==="Pending") pending++; });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
+    const stats = [["মোট বিক্রয়", "৳"+sales.toLocaleString("en-BD"), "💰"],["Diamond Balance",stock.toLocaleString("en-BD"),"💎"],["Total Orders",ordersSnapshot.size.toLocaleString("en-BD"),"📦"],["Pending Orders",pending.toLocaleString("en-BD"),"⏳"]];
     container.replaceChildren();
-    [["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
-      const card = document.createElement("div");
-      card.className = "order-card dashboard-stat-card";
-      const title = document.createElement("strong");
-      title.textContent = label;
-      const number = document.createElement("p");
-      number.textContent = String(value);
-      card.append(title, number);
-      container.appendChild(card);
-    });
-    const stockInput = $("diamondStockQuantity");
-    if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
-  } catch(error) {
-    console.error("Dashboard error:", error);
-    container.textContent = "ড্যাশবোর্ডের তথ্য লোড করা যায়নি।";
-  }
+    stats.forEach(([label,value,icon])=>{const card=document.createElement("div");card.className="order-card dashboard-stat-card";const title=document.createElement("strong");title.textContent=icon+" "+label;const number=document.createElement("p");number.textContent=value;card.append(title,number);container.appendChild(card);});
+    const stockInput=$("diamondStockQuantity"); if(stockInput && document.activeElement!==stockInput) stockInput.value=String(stock);
+  } catch(error) { console.error("Dashboard error:",error); container.textContent="ড্যাশবোর্ডের তথ্য লোড করা যায়নি।"; }
 }
-
 const diamondStockForm = $("diamondStockForm");
 if (diamondStockForm) {
   diamondStockForm.addEventListener("submit", async event => {
@@ -470,51 +452,19 @@ if (paymentSettingsForm) {
   });
 }
 
-async function loadAdminPackages() {
-  const container = $("adminPackages");
-  if (!container || !isAdmin) return;
-
-  container.textContent = "প্যাকেজ লোড হচ্ছে...";
-
-  try {
-    const snapshot = await getDocs(collection(db, "packages"));
-    container.replaceChildren();
-
-    if (snapshot.empty) {
-      container.textContent = "এখনো কোনো প্যাকেজ যোগ করা হয়নি।";
-      return;
-    }
-
-    snapshot.forEach((item) => {
-      const data = item.data();
-      const card = document.createElement("div");
-      card.className = "order-card";
-
-      const details = document.createElement("p");
-      details.textContent =
-        (data.name || "নাম নেই") + " (" + (Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || "পরিমাণ নেই") + " Diamond) - ৳" + (data.price ?? "নেই");
-
-      card.appendChild(details);
-      card.appendChild(makeButton("Delete", async () => {
-        if (!confirm("এই প্যাকেজটি মুছে ফেলবেন?")) return;
-
-        try {
-          await deleteDoc(doc(db, "packages", item.id));
-          await loadAdminPackages();
-        } catch (error) {
-          console.error("Delete package error:", error);
-          alert("প্যাকেজ মুছে ফেলা যায়নি।");
-        }
-      }));
-
-      container.appendChild(card);
+function loadAdminPackages() {
+  const container=$("adminPackages"); if(!container||!isAdmin)return;
+  if(stopAdminPackagesListener) stopAdminPackagesListener();
+  container.textContent="প্যাকেজ লোড হচ্ছে...";
+  stopAdminPackagesListener=onSnapshot(collection(db,"packages"),snapshot=>{
+    container.replaceChildren(); if(snapshot.empty){container.textContent="এখনো কোনো প্যাকেজ যোগ করা হয়নি।";return;}
+    snapshot.forEach(item=>{const data=item.data();const card=document.createElement("div");card.className="order-card";const details=document.createElement("p");details.textContent=(data.name||"নাম নেই")+" ("+(Number(data.diamondQuantity)||Number(String(data.name||"").match(/[0-9]+/)?.[0])||"পরিমাণ নেই")+" Diamond) - ৳"+(data.price??"নেই")+" | "+(data.active===false?"বন্ধ":"চালু");card.appendChild(details);
+      card.appendChild(makeButton("Edit",async()=>{const name=prompt("প্যাকেজের নাম:",data.name||"");if(name===null)return;const q=prompt("Diamond পরিমাণ:",String(data.diamondQuantity||""));if(q===null)return;const p=prompt("প্যাকেজের মূল্য:",String(data.price??""));if(p===null)return;const quantity=Number(q),price=Number(p);if(!name.trim()||!Number.isSafeInteger(quantity)||quantity<=0||!Number.isFinite(price)||price<=0){alert("সঠিক নাম, Diamond পরিমাণ ও মূল্য দিন।");return;}try{await updateDoc(doc(db,"packages",item.id),{name:name.trim(),diamondQuantity:quantity,price,updatedAt:serverTimestamp()});}catch(error){alert("প্যাকেজ আপডেট হয়নি: "+error.message);}}));
+      card.appendChild(makeButton(data.active===false?"Enable":"Disable",async()=>{try{await updateDoc(doc(db,"packages",item.id),{active:data.active===false,updatedAt:serverTimestamp()});}catch(error){alert("প্যাকেজের অবস্থা বদলানো যায়নি: "+error.message);}}));
+      card.appendChild(makeButton("Delete",async()=>{if(!confirm("প্যাকেজটি মুছে ফেলবেন? পুরোনো অর্ডার থাকবে।"))return;try{await deleteDoc(doc(db,"packages",item.id));}catch(error){alert("প্যাকেজ মুছে ফেলা যায়নি: "+error.message);}}));container.appendChild(card);
     });
-  } catch (error) {
-    console.error("Packages error:", error);
-    container.textContent = "প্যাকেজ লোড করা যায়নি।";
-  }
+  },error=>{console.error("Packages listener:",error);container.textContent="প্যাকেজ লোড করা যায়নি: "+error.message;});
 }
-
 const packageForm = $("packageForm");
 
 if (packageForm) {
@@ -544,7 +494,6 @@ if (packageForm) {
 
       packageForm.reset();
       showMessage(message, "প্যাকেজ সফলভাবে যোগ হয়েছে।", true);
-      await loadAdminPackages();
     } catch (error) {
       console.error("Add package error:", error);
       showMessage(message, "প্যাকেজ যোগ করা যায়নি।");
