@@ -21,12 +21,12 @@ const db = getFirestore(app);
 const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
-adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">🏠<span>Home</span></button><button type="button" data-admin-tab="orders">📦<span>Orders</span></button><button type="button" data-admin-tab="offers">🎁<span>Offers</span></button><button type="button" data-admin-tab="support">💬<span>Support</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button>';
+adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">🏠<span>Home</span></button><button type="button" data-admin-tab="offers">🎁<span>Offers</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button><button type="button" data-admin-tab="inbox">📥<span>Inbox</span></button><button type="button" data-admin-tab="profile">👤<span>Profile</span></button>';
 adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const adminProfilePage = document.createElement("section");
 adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
-adminProfilePage.innerHTML = '<h2>GIO BD Owner</h2><p>Welcome to GIO BD Owner.</p><p id="gioOwnerProfileEmail">Admin account</p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a>';
+adminProfilePage.innerHTML = '<div class="admin-profile-strip"><div class="admin-profile-avatar">👤</div><div><strong>GIO BD OWNER</strong><p>Owner Account Profile</p></div></div><h2>👤 Profile</h2><div class="order-card"><strong>Admin Email</strong><p id="gioOwnerProfileEmail">Admin account</p><p>নিরাপত্তার জন্য অ্যাডমিন অ্যাকাউন্টের অনুমতি Firebase থেকে যাচাই করা হয়।</p></div><div class="order-card"><strong>Help & Support</strong><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><a id="gioOwnerProfileWhatsApp" href="#" target="_blank" rel="noopener">WhatsApp Support</a><a href="https://www.facebook.com/profile.php?id=61582121766890" target="_blank" rel="noopener">Facebook Page</a></div><button type="button" id="gioOwnerProfileLogout">🚪 Logout</button>';
 main?.appendChild(adminProfilePage);
 const adminNavStyle = document.createElement("style");
 adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
@@ -38,7 +38,10 @@ adminHelpPanel.innerHTML='<strong>GIO BD Owner Support</strong><a id="gioOwnerWh
 adminHelp.hidden = true;
 document.body.append(adminHelp,adminHelpPanel);
 adminHelp.addEventListener("click",()=>{adminHelpPanel.hidden=!adminHelpPanel.hidden;});
-async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
+document.addEventListener("click",event=>{
+  if(event.target?.id==="gioOwnerProfileLogout") document.getElementById("logoutBtn")?.click();
+});
+async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";const profileLink=document.getElementById("gioOwnerProfileWhatsApp");if(profileLink)profileLink.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
 refreshOwnerWhatsApp();
 function showAdminTab(tab){
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage");
