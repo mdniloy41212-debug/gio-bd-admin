@@ -607,14 +607,16 @@ async function loadAdminPackages() {
         (data.name || "নাম নেই") + " (" + (Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || "পরিমাণ নেই") + " Diamond) - ৳" + (data.price ?? "নেই");
 
       card.appendChild(details);
-      card.appendChild(makeButton("Edit Quantity / Price", async () => {
-        const currentQuantity = Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || 0;
-        const nextQuantity = Number(prompt("নতুন Diamond Quantity লিখুন:", String(currentQuantity)));
+      card.appendChild(makeButton("Edit Name / Quantity / Price", async () => {
+        const nextName = prompt("প্যাকেজের নতুন নাম লিখুন:", String(data.name || ""));
+        if (nextName === null) return;
+        const nextQuantity = Number(prompt("নতুন Diamond Quantity লিখুন:", String(Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || 0)));
         if (!Number.isSafeInteger(nextQuantity) || nextQuantity <= 0) return alert("সঠিক পূর্ণসংখ্যা Diamond Quantity দিন।");
         const nextPrice = Number(prompt("নতুন প্যাকেজ মূল্য লিখুন:", String(data.price ?? "")));
-        if (!Number.isFinite(nextPrice) || nextPrice <= 0) return alert("সঠিক প্যাকেজ মূল্য দিন।");
+        if (!nextName.trim() || !Number.isFinite(nextPrice) || nextPrice <= 0) return alert("সঠিক নাম ও প্যাকেজ মূল্য দিন।");
         try {
           await updateDoc(doc(db, "packages", item.id), {
+            name: nextName.trim(),
             diamondQuantity: nextQuantity,
             price: nextPrice,
             updatedAt: serverTimestamp()
@@ -623,6 +625,18 @@ async function loadAdminPackages() {
         } catch (error) {
           console.error("Edit package error:", error);
           alert("প্যাকেজ আপডেট করা যায়নি: " + (error.message || "অজানা সমস্যা"));
+        }
+      }));
+      card.appendChild(makeButton(data.active === false ? "প্যাকেজ চালু করুন" : "প্যাকেজ বন্ধ করুন", async () => {
+        try {
+          await updateDoc(doc(db, "packages", item.id), {
+            active: data.active === false,
+            updatedAt: serverTimestamp()
+          });
+          await loadAdminPackages();
+        } catch (error) {
+          console.error("Package status error:", error);
+          alert("প্যাকেজের অবস্থা পরিবর্তন করা যায়নি।");
         }
       }));
       card.appendChild(makeButton("Delete", async () => {
