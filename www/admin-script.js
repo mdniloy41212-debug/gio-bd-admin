@@ -54,6 +54,8 @@ const logoutBtn = $("logoutBtn");
 let isAdmin = false;
 let stopAdminOrdersListener = null;
 let stopAdminPackagesListener = null;
+let stopPaymentSettingsListener = null;
+let stopSupportContactListener = null;
 
 async function checkAdmin(user) {
   if (!user) return false;
@@ -413,24 +415,21 @@ if (diamondStockForm) {
   });
 }
 
-async function loadPaymentSettings() {
+function loadPaymentSettings() {
   if (!isAdmin) return;
-
-  try {
-    const result = await getDoc(doc(db, "settings", "paymentMethods"));
+  if (stopPaymentSettingsListener) stopPaymentSettingsListener();
+  stopPaymentSettingsListener = onSnapshot(doc(db, "settings", "paymentMethods"), result => {
     const data = result.exists() ? result.data() : {};
-
     ["bkash", "nagad", "rocket"].forEach(method => {
       const number = $(method + "Number");
       const enabled = $(method + "Enabled");
-
-      if (number) number.value = data[method]?.number || "";
-      if (enabled) enabled.checked = data[method]?.enabled !== false;
+      if (number && document.activeElement !== number) number.value = data[method]?.number || "";
+      if (enabled && document.activeElement !== enabled) enabled.checked = data[method]?.enabled !== false;
     });
-  } catch (error) {
-    console.error("Payment settings load:", error);
+  }, error => {
+    console.error("Payment settings listener:", error);
     showMessage($("paymentMessage"), "পেমেন্ট সেটিংস লোড হয়নি।");
-  }
+  });
 }
 
 const paymentSettingsForm = $("paymentSettingsForm");
@@ -520,17 +519,16 @@ if (year) year.textContent = new Date().getFullYear();
 
 
 // Admin-controlled customer WhatsApp support contact
-async function loadSupportContact() {
+function loadSupportContact() {
   if (!isAdmin) return;
-  try {
-    const snap = await getDoc(doc(db, "settings", "supportContact"));
-    const data = snap.exists() ? snap.data() : {};
+  if (stopSupportContactListener) stopSupportContactListener();
+  stopSupportContactListener = onSnapshot(doc(db, "settings", "supportContact"), snap => {
     const input = $("whatsappNumber");
-    if (input) input.value = data.whatsappNumber || "";
-  } catch (error) {
-    console.error("Support contact load:", error);
+    if (input && document.activeElement !== input) input.value = snap.exists() ? snap.data().whatsappNumber || "" : "";
+  }, error => {
+    console.error("Support contact listener:", error);
     showMessage($("supportContactMessage"), "WhatsApp সেটিংস লোড হয়নি।");
-  }
+  });
 }
 
 const supportContactForm = $("supportContactForm");
