@@ -121,8 +121,8 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
-            echo "::warning::Firebase deployment skipped. Add FIREBASE_SERVICE_ACCOUNT_GIO_BD in repository Actions secrets."
-            exit 0
+            echo "::error::Missing FIREBASE_SERVICE_ACCOUNT_GIO_BD repository secret."
+            exit 1
           fi
 
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
