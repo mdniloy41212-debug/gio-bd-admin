@@ -89,18 +89,16 @@ jobs:
           path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
-      - name: Authenticate Firebase deployment
-        if: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON }}
-
       - name: Deploy Admin Hosting
-        if: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIO_BD }}
         run: |
+          set -euo pipefail
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::warning::Firebase deployment skipped. Add FIREBASE_SERVICE_ACCOUNT_GIO_BD in repository Actions secrets."
+            exit 0
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
           npm install --global firebase-tools
           firebase deploy --only hosting:admin --project gio-bd --non-interactive
-
-      - name: Explain skipped Firebase deployment
-        if: ${{ env.FIREBASE_SERVICE_ACCOUNT_JSON == '' }}
-        run: echo "::warning::APK artifact was built, but Firebase deploy was skipped. Add the FIREBASE_SERVICE_ACCOUNT_GIO_BD GitHub Actions secret to enable automatic Hosting deployment."
