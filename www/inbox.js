@@ -65,6 +65,7 @@ orderAlertButton.hidden = true;
 orderAlertButton.innerHTML = '🔔 <span id="adminOrderAlertBadge" class="notification-count" hidden>0</span>';
 document.getElementById("adminPage")?.insertBefore(orderAlertButton, document.getElementById("adminPage").firstChild);
 const orderReadKey = uid => "gioAdminReadOrders:" + uid;
+document.getElementById("adminBellNav")?.addEventListener("click", () => orderAlertButton.click());
 function renderOrderAlertBadge() {
   const badge = document.getElementById("adminOrderAlertBadge");
   if (!badge) return;
@@ -75,6 +76,7 @@ function renderOrderAlertBadge() {
   orderAlertButton.setAttribute("aria-label", count + " unread new orders");
 }
 orderAlertButton.addEventListener("click", async () => {
+  if ("Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch {} }
   if ("Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch {} }
   if (currentAdminUid) {
     try { localStorage.setItem(orderReadKey(currentAdminUid), JSON.stringify([...orderAlertIds])); } catch {}
