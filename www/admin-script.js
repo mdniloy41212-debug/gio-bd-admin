@@ -352,7 +352,8 @@ function renderCustomerManagement() {
           const d=order.data();
           return [d.customerUid,d.userUid,d.uid].some(value => String(value || "") === uid)
             || (email && [d.customerEmail,d.email].some(value => String(value || "").toLowerCase() === email))
-            || (phone && [d.customerPhone,d.phone].some(value => String(value || "") === phone));
+            || (phone && [d.customerPhone,d.phone].some(value => String(value || "") === phone))
+            || String(d.userId || "") === uid;
         }).map(order => {
           const d=order.data(); return order.id + " — " + (d.packageName || "Diamond") + " — " + (d.status || "Pending");
         });
