@@ -405,6 +405,27 @@ async function updateOrderStatus(orderId, status) {
         && order.status === "Approved"
         && order.stockDeducted === true
         && order.stockRestored !== true;
+      const shouldDebitMoney = shouldDeduct && order.balanceDeducted !== true;
+      const shouldRefundMoney = shouldRestore && order.balanceDeducted === true && order.balanceRefunded !== true;
+
+      let balanceRef = null;
+      let balanceSnap = null;
+      let currentBalance = 0;
+      const orderAmount = Number(order.price);
+      if ((shouldDebitMoney || shouldRefundMoney) && (!Number.isFinite(orderAmount) || orderAmount < 0)) {
+        throw new Error("অর্ডারের সঠিক মূল্য পাওয়া যায়নি; ব্যালেন্স পরিবর্তন করা হয়নি।");
+      }
+      if (shouldDebitMoney || shouldRefundMoney) {
+        balanceRef = doc(db, "settings", "mainBalance");
+        balanceSnap = await transaction.get(balanceRef);
+        currentBalance = Number(balanceSnap.exists() ? balanceSnap.data().amount : 0);
+        if (!Number.isFinite(currentBalance) || currentBalance < 0) {
+          throw new Error("Owner Main Balance সঠিক নয়।");
+        }
+        if (shouldDebitMoney && currentBalance < orderAmount) {
+          throw new Error("Owner Main Balance অপর্যাপ্ত। প্রয়োজন ৳" + orderAmount + ", আছে ৳" + currentBalance);
+        }
+      }
 
       if (shouldDeduct) {
         const quantity = Number(order.diamondQuantity)
@@ -422,9 +443,20 @@ async function updateOrderStatus(orderId, status) {
           quantity: currentStock - quantity,
           updatedAt: serverTimestamp()
         }, { merge: true });
+        if (shouldDebitMoney) {
+          transaction.set(balanceRef, {
+            amount: currentBalance - orderAmount,
+            updatedAt: serverTimestamp(),
+            updatedBy: auth.currentUser?.uid || ""
+          }, { merge: true });
+        }
         transaction.update(orderRef, {
           status, stockDeducted: true, stockDeductedQuantity: quantity,
           stockDeductedAt: serverTimestamp(), stockRestored: false,
+          balanceDeducted: shouldDebitMoney || order.balanceDeducted === true,
+          balanceDeductedAmount: shouldDebitMoney ? orderAmount : (Number(order.balanceDeductedAmount) || 0),
+          balanceDeductedAt: shouldDebitMoney ? serverTimestamp() : (order.balanceDeductedAt || null),
+          balanceRefunded: false,
           isArchived: false, updatedAt: serverTimestamp()
         });
       } else if (shouldRestore) {
@@ -441,9 +473,19 @@ async function updateOrderStatus(orderId, status) {
           quantity: currentStock + quantity,
           updatedAt: serverTimestamp()
         }, { merge: true });
+        if (shouldRefundMoney) {
+          transaction.set(balanceRef, {
+            amount: currentBalance + orderAmount,
+            updatedAt: serverTimestamp(),
+            updatedBy: auth.currentUser?.uid || ""
+          }, { merge: true });
+        }
         transaction.update(orderRef, {
           status, stockDeducted: false, stockRestored: true,
           stockRestoredQuantity: quantity, stockRestoredAt: serverTimestamp(),
+          balanceRefunded: shouldRefundMoney || order.balanceRefunded === true,
+          balanceRefundedAmount: shouldRefundMoney ? orderAmount : (Number(order.balanceRefundedAmount) || 0),
+          balanceRefundedAt: shouldRefundMoney ? serverTimestamp() : (order.balanceRefundedAt || null),
           isArchived: false, updatedAt: serverTimestamp()
         });
       } else {
@@ -458,11 +500,18 @@ async function updateOrderStatus(orderId, status) {
 }
 
 async function archiveOrder(orderId) {
-  if (!isAdmin || !confirm("অর্ডারটি সামনের তালিকা থেকে সরিয়ে Archive-এ রাখবেন?")) return;
+  if (!isAdmin) return;
   try {
+    const orderSnap = await getDoc(doc(db, "orders", orderId));
+    if (!orderSnap.exists()) throw new Error("অর্ডার পাওয়া যায়নি।");
+    const createdAt = orderSnap.data().createdAt?.toMillis?.() || 0;
+    if (!createdAt || Date.now() - createdAt < 12 * 60 * 60 * 1000) {
+      throw new Error("অর্ডার তৈরি হওয়ার ১২ ঘণ্টা পূর্ণ হলে History Archive করতে পারবেন।");
+    }
+    if (!confirm("১২ ঘণ্টার বেশি পুরোনো এই অর্ডার History থেকে Archive করবেন? পরে Restore করা যাবে।")) return;
     await updateDoc(doc(db, "orders", orderId), { isArchived: true, archivedAt: serverTimestamp(), updatedAt: serverTimestamp() });
     await loadAdminOrders(); await loadDashboardStats();
-  } catch (error) { console.error("Archive order error:", error); alert("অর্ডার Archive করা যায়নি।"); }
+  } catch (error) { console.error("Archive order error:", error); alert("অর্ডার Archive করা যায়নি: " + (error.message || "")); }
 }
 
 async function restoreOrder(orderId) {
@@ -478,9 +527,10 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const [ordersSnapshot, stockSnapshot] = await Promise.all([
+    const [ordersSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
       getDocs(collection(db, "orders")),
-      getDoc(doc(db, "settings", "diamondStock"))
+      getDoc(doc(db, "settings", "diamondStock")),
+      getDoc(doc(db, "settings", "mainBalance"))
     ]);
     let sales = 0;
     ordersSnapshot.forEach(item => {
@@ -488,8 +538,9 @@ async function loadDashboardStats() {
       if (data.status === "Completed") sales += Number(data.price) || 0;
     });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
+    const balance = Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0);
     container.replaceChildren();
-    [["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
+    [["Main Balance", "৳" + balance.toLocaleString("en-BD")], ["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
       const card = document.createElement("div");
       card.className = "order-card dashboard-stat-card";
       const title = document.createElement("strong");
@@ -505,6 +556,29 @@ async function loadDashboardStats() {
     console.error("Dashboard error:", error);
     container.textContent = "ড্যাশবোর্ডের তথ্য লোড করা যায়নি।";
   }
+}
+
+const mainBalanceForm = $("mainBalanceForm");
+if (mainBalanceForm) {
+  mainBalanceForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!isAdmin) return;
+    const amount = Number($("mainBalanceAmount")?.value);
+    if (!Number.isSafeInteger(amount) || amount < 0) {
+      showMessage($("mainBalanceMessage"), "০ বা তার বেশি পূর্ণসংখ্যা টাকা লিখুন।");
+      return;
+    }
+    try {
+      await setDoc(doc(db, "settings", "mainBalance"), {
+        amount, updatedAt: serverTimestamp(), updatedBy: auth.currentUser?.uid || ""
+      }, { merge: true });
+      showMessage($("mainBalanceMessage"), "Main Balance সংরক্ষণ হয়েছে।", true);
+      await loadDashboardStats();
+    } catch (error) {
+      console.error("Main balance save error:", error);
+      showMessage($("mainBalanceMessage"), "Main Balance সংরক্ষণ হয়নি: " + (error.message || "Rules পরীক্ষা করুন।"));
+    }
+  });
 }
 
 const diamondStockForm = $("diamondStockForm");
