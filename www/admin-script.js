@@ -550,6 +550,8 @@ async function loadDashboardStats() {
       card.append(title, number);
       container.appendChild(card);
     });
+    const balanceInput = $("mainBalanceAmount");
+    if (balanceInput && document.activeElement !== balanceInput) balanceInput.value = String(balance);
     const stockInput = $("diamondStockQuantity");
     if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
   } catch(error) {
