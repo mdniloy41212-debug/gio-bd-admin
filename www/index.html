@@ -7,13 +7,14 @@
   <title>GIO BD Owner</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>.gio-password-wrap{position:relative;display:flex;align-items:center}.gio-password-wrap input{width:100%;padding-right:54px}.gio-password-toggle{position:absolute;right:7px;min-height:38px;padding:6px 10px;background:transparent;color:#164cbb}.gio-login-options{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0 14px;font-size:12px}.gio-login-options label{display:flex;align-items:center;gap:6px}.gio-login-options input{width:auto;margin:0}.gio-forgot-link{background:transparent;color:#1459d2;padding:4px;font-size:12px}</style>
 </head>
 <body>
 <header class="header">
   <div class="logo">GIO BD <span>OWNER</span></div>
   <nav>
     <button data-page="loginPage" id="loginNav">অ্যাডমিন লগইন</button>
-    <button data-admin-tab="home" id="adminHomeNav" hidden>🏠 Home</button><button data-page="adminPage" id="adminNav" hidden>ড্যাশবোর্ড</button>
+    <button data-admin-tab="home" id="adminHomeNav" hidden>🏠 Home</button><button data-page="adminPage" id="adminNav" hidden>ড্যাশবোর্ড</button><button id="adminProfileNav" class="gio-admin-profile" type="button" hidden aria-label="Owner Profile">👤</button><button id="adminBellNav" class="gio-admin-bell" type="button" hidden aria-label="নতুন অর্ডারের Notification">🔔</button>
     <button id="logoutBtn" hidden>লগআউট</button>
   </nav>
   <p id="authStatus">আপনি লগইন করেননি</p>
@@ -45,7 +46,8 @@
       <label for="adminEmail">অ্যাডমিন ইমেইল</label>
       <input id="adminEmail" type="email" placeholder="Admin Email" required>
       <label for="adminPassword">পাসওয়ার্ড</label>
-      <input id="adminPassword" type="password" placeholder="Password" required>
+      <div class="gio-password-wrap"><input id="adminPassword" type="password" placeholder="Password" required><button id="toggleAdminPassword" class="gio-password-toggle" type="button" aria-label="পাসওয়ার্ড দেখান">👁</button></div>
+      <div class="gio-login-options"><label><input id="adminRememberMe" type="checkbox" checked> Remember Me</label><button id="adminForgotPassword" class="gio-forgot-link" type="button">Forgot Password?</button></div>
       <button type="submit">লগইন করুন</button>
     </form>
     <p id="loginMessage"></p>
@@ -54,7 +56,7 @@
     <div class="admin-profile-strip"><div class="admin-profile-avatar">👤</div><div><strong>GIO BD OWNER</strong><p id="adminDisplayName">Admin</p></div></div>
     <h2>ড্যাশবোর্ড</h2>
     <button id="adminSettingsButton" class="floating-settings-button" type="button">⚙️ Settings</button>
-  <h3>ড্যাশবোর্ড</h3>
+  <h3>Premium Home Dashboard</h3>
   <form id="diamondStockForm" class="stock-settings-form">
     <label for="diamondStockQuantity">Main Diamond Stock (নিজে সেট করুন)</label>
     <input id="diamondStockQuantity" type="number" min="0" step="1" placeholder="বর্তমান মোট Diamond Stock" required>

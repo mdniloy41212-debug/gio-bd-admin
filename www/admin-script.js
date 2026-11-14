@@ -6,13 +6,16 @@ import {
   onAuthStateChanged,
   signOut,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  browserSessionPersistence,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 import {
   getFirestore,
   collection,
   getDocs,
+  onSnapshot,
   getDoc,
   doc,
   addDoc,
@@ -49,6 +52,10 @@ const authStatus = $("authStatus");
 const logoutBtn = $("logoutBtn");
 
 let isAdmin = false;
+let stopAdminOrdersListener = null;
+let stopAdminPackagesListener = null;
+let stopPaymentSettingsListener = null;
+let stopSupportContactListener = null;
 
 async function checkAdmin(user) {
   if (!user) return false;
@@ -84,7 +91,29 @@ function makeButton(label, onClick) {
   return button;
 }
 
+
+function showGioWelcomeAnimation() {
+  const key = "gioWelcomeShown:owner";
+  try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key,"1"); } catch {}
+  const overlay = document.createElement("div");
+  overlay.className = "gio-welcome-overlay";
+  overlay.innerHTML = '<div class="gio-welcome-card"><img alt="GIO BD welcome gift animation"><h2>স্বাগতম, GIO BD Owner!</h2><p>IMO Diamond Recharge</p><button type="button">চালিয়ে যান</button></div>';
+  const image = overlay.querySelector("img");
+  image.src = "https://raw.githubusercontent.com/mdniloy41212-debug/gio-bd-admin/feat/live-agent-owner-sync/www/gio-bd-gift.gif";
+  image.onerror = () => { image.hidden = true; };
+  const style = document.createElement("style");
+  style.textContent = ".gio-welcome-overlay{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:20px;background:rgba(3,10,35,.88);backdrop-filter:blur(10px);animation:gioWelcomeFade .2s ease-out}.gio-welcome-card{width:min(320px,100%);padding:24px 20px;text-align:center;border:1px solid #72eaff88;border-radius:24px;background:linear-gradient(145deg,#102d62,#22144f);box-shadow:0 0 35px #00cfff55;color:#fff}.gio-welcome-card img{display:block;width:112px;height:100px;object-fit:contain;margin:0 auto 8px;image-rendering:auto}.gio-welcome-card h2{margin:8px 0;color:#fff}.gio-welcome-card p{color:#bfeeff;margin-bottom:14px}.gio-welcome-card button{width:100%;border-radius:12px;background:linear-gradient(120deg,#087ecb,#673bd0)}@keyframes gioWelcomeFade{from{opacity:0}to{opacity:1}}";
+  document.head.appendChild(style);
+  const close = () => { overlay.remove(); style.remove(); };
+  overlay.querySelector("button").addEventListener("click",close);
+  overlay.addEventListener("click",event=>{if(event.target===overlay)close();});
+  document.body.appendChild(overlay);
+  setTimeout(close,4200);
+}
+
 await setPersistence(auth, browserLocalPersistence);
+$("toggleAdminPassword")?.addEventListener("click",()=>{const field=$("adminPassword");if(!field)return;field.type=field.type==="password"?"text":"password";$("toggleAdminPassword").textContent=field.type==="password"?"👁":"🙈";});
+$("adminForgotPassword")?.addEventListener("click",async()=>{const email=$("adminEmail")?.value.trim();if(!email){showMessage(loginMessage,"আগে Admin Gmail লিখুন।");return;}try{await sendPasswordResetEmail(auth,email);showMessage(loginMessage,"Password Reset Link Admin Gmail-এ পাঠানো হয়েছে।",true);}catch(error){showMessage(loginMessage,"Reset Link পাঠানো যায়নি: "+error.message);}});
 
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
@@ -101,6 +130,7 @@ if (loginForm) {
     showMessage(loginMessage, "লগইন হচ্ছে...", true);
 
     try {
+      await setPersistence(auth, $("adminRememberMe")?.checked ? browserLocalPersistence : browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       console.error("Login error:", error);
@@ -115,6 +145,8 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     document.querySelector(".gio-admin-bottom-nav")?.setAttribute("hidden", "");
     if ($("adminHomeNav")) $("adminHomeNav").hidden = true;
+    if ($("adminBellNav")) $("adminBellNav").hidden = true;
+    if ($("adminProfileNav")) $("adminProfileNav").hidden = true;
     document.querySelector(".gio-admin-help")?.setAttribute("hidden", "");
     if (loginPage) { loginPage.hidden = false; loginPage.classList.add("active"); }
     if (adminPage) { adminPage.hidden = true; adminPage.classList.remove("active"); }
@@ -135,6 +167,8 @@ onAuthStateChanged(auth, async (user) => {
   isAdmin = true;
   document.querySelector(".gio-admin-bottom-nav")?.removeAttribute("hidden");
   if ($("adminHomeNav")) $("adminHomeNav").hidden = false;
+  if ($("adminBellNav")) $("adminBellNav").hidden = false;
+  if ($("adminProfileNav")) $("adminProfileNav").hidden = false;
   document.querySelector(".gio-admin-help")?.removeAttribute("hidden");
 
   if (loginPage) { loginPage.hidden = true; loginPage.classList.remove("active"); }
@@ -144,6 +178,7 @@ onAuthStateChanged(auth, async (user) => {
   if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
   const adminDisplayName = $("adminDisplayName");
   if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Admin";
+  showGioWelcomeAnimation();
 
   await loadAdminOrders();
   await loadCustomerManagement();
@@ -185,14 +220,15 @@ if (logoutBtn) {
 }
 
 
-async function loadAdminOrders() {
+function loadAdminOrders() {
   if (!isAdmin) return;
+  if (stopAdminOrdersListener) stopAdminOrdersListener();
   const activeBox = $("adminOrders");
   const historyBox = $("adminOrderHistory");
   const archivedBox = $("adminArchivedOrders");
   const rejectedBox = $("adminRejectedOrders");
-  try {
-    const snapshot = await getDocs(collection(db, "orders"));
+
+  stopAdminOrdersListener = onSnapshot(collection(db, "orders"), snapshot => {
     const active = [], history = [], rejected = [], archived = [];
     snapshot.forEach(item => {
       const data = item.data();
@@ -202,6 +238,7 @@ async function loadAdminOrders() {
       else if (["Approved", "Completed", "Cancelled"].includes(data.status)) history.push(row);
       else active.push(row);
     });
+
     const renderRows = (box, rows, empty, canChange, canArchive) => {
       if (!box) return;
       box.replaceChildren();
@@ -223,9 +260,10 @@ async function loadAdminOrders() {
           " | মূল্য: ৳" + (data.price ?? "নেই") + " | পেমেন্ট: " + (data.paymentMethod || "নেই") +
           " | Transaction ID: " + (data.transactionId || "নেই") + " | অবস্থা: " + (data.status || "Pending");
         card.appendChild(details);
-        if (data.paymentScreenshotUrl) {
+        const paymentScreenshot = data.paymentScreenshotUrl || data.paymentScreenshotData;
+        if (paymentScreenshot) {
           const link = document.createElement("a");
-          link.href = data.paymentScreenshotUrl; link.target = "_blank";
+          link.href = paymentScreenshot; link.target = "_blank";
           link.rel = "noopener noreferrer"; link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
           card.appendChild(link);
         }
@@ -240,10 +278,11 @@ async function loadAdminOrders() {
     renderRows(historyBox, history, "এখনো কোনো Approved / Completed অর্ডার নেই।", true, true);
     renderRows(rejectedBox, rejected, "Rejected অর্ডার নেই।", false, true);
     renderRows(archivedBox, archived, "Deleted / Archived অর্ডার নেই।", false, false);
-  } catch (error) {
-    console.error("Orders error:", error);
-    [activeBox, historyBox, rejectedBox, archivedBox].filter(Boolean).forEach(box => box.textContent = "অর্ডার লোড করা যায়নি। Firestore Rules পরীক্ষা করুন।");
-  }
+    loadDashboardStats();
+  }, error => {
+    console.error("Live orders listener:", error);
+    [activeBox, historyBox, rejectedBox, archivedBox].filter(Boolean).forEach(box => box.textContent = "অর্ডার লোড করা যায়নি: " + error.message);
+  });
 }
 
 async function updateOrderStatus(orderId, status) {
@@ -279,7 +318,7 @@ async function updateOrderStatus(orderId, status) {
         transaction.update(orderRef, { status, isArchived: false, updatedAt: serverTimestamp() });
       }
     });
-    await loadAdminOrders(); await loadDashboardStats();
+    await loadDashboardStats();
   } catch (error) {
     console.error("Update order error:", error);
     alert("অর্ডারের অবস্থা পরিবর্তন করা যায়নি: " + (error.message || "অজানা সমস্যা"));
@@ -344,7 +383,8 @@ function renderCustomerManagement() {
           const d=order.data();
           return [d.customerUid,d.userUid,d.uid].some(value => String(value || "") === uid)
             || (email && [d.customerEmail,d.email].some(value => String(value || "").toLowerCase() === email))
-            || (phone && [d.customerPhone,d.phone].some(value => String(value || "") === phone));
+            || (phone && [d.customerPhone,d.phone].some(value => String(value || "") === phone))
+            || String(d.userId || "") === uid;
         }).map(order => {
           const d=order.data(); return order.id + " — " + (d.packageName || "Diamond") + " — " + (d.status || "Pending");
         });
@@ -361,35 +401,16 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const [ordersSnapshot, stockSnapshot] = await Promise.all([
-      getDocs(collection(db, "orders")),
-      getDoc(doc(db, "settings", "diamondStock"))
-    ]);
-    let sales = 0;
-    ordersSnapshot.forEach(item => {
-      const data = item.data();
-      if (data.status === "Completed") sales += Number(data.price) || 0;
-    });
+    const [ordersSnapshot, stockSnapshot] = await Promise.all([getDocs(collection(db, "orders")), getDoc(doc(db, "settings", "diamondStock"))]);
+    let sales = 0, pending = 0;
+    ordersSnapshot.forEach(item => { const data=item.data(); if(data.status === "Completed") sales += Number(data.price)||0; if(!data.isArchived && (data.status||"Pending")==="Pending") pending++; });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
+    const stats = [["মোট বিক্রয়", "৳"+sales.toLocaleString("en-BD"), "💰"],["Diamond Balance",stock.toLocaleString("en-BD"),"💎"],["Total Orders",ordersSnapshot.size.toLocaleString("en-BD"),"📦"],["Pending Orders",pending.toLocaleString("en-BD"),"⏳"]];
     container.replaceChildren();
-    [["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
-      const card = document.createElement("div");
-      card.className = "order-card dashboard-stat-card";
-      const title = document.createElement("strong");
-      title.textContent = label;
-      const number = document.createElement("p");
-      number.textContent = String(value);
-      card.append(title, number);
-      container.appendChild(card);
-    });
-    const stockInput = $("diamondStockQuantity");
-    if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
-  } catch(error) {
-    console.error("Dashboard error:", error);
-    container.textContent = "ড্যাশবোর্ডের তথ্য লোড করা যায়নি।";
-  }
+    stats.forEach(([label,value,icon])=>{const card=document.createElement("div");card.className="order-card dashboard-stat-card";const title=document.createElement("strong");title.textContent=icon+" "+label;const number=document.createElement("p");number.textContent=value;card.append(title,number);container.appendChild(card);});
+    const stockInput=$("diamondStockQuantity"); if(stockInput && document.activeElement!==stockInput) stockInput.value=String(stock);
+  } catch(error) { console.error("Dashboard error:",error); container.textContent="ড্যাশবোর্ডের তথ্য লোড করা যায়নি।"; }
 }
-
 const diamondStockForm = $("diamondStockForm");
 if (diamondStockForm) {
   diamondStockForm.addEventListener("submit", async event => {
@@ -415,24 +436,21 @@ if (diamondStockForm) {
   });
 }
 
-async function loadPaymentSettings() {
+function loadPaymentSettings() {
   if (!isAdmin) return;
-
-  try {
-    const result = await getDoc(doc(db, "settings", "paymentMethods"));
+  if (stopPaymentSettingsListener) stopPaymentSettingsListener();
+  stopPaymentSettingsListener = onSnapshot(doc(db, "settings", "paymentMethods"), result => {
     const data = result.exists() ? result.data() : {};
-
     ["bkash", "nagad", "rocket"].forEach(method => {
       const number = $(method + "Number");
       const enabled = $(method + "Enabled");
-
-      if (number) number.value = data[method]?.number || "";
-      if (enabled) enabled.checked = data[method]?.enabled !== false;
+      if (number && document.activeElement !== number) number.value = data[method]?.number || "";
+      if (enabled && document.activeElement !== enabled) enabled.checked = data[method]?.enabled !== false;
     });
-  } catch (error) {
-    console.error("Payment settings load:", error);
+  }, error => {
+    console.error("Payment settings listener:", error);
     showMessage($("paymentMessage"), "পেমেন্ট সেটিংস লোড হয়নি।");
-  }
+  });
 }
 
 const paymentSettingsForm = $("paymentSettingsForm");
@@ -465,51 +483,19 @@ if (paymentSettingsForm) {
   });
 }
 
-async function loadAdminPackages() {
-  const container = $("adminPackages");
-  if (!container || !isAdmin) return;
-
-  container.textContent = "প্যাকেজ লোড হচ্ছে...";
-
-  try {
-    const snapshot = await getDocs(collection(db, "packages"));
-    container.replaceChildren();
-
-    if (snapshot.empty) {
-      container.textContent = "এখনো কোনো প্যাকেজ যোগ করা হয়নি।";
-      return;
-    }
-
-    snapshot.forEach((item) => {
-      const data = item.data();
-      const card = document.createElement("div");
-      card.className = "order-card";
-
-      const details = document.createElement("p");
-      details.textContent =
-        (data.name || "নাম নেই") + " (" + (Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || "পরিমাণ নেই") + " Diamond) - ৳" + (data.price ?? "নেই");
-
-      card.appendChild(details);
-      card.appendChild(makeButton("Delete", async () => {
-        if (!confirm("এই প্যাকেজটি মুছে ফেলবেন?")) return;
-
-        try {
-          await deleteDoc(doc(db, "packages", item.id));
-          await loadAdminPackages();
-        } catch (error) {
-          console.error("Delete package error:", error);
-          alert("প্যাকেজ মুছে ফেলা যায়নি।");
-        }
-      }));
-
-      container.appendChild(card);
+function loadAdminPackages() {
+  const container=$("adminPackages"); if(!container||!isAdmin)return;
+  if(stopAdminPackagesListener) stopAdminPackagesListener();
+  container.textContent="প্যাকেজ লোড হচ্ছে...";
+  stopAdminPackagesListener=onSnapshot(collection(db,"packages"),snapshot=>{
+    container.replaceChildren(); if(snapshot.empty){container.textContent="এখনো কোনো প্যাকেজ যোগ করা হয়নি।";return;}
+    snapshot.forEach(item=>{const data=item.data();const migration={};if(data.active===undefined)migration.active=true;if(typeof data.price!=="number"&&Number.isFinite(Number(data.price)))migration.price=Number(data.price);if(!Number.isSafeInteger(data.diamondQuantity)||data.diamondQuantity<=0){const parsed=Number(String(data.name||"").match(/[0-9]+/)?.[0]);if(Number.isSafeInteger(parsed)&&parsed>0)migration.diamondQuantity=parsed;}if(Object.keys(migration).length)updateDoc(doc(db,"packages",item.id),migration).catch(error=>console.warn("Legacy package migration:",error));const card=document.createElement("div");card.className="order-card";const details=document.createElement("p");details.textContent=(data.name||"নাম নেই")+" ("+(Number(data.diamondQuantity)||Number(String(data.name||"").match(/[0-9]+/)?.[0])||"পরিমাণ নেই")+" Diamond) - ৳"+(data.price??"নেই")+" | "+(data.active===false?"বন্ধ":"চালু");card.appendChild(details);
+      card.appendChild(makeButton("Edit",async()=>{const name=prompt("প্যাকেজের নাম:",data.name||"");if(name===null)return;const q=prompt("Diamond পরিমাণ:",String(data.diamondQuantity||""));if(q===null)return;const p=prompt("প্যাকেজের মূল্য:",String(data.price??""));if(p===null)return;const quantity=Number(q),price=Number(p);if(!name.trim()||!Number.isSafeInteger(quantity)||quantity<=0||!Number.isFinite(price)||price<=0){alert("সঠিক নাম, Diamond পরিমাণ ও মূল্য দিন।");return;}try{await updateDoc(doc(db,"packages",item.id),{name:name.trim(),diamondQuantity:quantity,price,updatedAt:serverTimestamp()});}catch(error){alert("প্যাকেজ আপডেট হয়নি: "+error.message);}}));
+      card.appendChild(makeButton(data.active===false?"Enable":"Disable",async()=>{try{await updateDoc(doc(db,"packages",item.id),{active:data.active===false,updatedAt:serverTimestamp()});}catch(error){alert("প্যাকেজের অবস্থা বদলানো যায়নি: "+error.message);}}));
+      card.appendChild(makeButton("Delete",async()=>{if(!confirm("প্যাকেজটি মুছে ফেলবেন? পুরোনো অর্ডার থাকবে।"))return;try{await deleteDoc(doc(db,"packages",item.id));}catch(error){alert("প্যাকেজ মুছে ফেলা যায়নি: "+error.message);}}));container.appendChild(card);
     });
-  } catch (error) {
-    console.error("Packages error:", error);
-    container.textContent = "প্যাকেজ লোড করা যায়নি।";
-  }
+  },error=>{console.error("Packages listener:",error);container.textContent="প্যাকেজ লোড করা যায়নি: "+error.message;});
 }
-
 const packageForm = $("packageForm");
 
 if (packageForm) {
@@ -539,7 +525,6 @@ if (packageForm) {
 
       packageForm.reset();
       showMessage(message, "প্যাকেজ সফলভাবে যোগ হয়েছে।", true);
-      await loadAdminPackages();
     } catch (error) {
       console.error("Add package error:", error);
       showMessage(message, "প্যাকেজ যোগ করা যায়নি।");
@@ -555,17 +540,16 @@ if (year) year.textContent = new Date().getFullYear();
 
 
 // Admin-controlled customer WhatsApp support contact
-async function loadSupportContact() {
+function loadSupportContact() {
   if (!isAdmin) return;
-  try {
-    const snap = await getDoc(doc(db, "settings", "supportContact"));
-    const data = snap.exists() ? snap.data() : {};
+  if (stopSupportContactListener) stopSupportContactListener();
+  stopSupportContactListener = onSnapshot(doc(db, "settings", "supportContact"), snap => {
     const input = $("whatsappNumber");
-    if (input) input.value = data.whatsappNumber || "";
-  } catch (error) {
-    console.error("Support contact load:", error);
+    if (input && document.activeElement !== input) input.value = snap.exists() ? snap.data().whatsappNumber || "" : "";
+  }, error => {
+    console.error("Support contact listener:", error);
     showMessage($("supportContactMessage"), "WhatsApp সেটিংস লোড হয়নি।");
-  }
+  });
 }
 
 const supportContactForm = $("supportContactForm");

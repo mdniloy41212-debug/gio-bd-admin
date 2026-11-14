@@ -21,15 +21,16 @@ const db = getFirestore(app);
 const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
-adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">🏠<span>Home</span></button><button type="button" data-admin-tab="orders">📦<span>Orders</span></button><button type="button" data-admin-tab="offers">🎁<span>Offers</span></button><button type="button" data-admin-tab="support">💬<span>Support</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button>';
+adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">🏠<span>Home</span></button><button type="button" data-admin-tab="orders">📦<span>Orders</span></button><button type="button" data-admin-tab="offers">💎<span>Packages</span></button><button type="button" data-admin-tab="support">💬<span>Support</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button>';
 adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const adminProfilePage = document.createElement("section");
 adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
-adminProfilePage.innerHTML = '<h2>GIO BD Owner</h2><p>Welcome to GIO BD Owner.</p><p id="gioOwnerProfileEmail">Admin account</p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a>';
+adminProfilePage.innerHTML = '<h2>👤 GIO BD Owner Profile</h2><p>Owner Account Information</p><p id="gioOwnerProfileEmail">Admin account</p><p id="gioOwnerProfileUid" style="overflow-wrap:anywhere"></p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><button id="gioOwnerProfileBack" type="button">← Home</button>';
 main?.appendChild(adminProfilePage);
+document.getElementById("gioOwnerProfileBack")?.addEventListener("click", () => showAdminTab("home"));
 const adminNavStyle = document.createElement("style");
-adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
+adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}.gio-admin-profile{position:fixed!important;top:12px;right:64px;z-index:1200;width:46px;height:46px;min-height:46px;padding:0;border:1px solid #7deaff88;border-radius:50%;background:linear-gradient(145deg,#174a83,#34206e);box-shadow:0 0 18px #00cfff35;font-size:20px}.gio-admin-profile[hidden]{display:none!important}.gio-admin-bell{position:fixed!important;top:12px;right:12px;z-index:1200;width:46px;height:46px;min-height:46px;padding:0;border:1px solid #7deaff88;border-radius:15px;background:linear-gradient(145deg,#174a83,#34206e);box-shadow:0 0 18px #00cfff55;font-size:21px}.gio-admin-bell[hidden]{display:none!important}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
 adminNavStyle.textContent += '.admin-order-alert{display:block;width:100%;margin:0 0 12px;padding:13px;border:1px solid #ffcf6a88;border-radius:13px;background:linear-gradient(110deg,#9a4b13,#6234a8);font-weight:800}.notification-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:20px;background:#ff3158;color:#fff;font-size:11px;font-weight:900}.notification-count[hidden]{display:none!important}';
 document.head.appendChild(adminNavStyle);
 const adminHelp = document.createElement("button"); adminHelp.type="button"; adminHelp.className="gio-admin-help"; adminHelp.textContent="☎ Help";
@@ -38,18 +39,17 @@ adminHelpPanel.innerHTML='<strong>GIO BD Owner Support</strong><a id="gioOwnerWh
 adminHelp.hidden = true;
 document.body.append(adminHelp,adminHelpPanel);
 adminHelp.addEventListener("click",()=>{adminHelpPanel.hidden=!adminHelpPanel.hidden;});
-async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
-refreshOwnerWhatsApp();
+onSnapshot(doc(db,"settings","supportContact"),snap=>{const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";},e=>console.warn("WhatsApp contact unavailable",e));
 function showAdminTab(tab){
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage");
  [login,dash,settings,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
  if(tab==="orders"&&dash){dash.hidden=false;dash.classList.add("active");document.getElementById("adminOrders")?.scrollIntoView({behavior:"smooth",block:"start"});}
- if(tab==="offers"&&settings){settings.hidden=false;settings.classList.add("active");document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
+ if(tab==="offers"&&settings){settings.hidden=false;settings.classList.add("active");const folder=[...document.querySelectorAll("#adminSettingsPage details")].find(item=>item.querySelector("summary")?.textContent.includes("প্যাকেজ"));if(folder)folder.open=true;document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
  if(tab==="support"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
  if(tab==="manage"&&settings){settings.hidden=false;settings.classList.add("active");document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
  if(tab==="settings"&&settings){settings.hidden=false;settings.classList.add("active");}
- if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";}
+ if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";const uid=document.getElementById("gioOwnerProfileUid");if(uid)uid.textContent=auth.currentUser?.uid||"";}
  if(tab==="inbox"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
 }
 adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
@@ -62,18 +62,22 @@ orderAlertButton.type = "button";
 orderAlertButton.id = "adminOrderAlertButton";
 orderAlertButton.className = "admin-order-alert";
 orderAlertButton.hidden = true;
-orderAlertButton.innerHTML = '🛎️ New Orders <span id="adminOrderAlertBadge" class="notification-count" hidden>0</span>';
+orderAlertButton.innerHTML = '🔔 <span id="adminOrderAlertBadge" class="notification-count" hidden>0</span>';
 document.getElementById("adminPage")?.insertBefore(orderAlertButton, document.getElementById("adminPage").firstChild);
 const orderReadKey = uid => "gioAdminReadOrders:" + uid;
+document.getElementById("adminBellNav")?.addEventListener("click", () => orderAlertButton.click());
+document.getElementById("adminProfileNav")?.addEventListener("click", () => showAdminTab("profile"));
 function renderOrderAlertBadge() {
   const badge = document.getElementById("adminOrderAlertBadge");
   if (!badge) return;
   const count = unreadOrderIds.size;
   badge.textContent = count > 99 ? "99+" : String(count);
   badge.hidden = count === 0;
+  const bell = document.getElementById("adminBellNav"); if (bell) bell.textContent = count ? "🔔 " + (count > 99 ? "99+" : count) : "🔔";
   orderAlertButton.setAttribute("aria-label", count + " unread new orders");
 }
-orderAlertButton.addEventListener("click", () => {
+orderAlertButton.addEventListener("click", async () => {
+  if ("Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch {} }
   if (currentAdminUid) {
     try { localStorage.setItem(orderReadKey(currentAdminUid), JSON.stringify([...orderAlertIds])); } catch {}
   }
@@ -94,7 +98,11 @@ function startOrderAlerts(uid) {
     const saved = JSON.parse(localStorage.getItem(orderReadKey(uid)) || "[]");
     if (Array.isArray(saved)) read = new Set(saved);
   } catch {}
+  let firstSnapshot = true;
   stopOrderAlertsListening = onSnapshot(collection(db,"orders"), snapshot => {
+    const freshPending = snapshot.docs.filter(item => { const d=item.data(); return !firstSnapshot && !d.isArchived && (d.status || "Pending") === "Pending" && !orderAlertIds.has(item.id); });
+    freshPending.forEach(item => { if ("Notification" in window && Notification.permission === "granted") new Notification("GIO BD: নতুন অর্ডার", { body:"নতুন অর্ডার এসেছে: " + item.id }); });
+    firstSnapshot = false;
     orderAlertIds = new Set(snapshot.docs.map(item => item.id));
     unreadOrderIds = new Set(snapshot.docs.filter(item => {
       const d=item.data();
