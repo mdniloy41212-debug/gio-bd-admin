@@ -30,7 +30,7 @@ adminProfilePage.innerHTML = '<div class="admin-profile-strip"><div class="admin
 main?.appendChild(adminProfilePage);
 const adminNavStyle = document.createElement("style");
 adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
-adminNavStyle.textContent += '.gio-admin-bottom-nav button.is-active{outline:2px solid #ffd66b;background:linear-gradient(145deg,#72521a,#5a327f);box-shadow:0 0 14px #ffd66b55}.admin-order-alert{display:block;width:100%;margin:0 0 12px;padding:13px;border:1px solid #ffcf6a88;border-radius:13px;background:linear-gradient(110deg,#9a4b13,#6234a8);font-weight:800}.notification-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:20px;background:#ff3158;color:#fff;font-size:11px;font-weight:900}.notification-count[hidden]{display:none!important}';
+adminNavStyle.textContent += '.gio-owner-page-back{display:inline-flex;align-items:center;margin:4px 0 14px;padding:10px 15px;border:1px solid #70ddff66;border-radius:12px;background:linear-gradient(135deg,#174a83,#34206e);color:#fff;font-weight:700}.gio-admin-bottom-nav button.is-active{outline:2px solid #ffd66b;background:linear-gradient(145deg,#72521a,#5a327f);box-shadow:0 0 14px #ffd66b55}.admin-order-alert{display:block;width:100%;margin:0 0 12px;padding:13px;border:1px solid #ffcf6a88;border-radius:13px;background:linear-gradient(110deg,#9a4b13,#6234a8);font-weight:800}.notification-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:20px;background:#ff3158;color:#fff;font-size:11px;font-weight:900}.notification-count[hidden]{display:none!important}';
 document.head.appendChild(adminNavStyle);
 const adminHelp = document.createElement("button"); adminHelp.type="button"; adminHelp.className="gio-admin-help"; adminHelp.textContent="☎ Help";
 const adminHelpPanel = document.createElement("div"); adminHelpPanel.className="gio-admin-help-panel"; adminHelpPanel.hidden=true;
@@ -58,7 +58,14 @@ function setOwnerAvatar(element, user) {
   }
 }
 
-function showAdminTab(tab){
+const ownerPageHistory = [];
+let activeOwnerTab = "home";
+function goBackOwnerPage() {
+ const previous = ownerPageHistory.pop();
+ showAdminTab(previous || "home", { fromBack: true });
+}
+window.addEventListener("popstate", () => goBackOwnerPage());
+function showAdminTab(tab, options = {}){
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage");
  adminBottomNav.querySelectorAll("[data-admin-tab]").forEach(button=>button.classList.toggle("is-active",button.dataset.adminTab===tab));
  [login,dash,settings,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
@@ -70,6 +77,20 @@ function showAdminTab(tab){
  if(tab==="settings"&&settings){settings.hidden=false;settings.classList.add("active");}
  if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";}
  if(tab==="inbox"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
+ if (!options.fromBack && activeOwnerTab !== tab) {
+   ownerPageHistory.push(activeOwnerTab);
+   try { history.pushState({ gioOwnerTab: tab }, "", "#owner-" + tab); } catch {}
+ }
+ activeOwnerTab = tab;
+ const visiblePage = [dash, settings, inbox, adminProfilePage].find(page => page && !page.hidden && page.classList.contains("active"));
+ if (visiblePage && visiblePage.id !== "adminPage" && !visiblePage.querySelector(".gio-owner-page-back")) {
+   const back = document.createElement("button");
+   back.type = "button";
+   back.className = "gio-owner-page-back";
+   back.textContent = "← ফিরে যান";
+   back.addEventListener("click", goBackOwnerPage);
+   visiblePage.prepend(back);
+ }
 }
 adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
 document.querySelector("header nav")?.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
