@@ -43,6 +43,21 @@ document.addEventListener("click",event=>{
 });
 async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";const profileLink=document.getElementById("gioOwnerProfileWhatsApp");if(profileLink)profileLink.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
 refreshOwnerWhatsApp();
+function setOwnerAvatar(element, user) {
+  if (!element) return;
+  const photo = user?.photoURL;
+  if (photo) {
+    const img = document.createElement("img");
+    img.src = photo;
+    img.alt = "Owner profile photo";
+    img.referrerPolicy = "no-referrer";
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block";
+    element.replaceChildren(img);
+  } else {
+    element.textContent = user ? (user.displayName || user.email || "O").charAt(0).toUpperCase() : "👤";
+  }
+}
+
 function showAdminTab(tab){
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage");
  adminBottomNav.querySelectorAll("[data-admin-tab]").forEach(button=>button.classList.toggle("is-active",button.dataset.adminTab===tab));
@@ -332,6 +347,7 @@ if (main && !document.getElementById("adminInboxPage")) {
 }
 
 onAuthStateChanged(auth, async user => {
+  document.querySelectorAll(".admin-profile-avatar").forEach(element => setOwnerAvatar(element, user));
   const button = document.getElementById("adminInboxButton");
   if (stopListening) stopListening();
   currentMessages = [];
