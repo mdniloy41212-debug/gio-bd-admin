@@ -223,6 +223,31 @@ async function loadAdminOrders() {
           " | মূল্য: ৳" + (data.price ?? "নেই") + " | পেমেন্ট: " + (data.paymentMethod || "নেই") +
           " | Transaction ID: " + (data.transactionId || "নেই") + " | অবস্থা: " + (data.status || "Pending");
         card.appendChild(details);
+        if (data.transactionId) {
+          const copyTransactionId = makeButton("Transaction ID কপি", async () => {
+            const value = String(data.transactionId);
+            try {
+              if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(value);
+              } else {
+                const temporary = document.createElement("textarea");
+                temporary.value = value;
+                temporary.style.position = "fixed";
+                temporary.style.opacity = "0";
+                document.body.appendChild(temporary);
+                temporary.select();
+                const copied = document.execCommand("copy");
+                temporary.remove();
+                if (!copied) throw new Error("Copy command failed");
+              }
+              copyTransactionId.textContent = "কপি হয়েছে ✓";
+              setTimeout(() => { copyTransactionId.textContent = "Transaction ID কপি"; }, 1800);
+            } catch (error) {
+              alert("Transaction ID কপি করা যায়নি। নিজে নির্বাচন করে কপি করুন।");
+            }
+          });
+          card.appendChild(copyTransactionId);
+        }
         if (data.paymentScreenshotUrl) {
           const link = document.createElement("a");
           link.href = data.paymentScreenshotUrl; link.target = "_blank";
