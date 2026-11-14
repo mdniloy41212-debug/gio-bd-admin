@@ -1,4 +1,7 @@
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { registerPlugin } from "https://cdn.jsdelivr.net/npm/@capacitor/core@8.6.0/dist/index.js";
+
+const AppUpdate = registerPlugin("AppUpdate");
 
 import {
   getAuth,
@@ -622,3 +625,74 @@ if (supportContactForm) {
     }
   });
 }
+
+
+// GIO BD Owner in-app APK updater (native Android bridge).
+(async function setupOwnerAppUpdater() {
+  const manifestUrl = "https://gio-bd-admin.web.app/updates/admin-version.json";
+  const nativePlatform = window.Capacitor?.isNativePlatform?.() === true;
+  if (!nativePlatform) return;
+
+  let installed;
+  try {
+    installed = await AppUpdate.getAppVersion();
+  } catch (error) {
+    console.warn("App updater native bridge unavailable:", error);
+    return;
+  }
+
+  const banner = document.createElement("section");
+  banner.id = "gioAppUpdateBanner";
+  banner.setAttribute("role", "status");
+  banner.style.cssText = "display:none;margin:12px auto;padding:14px;max-width:900px;border:1px solid #8b75c9;border-radius:14px;background:#21183c;color:#fff;box-sizing:border-box";
+  const heading = document.createElement("strong");
+  heading.textContent = "নতুন GIO BD Owner আপডেট পাওয়া গেছে";
+  const detail = document.createElement("p");
+  detail.style.cssText = "margin:8px 0;font-size:14px";
+  const action = document.createElement("button");
+  action.type = "button";
+  action.textContent = "আপডেট ডাউনলোড ও ইনস্টল করুন";
+  action.style.cssText = "padding:10px 14px;border:0;border-radius:9px;background:#a78bfa;color:#160d2b;font-weight:700";
+  const status = document.createElement("p");
+  status.style.cssText = "margin:8px 0 0;font-size:13px";
+  banner.append(heading, detail, action, status);
+  const header = document.querySelector("header.header");
+  if (header?.parentNode) header.insertAdjacentElement("afterend", banner);
+  else document.body.prepend(banner);
+
+  let latestManifest = null;
+  action.addEventListener("click", async () => {
+    if (!latestManifest?.apkUrl) return;
+    try {
+      action.disabled = true;
+      status.textContent = "APK ডাউনলোড শুরু হচ্ছে...";
+      await AppUpdate.installUpdate({ apkUrl: latestManifest.apkUrl });
+      status.textContent = "ডাউনলোড শুরু হয়েছে। ডাউনলোড শেষ হলে Android-এর ইনস্টল স্ক্রিন আসবে।";
+    } catch (error) {
+      console.error("Owner app update:", error);
+      status.textContent = error?.message || "আপডেট শুরু করা যায়নি। অনুমতি পরীক্ষা করে আবার চেষ্টা করুন।";
+    } finally {
+      action.disabled = false;
+    }
+  });
+
+  try {
+    const response = await fetch(manifestUrl, { cache: "no-store" });
+    if (!response.ok) throw new Error("Update server response: " + response.status);
+    const manifest = await response.json();
+    const latestCode = Number(manifest.versionCode);
+    const currentCode = Number(installed.versionCode);
+    const apk = new URL(manifest.apkUrl);
+    if (apk.hostname !== "github.com" || !apk.pathname.includes("/releases/latest/download/")) {
+      throw new Error("Untrusted APK download address");
+    }
+    if (!Number.isFinite(latestCode) || !Number.isFinite(currentCode) || latestCode <= currentCode) return;
+    latestManifest = manifest;
+    detail.textContent = "বর্তমান ভার্সন " + (installed.versionName || currentCode) +
+      " · নতুন ভার্সন " + (manifest.versionName || latestCode) +
+      "। আপডেট ইনস্টল করতে Android-এর অনুমতি দিতে হবে।";
+    banner.style.display = "block";
+  } catch (error) {
+    console.warn("Could not check Owner app update:", error);
+  }
+})();
