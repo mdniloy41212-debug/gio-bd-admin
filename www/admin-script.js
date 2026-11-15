@@ -329,9 +329,12 @@ async function loadAdminOrders() {
           card.appendChild(link);
         }
         if (canChange && !["Completed", "Rejected", "Cancelled"].includes(data.status)) {
+          if (data.status === "Pending" && data.paymentVerified !== true) {
+            card.appendChild(makeButton("পেমেন্ট যাচাই করুন", () => verifyPayment(id)));
+          }
           const isApproved = data.status === "Approved";
           card.appendChild(makeButton(isApproved ? "Confirm / Complete" : "Confirm", () =>
-            updateOrderStatus(id, isApproved ? "Completed" : "Approved", true)));
+            updateOrderStatus(id, isApproved ? "Completed" : "Approved")));
           card.appendChild(makeButton("Cancel / Reject", () => updateOrderStatus(id, "Rejected")));
         }
         if (canArchive) card.appendChild(makeButton("Delete / Archive", () => archiveOrder(id)));
@@ -369,7 +372,7 @@ async function verifyPayment(orderId) {
   }
 }
 
-async function updateOrderStatus(orderId, status, ownerConfirmedPayment = false) {
+async function updateOrderStatus(orderId, status) {
   if (!isAdmin) return;
   try {
     const notificationOrder = await runTransaction(db, async transaction => {
@@ -378,11 +381,9 @@ async function updateOrderStatus(orderId, status, ownerConfirmedPayment = false)
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
       const order = orderSnap.data();
       if (status === "Approved" && order.paymentVerified !== true) {
-        if (!ownerConfirmedPayment || !String(order.transactionId || "").trim()) {
-          throw new Error("Confirm করার আগে Transaction ID যাচাই করুন। Transaction ID ছাড়া অনুমোদন করা যাবে না।");
-        }
+        throw new Error("প্রথমে Transaction ID ও পেমেন্ট নিজে যাচাই করে ‘পেমেন্ট যাচাই করুন’ চাপুন।");
       }
-      const paymentIsVerified = order.paymentVerified === true || (status === "Approved" && ownerConfirmedPayment);
+      const paymentIsVerified = order.paymentVerified === true;
       if (order.status === "Completed" && status !== "Completed") {
         throw new Error("Completed অর্ডারের স্ট্যাটাস পরিবর্তন করা যাবে না।");
       }
