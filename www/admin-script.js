@@ -328,12 +328,11 @@ async function loadAdminOrders() {
           link.rel = "noopener noreferrer"; link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
           card.appendChild(link);
         }
-        if (canChange) {
-          if (data.paymentVerified !== true && data.status !== "Rejected" && data.status !== "Cancelled") {
-            card.appendChild(makeButton("Verify Transaction ID", () => verifyPayment(id)));
-          }
-          ["Pending","Processing","Approved","Completed","Rejected","Cancelled"].forEach(status =>
-            card.appendChild(makeButton(status, () => updateOrderStatus(id, status))));
+        if (canChange && !["Completed", "Rejected", "Cancelled"].includes(data.status)) {
+          const isApproved = data.status === "Approved";
+          card.appendChild(makeButton(isApproved ? "Confirm / Complete" : "Confirm", () =>
+            updateOrderStatus(id, isApproved ? "Completed" : "Approved", true)));
+          card.appendChild(makeButton("Cancel / Reject", () => updateOrderStatus(id, "Rejected")));
         }
         if (canArchive) card.appendChild(makeButton("Delete / Archive", () => archiveOrder(id)));
         if (box === archivedBox) card.appendChild(makeButton("Restore", () => restoreOrder(id)));
@@ -370,7 +369,7 @@ async function verifyPayment(orderId) {
   }
 }
 
-async function updateOrderStatus(orderId, status) {
+async function updateOrderStatus(orderId, status, ownerConfirmedPayment = false) {
   if (!isAdmin) return;
   try {
     const notificationOrder = await runTransaction(db, async transaction => {
@@ -379,8 +378,11 @@ async function updateOrderStatus(orderId, status) {
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
       const order = orderSnap.data();
       if (status === "Approved" && order.paymentVerified !== true) {
-        throw new Error("প্রথমে Transaction ID ও পেমেন্ট যাচাই করে Payment Verified করুন।");
+        if (!ownerConfirmedPayment || !String(order.transactionId || "").trim()) {
+          throw new Error("Confirm করার আগে Transaction ID যাচাই করুন। Transaction ID ছাড়া অনুমোদন করা যাবে না।");
+        }
       }
+      const paymentIsVerified = order.paymentVerified === true || (status === "Approved" && ownerConfirmedPayment);
       if (order.status === "Completed" && status !== "Completed") {
         throw new Error("Completed অর্ডারের স্ট্যাটাস পরিবর্তন করা যাবে না।");
       }
@@ -451,7 +453,9 @@ async function updateOrderStatus(orderId, status) {
           }, { merge: true });
         }
         transaction.update(orderRef, {
-          status, statusChangedAt: serverTimestamp(), stockDeducted: true, stockDeductedQuantity: quantity,
+          status, statusChangedAt: serverTimestamp(), paymentVerified: true,
+          paymentVerifiedAt: order.paymentVerified === true ? (order.paymentVerifiedAt || serverTimestamp()) : serverTimestamp(),
+          stockDeducted: true, stockDeductedQuantity: quantity,
           stockDeductedAt: serverTimestamp(), stockRestored: false,
           balanceDeducted: shouldDebitMoney || order.balanceDeducted === true,
           balanceDeductedAmount: shouldDebitMoney ? orderAmount : (Number(order.balanceDeductedAmount) || 0),
