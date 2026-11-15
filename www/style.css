@@ -709,3 +709,26 @@ body { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
 
 /* Firebase server-controlled appearance tokens */
 :root{--gio-bg:#100b25;--gio-surface:#102e65;--gio-primary:#135ce0;--gio-accent:#ffc928;--gio-text:#fff}
+
+/* GIO BD compact 5-second animated welcome strip */
+.gio-flash-ad{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:92px;width:100%;max-width:760px;margin:0 auto 14px;padding:10px 12px;overflow:hidden;border:1px solid rgba(255,218,91,.75);border-radius:15px;background:radial-gradient(ellipse at 72% 45%,rgba(255,204,45,.2),transparent 42%),linear-gradient(112deg,#080b18 0%,#18264b 48%,#090a12 100%);box-shadow:0 7px 20px rgba(0,0,0,.3),inset 0 0 18px rgba(255,215,75,.08);color:#fff}
+.gio-flash-ad:before{content:"";position:absolute;inset:-50%;z-index:-1;background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.18) 50%,transparent 58%);transform:translateX(-65%);animation:gioAdShimmer 5s ease-in-out infinite}
+.gio-ad-diamonds{display:flex;flex-direction:column;gap:2px;align-items:center;flex:0 0 34px;font-size:19px;text-shadow:0 0 9px #ffd54d;animation:gioAdDiamond 5s ease-in-out infinite}
+.gio-ad-diamonds span:nth-child(2),.gio-ad-diamonds span:nth-child(4){color:#050505;font-size:14px;text-shadow:0 0 5px #fff}
+.gio-ad-welcome{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;gap:1px;text-align:center;animation:gioAdText 5s ease-in-out infinite}
+.gio-ad-welcome small{font-size:9px;letter-spacing:1.6px;color:#ffe58a;font-weight:900}
+.gio-ad-welcome strong{font-size:clamp(19px,5vw,27px);font-weight:1000;letter-spacing:1px;line-height:1.12;color:#fff;text-shadow:0 2px 0 #9c6811,0 0 9px #ffd84d,0 0 17px #ffb900}
+.gio-ad-welcome em{font-style:normal;color:#ffd54a}
+.gio-ad-tagline{font-size:8px;letter-spacing:2px;color:#d7e8ff;font-weight:800}
+.gio-ad-person{position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 75px;height:68px;animation:gioAdPerson 5s ease-in-out infinite}
+.gio-ad-person-icon{font-size:39px;filter:drop-shadow(0 3px 4px #000);transform:scaleX(-1)}
+.gio-ad-phone{position:absolute;right:1px;top:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;width:30px;height:44px;border:2px solid #f9d86a;border-radius:6px;background:linear-gradient(145deg,#142c59,#070b19);font-size:15px;box-shadow:0 0 10px #ffdb63}
+.gio-ad-phone b{font-size:5px;color:#ffe58a;letter-spacing:-.2px}
+.gio-ad-glint{position:absolute;right:7px;top:4px;color:#fff4b0;font-size:18px;text-shadow:0 0 12px #ffdb49;animation:gioAdSpark 2s ease-in-out infinite}
+@keyframes gioAdShimmer{0%,28%{transform:translateX(-70%)}40%,68%{transform:translateX(70%)}80%,100%{transform:translateX(-70%)}}
+@keyframes gioAdText{0%,34%,100%{transform:translateY(0) scale(1)}40%,72%{transform:translateY(-2px) scale(1.035)}}
+@keyframes gioAdPerson{0%,34%,100%{transform:translateX(0) rotate(0)}40%,70%{transform:translateX(-4px) rotate(-3deg)}}
+@keyframes gioAdDiamond{0%,34%,100%{filter:brightness(1)}40%,70%{filter:brightness(1.8)}}
+@keyframes gioAdSpark{0%,100%{opacity:.35;transform:scale(.8) rotate(0)}50%{opacity:1;transform:scale(1.35) rotate(35deg)}}
+@media(max-width:380px){.gio-flash-ad{min-height:82px;padding:8px 7px}.gio-ad-person{flex-basis:62px}.gio-ad-person-icon{font-size:34px}.gio-ad-welcome small{font-size:8px}.gio-ad-tagline{font-size:7px}}
+@media(prefers-reduced-motion:reduce){.gio-flash-ad:before,.gio-ad-diamonds,.gio-ad-welcome,.gio-ad-person,.gio-ad-glint{animation:none}}
