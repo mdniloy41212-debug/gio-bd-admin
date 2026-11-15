@@ -709,3 +709,11 @@ body:has(#adminPage.active) main {max-width:none;width:100%;padding:12px 12px 10
 button{border-radius:13px}
 @keyframes gioDiamondFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
 @media(max-width:420px){#loginPage{padding:12px 10px 18px}#loginPage .gio-login-brand{padding:14px 9px}#loginPage .gio-welcome-title{letter-spacing:2px}}
+
+/* Owner profile V verification badge — subtle movement */
+.gio-owner-avatar{position:relative;display:flex;align-items:center;justify-content:center;overflow:visible!important;border-radius:50%;background:radial-gradient(circle at 28% 20%,#38e7ff,#17458e 58%,#11133e);border:2px solid #9af4ff;box-shadow:0 0 14px #15cfff66,inset 0 0 9px #fff4;color:#fff;font-weight:1000;letter-spacing:-.5px}
+.gio-owner-avatar>span{animation:gioOwnerAvatarFloat 3.2s ease-in-out infinite}
+.gio-owner-v-badge{position:absolute;right:-5px;top:-5px;z-index:5;width:21px;height:21px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;border-radius:50%;background:linear-gradient(145deg,#fff080,#eaa21a);color:#17264e;font-size:12px;font-weight:1000;box-shadow:0 2px 8px #0008,0 0 10px #ffe45c99;transform-origin:70% 70%;animation:gioOwnerBadgeRock 2.5s ease-in-out infinite}
+@keyframes gioOwnerBadgeRock{0%,100%{transform:rotate(-8deg) translateY(0)}25%{transform:rotate(6deg) translateY(-1px)}50%{transform:rotate(-3deg) translateY(1px)}75%{transform:rotate(8deg) translateY(-1px)}}
+@keyframes gioOwnerAvatarFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+@media(prefers-reduced-motion:reduce){.gio-owner-v-badge,.gio-owner-avatar>span{animation:none!important}}
