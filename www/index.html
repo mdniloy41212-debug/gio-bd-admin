@@ -54,10 +54,10 @@
     <p id="loginMessage"></p>
   </section>
   <section id="adminPage" class="page">
-    <div class="admin-profile-strip"><div class="admin-profile-avatar">👤</div><div><strong>GIO BD OWNER</strong><p id="adminDisplayName">Admin</p></div></div>
+    <div class="admin-profile-strip owner-dashboard-profile"><div class="admin-profile-avatar">👤</div><div><strong>GIO BD OWNER</strong><p id="adminDisplayName">Admin</p></div></div>
     <h2>ড্যাশবোর্ড</h2>
     <p id="adminOrderAlert" class="form-message">অর্ডার নোটিফিকেশন লোড হচ্ছে...</p>
-    <button id="adminSettingsButton" class="floating-settings-button" type="button">⚙️ Settings</button>
+    
   <h3>ড্যাশবোর্ড</h3>
   <form id="mainBalanceForm" class="stock-settings-form">
     <label for="mainBalanceAmount">Owner Main Balance (৳)</label>
@@ -65,10 +65,10 @@
     <button type="submit">Main Balance সংরক্ষণ করুন</button>
     <p id="mainBalanceMessage" class="form-message"></p>
   </form>
-  <form id="diamondStockForm" class="stock-settings-form">
-    <label for="diamondStockQuantity">Main Diamond Stock (নিজে সেট করুন)</label>
+  <form id="diamondStockForm" class="stock-settings-form owner-stock-editor" hidden>
+    <label for="diamondStockQuantity">বর্তমান Diamond Stock</label>
     <input id="diamondStockQuantity" type="number" min="0" step="1" placeholder="বর্তমান মোট Diamond Stock" required>
-    <button type="submit">Stock সংরক্ষণ করুন</button>
+    <button type="submit">ডায়মন্ড সংরক্ষণ করুন</button>
     <p id="diamondStockMessage" class="form-message"></p>
   </form>
   <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
