@@ -8,7 +8,7 @@ on:
       - work/gio-owner-complete
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -52,14 +52,53 @@ jobs:
       - name: Sync Android
         run: npx cap sync android
 
-      - name: Build Owner APK
+      - name: Restore Owner release signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "::error::Add ANDROID_KEYSTORE_BASE64 to the Owner repository secrets."; exit 1; }
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release-key.jks
+          test -s android/app/release-key.jks
 
-      - uses: actions/upload-artifact@v4
+      - name: Verify release signing key
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          test -n "$ANDROID_KEY_ALIAS"
+          keytool -list -v -keystore android/app/release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" | grep -E 'SHA1:|SHA256:'
+
+      - name: Build signed Owner Release APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: release-key.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/GIO-BD-Owner.apk
+
+      - name: Upload signed Owner APK artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: GIO-BD-Owner-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: GIO-BD-Owner-Release-APK
+          path: android/app/build/outputs/apk/release/GIO-BD-Owner.apk
           if-no-files-found: error
+
+      - name: Publish Owner APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: owner-v1.5-7-${{ github.run_number }}
+          name: GIO BD Owner v1.5 (Build ${{ github.run_number }})
+          body: |
+            GIO BD Owner signed Android release.
+            Version: 1.5
+            Version code: 7
+          files: android/app/build/outputs/apk/release/GIO-BD-Owner.apk
+          make_latest: true
