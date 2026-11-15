@@ -547,7 +547,7 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const [ordersSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
+    const [ordersSnapshot, salesLedgerSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
       getDocs(collection(db, "orders")),
       getDocs(collection(db, "salesLedger")),
       getDoc(doc(db, "settings", "diamondStock")),
