@@ -1,9 +1,11 @@
-name: Build GIO BD Admin APK
+name: Build GIO BD Owner APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+      - work/gio-owner-complete
 
 permissions:
   contents: read
@@ -11,6 +13,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +32,7 @@ jobs:
       - name: Sync Android
         run: npx cap sync android
 
-      - name: Build Admin APK
+      - name: Build Owner APK
         run: |
           cd android
           chmod +x gradlew
@@ -37,6 +40,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GIO-BD-Admin-APK
+          name: GIO-BD-Owner-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
