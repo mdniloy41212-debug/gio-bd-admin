@@ -50,6 +50,8 @@ function showAdminTab(tab){
 }
 adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
 let stopListening;
+let stopOrdersListening;
+let currentPendingOrders = [];
 let currentMessages = [];
 let currentAdminUid = null;
 let readNotificationIds = new Set();
@@ -176,13 +178,32 @@ function renderMessages() {
   const list = document.getElementById("adminInboxList");
   const button = document.getElementById("adminInboxButton");
   if (!list || !button) return;
-  const unread = currentMessages.filter(item => item.data().senderRole === "customer" && !readNotificationIds.has(item.id)).length;
+  const unread = currentMessages.filter(item => item.data().senderRole === "customer" && !readNotificationIds.has(item.id)).length + currentPendingOrders.length;
   button.innerHTML = "📥 Inbox" + (unread ? ' <span class="notification-count">' + unread + "</span>" : "");
   const visible = currentMessages.filter(item => activeInboxTab === "customer"
     ? item.data().senderRole === "customer"
     : item.data().senderRole === "admin");
   list.replaceChildren();
-  if (!visible.length) {
+  if (activeInboxTab === "customer" && currentPendingOrders.length) {
+    const heading = document.createElement("h3");
+    heading.textContent = "🛎️ Pending / Processing Orders (" + currentPendingOrders.length + ")";
+    list.appendChild(heading);
+    currentPendingOrders.forEach(item => {
+      const data = item.data();
+      const card = document.createElement("article");
+      card.className = "order-card notification-card";
+      const title = document.createElement("strong");
+      title.textContent = "নতুন অর্ডার: " + (data.packageName || "Diamond Order");
+      const details = document.createElement("p");
+      details.textContent = "Order ID: " + item.id + " | কাস্টমার: " + (data.customerName || "নেই") + " | মূল্য: ৳" + (data.price ?? "—") + " | IMO ID: " + (data.imoId || "—") + " | Transaction ID: " + (data.transactionId || "—");
+      const status = document.createElement("p");
+      status.className = "notification-status";
+      status.textContent = data.status || "Pending";
+      card.append(title, details, status);
+      list.appendChild(card);
+    });
+  }
+  if (!visible.length && !(activeInboxTab === "customer" && currentPendingOrders.length)) {
     list.textContent = activeInboxTab === "customer" ? "কাস্টমারের কোনো মেসেজ নেই।" : "আপনার পাঠানো কোনো মেসেজ নেই।";
     return;
   }
@@ -275,6 +296,8 @@ if (main && !document.getElementById("adminInboxPage")) {
 onAuthStateChanged(auth, async user => {
   const button = document.getElementById("adminInboxButton");
   if (stopListening) stopListening();
+  if (stopOrdersListening) stopOrdersListening();
+  currentPendingOrders = [];
   currentMessages = [];
   currentAdminUid = null;
   readNotificationIds = new Set();
@@ -298,6 +321,13 @@ onAuthStateChanged(auth, async user => {
     const list = document.getElementById("adminInboxList");
     if (!list) return;
 
+    stopOrdersListening = onSnapshot(collection(db, "orders"), snapshot => {
+      currentPendingOrders = snapshot.docs.filter(item => {
+        const data = item.data();
+        return ["Pending", "Processing"].includes(data.status || "Pending") && data.isArchived !== true;
+      }).sort((a, b) => (b.data().createdAt?.toMillis?.() || 0) - (a.data().createdAt?.toMillis?.() || 0));
+      renderMessages();
+    }, error => console.error("Pending orders inbox:", error));
     const q = query(collection(db, "supportMessages"), orderBy("createdAt", "asc"));
     stopListening = onSnapshot(q, snapshot => {
       currentMessages = snapshot.docs;
