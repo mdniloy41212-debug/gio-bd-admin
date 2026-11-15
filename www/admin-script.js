@@ -240,8 +240,8 @@ onAuthStateChanged(auth, async (user) => {
   if (loginPage) { loginPage.hidden = true; loginPage.classList.remove("active"); }
   if (adminPage) { adminPage.hidden = false; adminPage.classList.add("active"); }
   if (adminSettingsPage) { adminSettingsPage.hidden = true; adminSettingsPage.classList.remove("active"); }
-  if (logoutBtn) logoutBtn.hidden = false;
-  if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
+  if (logoutBtn) logoutBtn.hidden = true;
+  if (authStatus) authStatus.hidden = true;
   const adminDisplayName = $("adminDisplayName");
   if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Admin";
 
@@ -254,7 +254,7 @@ onAuthStateChanged(auth, async (user) => {
 
 const settingsButton = $("adminSettingsButton");
 const settingsBackButton = $("adminSettingsBack");
-if (settingsButton) {
+if (settingsButton) { settingsButton.hidden = true;
   settingsButton.addEventListener("click", () => {
     if (!isAdmin) return;
     adminPage?.classList.remove("active");
@@ -553,18 +553,38 @@ async function loadDashboardStats() {
       getDoc(doc(db, "settings", "diamondStock")),
       getDoc(doc(db, "settings", "mainBalance"))
     ]);
-    let sales = 0;
+    let salesMoney = 0;
+    let salesDiamonds = 0;
     ordersSnapshot.forEach(item => {
       const data = item.data();
-      if (data.status === "Completed" && data.isArchived !== true) sales += Number(data.price) || 0;
+      if (data.status === "Completed" && data.isArchived !== true) {
+        salesMoney += Number(data.price) || 0;
+        const explicitQty = Number(data.diamondQuantity);
+        if (Number.isSafeInteger(explicitQty) && explicitQty > 0) salesDiamonds += explicitQty;
+        else {
+          const match = String(data.packageName || "").replace(/,/g, "").match(/(\d+(?:\.\d+)?)\s*(?:k)?\s*(?:diamond|ডায়মন্ড|ডায়মন্ড)/i);
+          if (match) salesDiamonds += Math.round(Number(match[1]) * (/k/i.test(match[0]) ? 1000 : 1));
+        }
+      }
     });
-    salesLedgerSnapshot.forEach(item => { sales += Number(item.data().amount) || 0; });
+    salesLedgerSnapshot.forEach(item => { salesMoney += Number(item.data().amount) || 0; });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
     const balance = Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0);
     container.replaceChildren();
-    [["Main Balance", "৳" + balance.toLocaleString("en-BD")], ["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.className = "owner-stock-edit-button";
+    editButton.textContent = "✏️ ডায়মন্ড এডিট করুন";
+    editButton.addEventListener("click", () => {
+      const form = $("diamondStockForm");
+      if (!form) return;
+      form.hidden = !form.hidden;
+      if (!form.hidden) $("diamondStockQuantity")?.focus();
+    });
+    container.appendChild(editButton);
+    [["বর্তমান ডায়মন্ড", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"], ["সেলস ডায়মন্ড", salesDiamonds.toLocaleString("en-BD") + " 💎", "sales-diamonds"], ["Owner Balance", "৳" + balance.toLocaleString("en-BD"), "owner-balance"], ["মোট বিক্রয়", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]].forEach(([label,value,kind]) => {
       const card = document.createElement("div");
-      card.className = "order-card dashboard-stat-card";
+      card.className = "order-card dashboard-stat-card owner-diamond-card " + kind;
       const title = document.createElement("strong");
       title.textContent = label;
       const number = document.createElement("p");
