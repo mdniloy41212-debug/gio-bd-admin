@@ -687,3 +687,25 @@ body:has(#adminPage.active) main {max-width:none;width:100%;padding:12px 12px 10
 #adminPage .owner-balance,#adminPage .sales-money{background:linear-gradient(145deg,#244b50,#172d4a)}
 .gio-admin-bottom-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 @media(max-width:420px){#adminPage .owner-dashboard-profile strong{font-size:20px}#adminPage .owner-diamond-card p{font-size:22px}}
+
+
+/* Premium GIO BD Owner sign-in presentation */
+#loginPage{position:relative;isolation:isolate;overflow:hidden;padding:18px 16px 24px;border-radius:26px;background:linear-gradient(145deg,#07152f 0%,#102e68 35%,#25105a 70%,#090d27 100%);border:1px solid rgba(126,225,255,.42);box-shadow:0 18px 48px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.18)}
+#loginPage::before{content:"";position:absolute;inset:-30%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 18% 20%,rgba(0,225,255,.32),transparent 32%),radial-gradient(ellipse at 85% 35%,rgba(255,0,204,.22),transparent 30%),radial-gradient(ellipse at 52% 90%,rgba(255,177,0,.2),transparent 34%);filter:saturate(1.3)}
+#loginPage::after{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;opacity:.22;background-image:linear-gradient(120deg,transparent 45%,rgba(255,255,255,.16) 50%,transparent 55%),radial-gradient(circle,rgba(255,255,255,.6) 1px,transparent 1.7px);background-size:100% 100%,38px 38px}
+#loginPage .gio-login-brand{width:100%;margin:0 auto 18px;padding:17px 12px 16px;border-radius:22px;background:linear-gradient(145deg,rgba(4,23,61,.8),rgba(45,21,103,.76),rgba(6,46,81,.82));border:1px solid rgba(134,239,255,.7);box-shadow:0 12px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3),0 0 26px rgba(27,199,255,.22)}
+#loginPage .gio-welcome-title{font-size:clamp(30px,8vw,46px);line-height:1;font-weight:1000;letter-spacing:4px;color:#fff;text-shadow:0 3px 0 #1653a0,0 0 22px #27dfff;margin:0 0 5px}
+#loginPage .gio-welcome-owner{font-size:clamp(22px,6vw,34px);font-weight:1000;letter-spacing:1.5px;color:#ffe17b;text-shadow:0 3px 0 #763b12,0 0 18px rgba(255,195,67,.65);margin-bottom:12px}
+#loginPage .gio-diamond-mark{width:70px;height:60px;margin:0 auto 5px;animation:gioDiamondFloat 5s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(73,220,255,.7))}
+#loginPage .gio-brand-name{font-size:clamp(22px,6vw,30px);letter-spacing:1.5px}
+#loginPage .gio-brand-subtitle{font-size:11px;letter-spacing:2px}
+#loginPage .gio-brand-glow{font-size:11px;margin-top:7px}
+#loginPage .owner-login-heading{font-size:23px;font-weight:900;text-align:center;color:#fff;text-shadow:0 2px 12px #28cfff;margin:16px 0 8px}
+#loginPage>p{color:#d6edff;text-align:center}
+#loginPage form label{color:#e5f8ff;font-weight:800}
+#loginPage input{border:1px solid rgba(113,225,255,.55);border-radius:13px;background:rgba(3,13,39,.72);color:#fff;box-shadow:inset 0 2px 8px rgba(0,0,0,.25)}
+#loginPage button{border-radius:14px;border:1px solid rgba(255,255,255,.22);font-weight:900;letter-spacing:.2px;background:linear-gradient(115deg,#08a9d4,#3d55d9 52%,#8c39c9);box-shadow:0 8px 20px rgba(0,156,255,.25),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .16s ease,filter .16s ease}
+#loginPage button:active{transform:translateY(1px) scale(.985);filter:brightness(1.15)}
+button{border-radius:13px}
+@keyframes gioDiamondFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
+@media(max-width:420px){#loginPage{padding:12px 10px 18px}#loginPage .gio-login-brand{padding:14px 9px}#loginPage .gio-welcome-title{letter-spacing:2px}}
