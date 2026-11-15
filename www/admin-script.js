@@ -373,7 +373,7 @@ async function verifyPayment(orderId) {
 async function updateOrderStatus(orderId, status) {
   if (!isAdmin) return;
   try {
-    await runTransaction(db, async transaction => {
+    const notificationOrder = await runTransaction(db, async transaction => {
       const orderRef = doc(db, "orders", orderId);
       const orderSnap = await transaction.get(orderRef);
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
@@ -451,7 +451,7 @@ async function updateOrderStatus(orderId, status) {
           }, { merge: true });
         }
         transaction.update(orderRef, {
-          status, stockDeducted: true, stockDeductedQuantity: quantity,
+          status, statusChangedAt: serverTimestamp(), stockDeducted: true, stockDeductedQuantity: quantity,
           stockDeductedAt: serverTimestamp(), stockRestored: false,
           balanceDeducted: shouldDebitMoney || order.balanceDeducted === true,
           balanceDeductedAmount: shouldDebitMoney ? orderAmount : (Number(order.balanceDeductedAmount) || 0),
@@ -481,7 +481,7 @@ async function updateOrderStatus(orderId, status) {
           }, { merge: true });
         }
         transaction.update(orderRef, {
-          status, stockDeducted: false, stockRestored: true,
+          status, statusChangedAt: serverTimestamp(), stockDeducted: false, stockRestored: true,
           stockRestoredQuantity: quantity, stockRestoredAt: serverTimestamp(),
           balanceRefunded: shouldRefundMoney || order.balanceRefunded === true,
           balanceRefundedAmount: shouldRefundMoney ? orderAmount : (Number(order.balanceRefundedAmount) || 0),
@@ -489,9 +489,29 @@ async function updateOrderStatus(orderId, status) {
           isArchived: false, updatedAt: serverTimestamp()
         });
       } else {
-        transaction.update(orderRef, { status, isArchived: false, updatedAt: serverTimestamp() });
+        transaction.update(orderRef, { status, statusChangedAt: serverTimestamp(), isArchived: false, updatedAt: serverTimestamp() });
       }
+      return { userId: order.userId || order.customerUid || "", packageName: order.packageName || "Diamond Order", price: order.price };
     });
+    if (notificationOrder?.userId && ["Completed", "Cancelled", "Rejected"].includes(status)) {
+      const completed = status === "Completed";
+      try {
+        await addDoc(collection(db, "supportMessages"), {
+          userUid: notificationOrder.userId,
+          senderRole: "admin",
+          senderName: "GIO BD অর্ডার আপডেট",
+          text: completed
+            ? "✅ আপনার অর্ডার রিসিভ হয়েছে। অর্ডার কমপ্লিট। প্যাকেজ: " + notificationOrder.packageName + " | মূল্য: ৳" + (notificationOrder.price ?? "—") + " | Order ID: " + orderId
+            : "❌ দুঃখিত, আপনার অর্ডারটি ক্যানসেল হয়েছে। প্যাকেজ: " + notificationOrder.packageName + " | Order ID: " + orderId,
+          orderId,
+          orderStatus: status,
+          createdAt: serverTimestamp()
+        });
+      } catch (notificationError) {
+        console.error("Customer order notification could not be sent:", notificationError);
+        alert("অর্ডারের স্ট্যাটাস আপডেট হয়েছে, তবে কাস্টমার নোটিফিকেশন পাঠানো যায়নি: " + notificationError.message);
+      }
+    }
     await loadAdminOrders(); await loadDashboardStats();
   } catch (error) {
     console.error("Update order error:", error);
