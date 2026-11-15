@@ -398,9 +398,9 @@ async function updateOrderStatus(orderId, status, ownerConfirmedPayment = false)
 
       // Deduct stock exactly once when Admin approves an already payment-verified order.
       const shouldDeduct = status === "Approved"
-        && order.status !== "Approved"
-        && order.paymentVerified === true
-        && order.stockDeducted !== true;
+        && paymentIsVerified
+        && order.stockDeducted !== true
+        && order.status !== "Completed";
 
       // If an approved, not-yet-completed order is cancelled/rejected, return its reserved stock.
       const shouldRestore = ["Cancelled", "Rejected"].includes(status)
