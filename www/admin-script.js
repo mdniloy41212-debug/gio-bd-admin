@@ -329,12 +329,13 @@ async function loadAdminOrders() {
           card.appendChild(link);
         }
         if (canChange && !["Completed", "Rejected", "Cancelled"].includes(data.status)) {
-          if (data.status === "Pending" && data.paymentVerified !== true) {
+          if (data.status === "Approved") {
+            card.appendChild(makeButton("Confirm / Complete", () => updateOrderStatus(id, "Completed")));
+          } else if (data.paymentVerified === true) {
+            card.appendChild(makeButton("Confirm", () => updateOrderStatus(id, "Approved")));
+          } else {
             card.appendChild(makeButton("পেমেন্ট যাচাই করুন", () => verifyPayment(id)));
           }
-          const isApproved = data.status === "Approved";
-          card.appendChild(makeButton(isApproved ? "Confirm / Complete" : "Confirm", () =>
-            updateOrderStatus(id, isApproved ? "Completed" : "Approved")));
           card.appendChild(makeButton("Cancel / Reject", () => updateOrderStatus(id, "Rejected")));
         }
         if (canArchive) card.appendChild(makeButton("Delete / Archive", () => archiveOrder(id)));
@@ -364,7 +365,7 @@ async function verifyPayment(orderId) {
       return;
     }
     if (!confirm("Transaction ID: " + transactionId +
-      "\\n\\nআপনি কি bKash / Nagad / Rocket-এর লেনদেনের তথ্য মিলিয়ে টাকা পাওয়ার বিষয়টি নিজে যাচাই করেছেন?\\n\\nশুধু নিশ্চিত হওয়ার পর OK চাপুন।")) return;
+      "\n\nআপনি কি bKash / Nagad / Rocket-এর লেনদেনের তথ্য মিলিয়ে টাকা পাওয়ার বিষয়টি নিজে যাচাই করেছেন?\n\nশুধু নিশ্চিত হওয়ার পর OK চাপুন।")) return;
     await updateDoc(doc(db, "orders", orderId), {
       paymentVerified: true,
       paymentVerifiedAt: serverTimestamp(),
