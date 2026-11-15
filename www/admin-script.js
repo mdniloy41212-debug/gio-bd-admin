@@ -357,12 +357,18 @@ async function verifyPayment(orderId) {
   try {
     const orderSnapshot = await getDoc(doc(db, "orders", orderId));
     if (!orderSnapshot.exists()) throw new Error("অর্ডার পাওয়া যায়নি।");
-    if (!String(orderSnapshot.data().transactionId || "").trim()) {
-      throw new Error("Transaction ID না থাকলে পেমেন্ট Verified করা যাবে না।");
+    const transactionId = String(orderSnapshot.data().transactionId || "").trim();
+    if (!transactionId) throw new Error("Transaction ID না থাকলে পেমেন্ট Verified করা যাবে না।");
+    if (orderSnapshot.data().paymentVerified === true) {
+      alert("এই অর্ডারের পেমেন্ট আগেই Verified করা হয়েছে।");
+      return;
     }
+    if (!confirm("Transaction ID: " + transactionId +
+      "\\n\\nআপনি কি bKash / Nagad / Rocket-এর লেনদেনের তথ্য মিলিয়ে টাকা পাওয়ার বিষয়টি নিজে যাচাই করেছেন?\\n\\nশুধু নিশ্চিত হওয়ার পর OK চাপুন।")) return;
     await updateDoc(doc(db, "orders", orderId), {
       paymentVerified: true,
       paymentVerifiedAt: serverTimestamp(),
+      paymentVerifiedBy: auth.currentUser?.uid || "",
       updatedAt: serverTimestamp()
     });
     await loadAdminOrders();
