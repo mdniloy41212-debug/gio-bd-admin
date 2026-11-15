@@ -549,14 +549,16 @@ async function loadDashboardStats() {
   try {
     const [ordersSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
       getDocs(collection(db, "orders")),
+      getDocs(collection(db, "salesLedger")),
       getDoc(doc(db, "settings", "diamondStock")),
       getDoc(doc(db, "settings", "mainBalance"))
     ]);
     let sales = 0;
     ordersSnapshot.forEach(item => {
       const data = item.data();
-      if (data.status === "Completed") sales += Number(data.price) || 0;
+      if (data.status === "Completed" && data.isArchived !== true) sales += Number(data.price) || 0;
     });
+    salesLedgerSnapshot.forEach(item => { sales += Number(item.data().amount) || 0; });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
     const balance = Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0);
     container.replaceChildren();
