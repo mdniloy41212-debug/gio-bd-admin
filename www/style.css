@@ -717,3 +717,8 @@ button{border-radius:13px}
 @keyframes gioOwnerBadgeRock{0%,100%{transform:rotate(-8deg) translateY(0)}25%{transform:rotate(6deg) translateY(-1px)}50%{transform:rotate(-3deg) translateY(1px)}75%{transform:rotate(8deg) translateY(-1px)}}
 @keyframes gioOwnerAvatarFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
 @media(prefers-reduced-motion:reduce){.gio-owner-v-badge,.gio-owner-avatar>span{animation:none!important}}
+
+
+/* Permanent black-and-gold Owner reseller identity badge */
+#adminPage .gio-owner-identity{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+#adminPage .gio-reseller-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid #d9ad45;border-radius:7px;background:linear-gradient(135deg,#080808,#292016 55%,#090909);color:#ffe19a;font-size:12px;font-weight:900;letter-spacing:1px;text-shadow:0 1px 2px #000;box-shadow:inset 0 0 0 1px #8b682c55,0 3px 10px #0005}
