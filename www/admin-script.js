@@ -1,6 +1,7 @@
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
 import {
   getAuth,
@@ -43,6 +44,7 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 const $ = (id) => document.getElementById(id);
 
@@ -243,13 +245,77 @@ onAuthStateChanged(auth, async (user) => {
   if (logoutBtn) logoutBtn.hidden = true;
   if (authStatus) authStatus.hidden = true;
   const adminDisplayName = $("adminDisplayName");
-  if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Admin";
+  if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Owner";
+  watchOwnerProfile(user);
 
   await loadAdminOrders();
   await loadDashboardStats();
   await loadPaymentSettings();
   await loadAdminPackages();
   await loadSupportContact();
+});
+
+
+let stopOwnerProfileListener = null;
+function watchOwnerProfile(user) {
+  const profileRef = doc(db, "users", "admin");
+  if (stopOwnerProfileListener) stopOwnerProfileListener();
+  stopOwnerProfileListener = onSnapshot(profileRef, snap => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const name = data.displayName || user.displayName || user.email || "Owner";
+    $("adminDisplayName").textContent = name;
+    $("ownerFollowerCount").textContent = Number(data.followerCount || 0).toLocaleString();
+    $("ownerLevel").textContent = String(Math.max(1, Number(data.level || 1)));
+    const avatar = String(data.avatar || "");
+    if (avatar) {
+      $("ownerProfilePhoto").src = avatar;
+      $("ownerProfilePhoto").hidden = false;
+      $("ownerProfilePlaceholder").hidden = true;
+    } else {
+      $("ownerProfilePhoto").hidden = true;
+      $("ownerProfilePlaceholder").hidden = false;
+    }
+  }, error => showMessage($("ownerProfileMessage"), "প্রোফাইল লোড হয়নি: " + error.message));
+}
+$("ownerNameEditButton")?.addEventListener("click", async () => {
+  if (!isAdmin) return;
+  const nextName = prompt("নতুন Owner নাম লিখুন:", $("adminDisplayName").textContent || "");
+  if (nextName === null) return;
+  const cleanName = nextName.trim();
+  if (cleanName.length < 2 || cleanName.length > 80) {
+    showMessage($("ownerProfileMessage"), "নাম ২ থেকে ৮০ অক্ষরের মধ্যে হতে হবে।");
+    return;
+  }
+  try {
+    await updateDoc(doc(db, "users", "admin"), { displayName: cleanName, updatedAt: serverTimestamp() });
+    showMessage($("ownerProfileMessage"), "Owner নাম পরিবর্তন হয়েছে।", true);
+  } catch (error) {
+    showMessage($("ownerProfileMessage"), "নাম পরিবর্তন হয়নি: " + error.message);
+  }
+});
+$("ownerProfilePhotoInput")?.addEventListener("change", async event => {
+  const user = auth.currentUser;
+  const file = event.target.files?.[0];
+  if (!isAdmin || !user || !file) return;
+  if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+    showMessage($("ownerProfileMessage"), "৫ MB-এর কম একটি ছবি নির্বাচন করুন।");
+    event.target.value = "";
+    return;
+  }
+  try {
+    showMessage($("ownerProfileMessage"), "ছবি আপলোড হচ্ছে...");
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-60);
+    const imageRef = storageRef(storage, `ownerProfilePhotos/${user.uid}/${Date.now()}-${safeName}`);
+    const uploaded = await uploadBytes(imageRef, file);
+    const avatar = await getDownloadURL(uploaded.ref);
+    await updateDoc(doc(db, "users", "admin"), { avatar, updatedAt: serverTimestamp() });
+    showMessage($("ownerProfileMessage"), "Owner ছবি পরিবর্তন হয়েছে।", true);
+  } catch (error) {
+    showMessage($("ownerProfileMessage"), "ছবি আপলোড হয়নি: " + error.message);
+  } finally {
+    event.target.value = "";
+  }
 });
 
 const settingsButton = $("adminSettingsButton");
