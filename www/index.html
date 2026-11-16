@@ -54,7 +54,30 @@
     <p id="loginMessage"></p>
   </section>
   <section id="adminPage" class="page">
-    <div class="admin-profile-strip owner-dashboard-profile"><div class="admin-profile-avatar gio-owner-avatar" aria-label="GIO BD Owner Verified"><span>GIO</span><b class="gio-owner-v-badge">V</b></div><div class="gio-owner-identity"><strong>GIO BD OWNER</strong><p id="adminDisplayName">Admin</p><span class="gio-reseller-badge gio-primary-reseller">♛ PRIMARY RESELLER</span></div></div>
+    <div class="gio-profile-card gio-owner-profile-card">
+      <div class="gio-profile-frame gio-owner-profile-frame">
+        <div class="gio-profile-crown" aria-hidden="true">♛</div>
+        <div class="gio-profile-title">GIO OFFICIAL</div>
+        <div class="gio-profile-photo-wrap">
+          <img id="ownerProfilePhoto" alt="Owner profile photo" hidden>
+          <span id="ownerProfilePlaceholder">GIO</span>
+          <span class="gio-online-dot" aria-label="Online"></span>
+        </div>
+        <label class="gio-photo-edit" for="ownerProfilePhotoInput">✎ ছবি পরিবর্তন</label>
+        <input id="ownerProfilePhotoInput" type="file" accept="image/*" hidden>
+      </div>
+      <div class="gio-profile-spacer"></div>
+      <div class="gio-profile-name-row">
+        <h2 id="adminDisplayName">Owner</h2>
+        <button id="ownerNameEditButton" type="button">✎ নাম Edit</button>
+      </div>
+      <div class="gio-profile-stats">
+        <div class="gio-profile-stat"><span>Followers</span><strong id="ownerFollowerCount">0</strong></div>
+        <div class="gio-profile-reseller-badge">♛ PRIMARY RESELLER</div>
+        <div class="gio-profile-stat"><span>Level</span><strong id="ownerLevel">1</strong></div>
+      </div>
+      <p id="ownerProfileMessage" class="form-message" aria-live="polite"></p>
+    </div>
     <h2>ড্যাশবোর্ড</h2>
     <p id="adminOrderAlert" class="form-message">অর্ডার নোটিফিকেশন লোড হচ্ছে...</p>
     
