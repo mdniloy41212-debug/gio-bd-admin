@@ -9,6 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+<div class="gio-global-controls" aria-label="অ্যাপ নেভিগেশন">
+  <button id="gioGlobalBack" class="gio-global-control" type="button" aria-label="আগের স্ক্রিনে ফিরে যান" title="Back">←</button>
+  <button id="gioGlobalRefresh" class="gio-global-control" type="button" aria-label="অ্যাপ রিফ্রেশ করুন" title="Refresh">↻</button>
+</div>
 <header class="header">
   <div class="logo">GIO BD <span>OWNER</span></div>
   <nav>
@@ -191,5 +195,27 @@
 <script type="module" src="inbox.js"></script>
 <script type="module" src="admin-script.js"></script>
   <script type="module" src="appearance.js"></script>
+<script>
+(() => {
+  const back = document.getElementById("gioGlobalBack");
+  const refresh = document.getElementById("gioGlobalRefresh");
+  back?.addEventListener("click", () => {
+    const openDetails = [...document.querySelectorAll("details[open]")].pop();
+    if (openDetails) { openDetails.open = false; openDetails.scrollIntoView({behavior:"smooth",block:"nearest"}); return; }
+    const settings = document.getElementById("adminSettingsPage");
+    const dashboard = document.getElementById("adminPage");
+    if (settings && !settings.hidden && settings.classList.contains("active")) {
+      document.getElementById("adminSettingsBack")?.click(); return;
+    }
+    if (dashboard && !dashboard.hidden && dashboard.classList.contains("active")) {
+      const home = document.getElementById("adminHomeNav");
+      if (home && !home.hidden) { home.click(); return; }
+      dashboard.scrollIntoView({behavior:"smooth",block:"start"}); return;
+    }
+    if (window.history.length > 1) window.history.back();
+  });
+  refresh?.addEventListener("click", () => window.location.reload());
+})();
+</script>
 </body>
 </html>
