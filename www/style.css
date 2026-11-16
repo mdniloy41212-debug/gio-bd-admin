@@ -960,3 +960,12 @@ body:has(#loginPage.active) main { padding-top:12px; }
 .gio-five-second-ad{animation:gioAdTenSecondCycle 10s linear infinite!important;}
 .gio-five-second-ad:before{animation:gioAdFiveSweep 5s ease-in-out infinite!important;}
 @keyframes gioAdTenSecondCycle{0%,49.9%{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}50%,99.9%{opacity:0;visibility:hidden;transform:translateY(-5px);pointer-events:none}100%{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}}
+
+
+/* Compact animated creator credit, shown only while the login page is visible. */
+.gio-presented-by{display:flex;align-items:center;justify-content:center;gap:4px;width:max-content;max-width:100%;margin:-10px auto 12px;padding:5px 11px;border:1px solid rgba(94,177,255,.34);border-radius:999px;background:linear-gradient(100deg,rgba(8,24,58,.88),rgba(20,48,88,.78));color:#d9edff;font-family:Arial,sans-serif;font-size:10px;font-weight:650;letter-spacing:.45px;line-height:1.2;box-shadow:0 3px 12px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.14);animation:gioSajibWave 2.8s ease-in-out infinite}
+.gio-presented-by strong{font-size:11px;font-weight:900;letter-spacing:.65px;background:linear-gradient(90deg,#ffe88b 0%,#fff 28%,#72ddff 58%,#c9a4ff 82%,#ffe88b 100%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;animation:gioSajibColor 3.2s linear infinite}
+.gio-presented-verified{display:inline-flex;flex:0 0 13px;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:linear-gradient(145deg,#45c5ff 0%,#1685ed 52%,#0756c9 100%);border:1px solid rgba(255,255,255,.55);color:#fff;font-family:Arial,sans-serif;font-size:9px;font-weight:900;line-height:1;box-shadow:0 0 8px rgba(48,151,255,.65),inset 0 1px 1px rgba(255,255,255,.45)}
+@keyframes gioSajibWave{0%,100%{transform:translateY(0) skewX(0deg);filter:brightness(1)}25%{transform:translateY(-2px) skewX(-1deg);filter:brightness(1.12)}50%{transform:translateY(0) skewX(0deg);filter:brightness(1.04)}75%{transform:translateY(2px) skewX(1deg);filter:brightness(1.12)}}
+@keyframes gioSajibColor{0%{background-position:0% 50%}100%{background-position:220% 50%}}
+@media(prefers-reduced-motion:reduce){.gio-presented-by,.gio-presented-by strong{animation:none}}
