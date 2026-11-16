@@ -56,21 +56,32 @@ let isAdmin = false;
 async function checkAdmin(user) {
   if (!user) return false;
 
+  // Owner app: retain the UID match and allow only explicitly assigned
+  // admin/owner roles. Never grant access from email or password alone.
+  const adminRef = doc(db, "users", "admin");
+  let adminDoc;
   try {
-    const adminDoc = await getDoc(doc(db, "users", "admin"));
-
-    if (!adminDoc.exists()) return false;
-
-    const data = adminDoc.data();
-
-    return (
-      data.uid === user.uid &&
-      String(data.role || "").toLowerCase() === "admin"
-    );
+    adminDoc = await getDoc(adminRef);
   } catch (error) {
-    console.error("Admin check:", error);
-    return false;
+    console.error("Owner permission document read failed:", error);
+    throw new Error("অনুমতি যাচাই করা যায়নি (Firestore: " + (error.code || error.message) + ")। users/admin পড়ার Rules পরীক্ষা করুন।");
   }
+
+  if (!adminDoc.exists()) {
+    throw new Error("Firestore-এ users/admin ডকুমেন্ট পাওয়া যায়নি।");
+  }
+
+  const data = adminDoc.data();
+  const role = String(data.role || "").trim().toLowerCase();
+  if (data.uid !== user.uid) {
+    console.error("Owner UID mismatch", { signedInUid: user.uid, storedUid: data.uid || null });
+    throw new Error("লগইন করা অ্যাকাউন্টের UID users/admin-এর uid-এর সঙ্গে মিলছে না।");
+  }
+  if (!["admin", "owner"].includes(role)) {
+    console.error("Owner role mismatch", { storedRole: data.role || null });
+    throw new Error("users/admin-এর role অবশ্যই Admin অথবা Owner হতে হবে।");
+  }
+  return true;
 }
 
 function showMessage(element, message, success = false) {
@@ -127,10 +138,17 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  const allowed = await checkAdmin(user);
+  let allowed = false;
+  try {
+    allowed = await checkAdmin(user);
+  } catch (error) {
+    showMessage(loginMessage, error.message || "Owner অনুমতি যাচাই করা যায়নি।");
+    await signOut(auth);
+    return;
+  }
 
   if (!allowed) {
-    showMessage(loginMessage, "এই অ্যাকাউন্টের অ্যাডমিন অনুমতি নেই।");
+    showMessage(loginMessage, "এই অ্যাকাউন্টের Owner অনুমতি নেই।");
     await signOut(auth);
     return;
   }
@@ -144,7 +162,7 @@ onAuthStateChanged(auth, async (user) => {
   if (adminPage) { adminPage.hidden = false; adminPage.classList.add("active"); }
   if (adminSettingsPage) { adminSettingsPage.hidden = true; adminSettingsPage.classList.remove("active"); }
   if (logoutBtn) logoutBtn.hidden = false;
-  if (authStatus) authStatus.textContent = "অ্যাডমিন হিসেবে লগইন আছেন";
+  if (authStatus) authStatus.textContent = "ওনার হিসেবে লগইন আছেন";
   const adminDisplayName = $("adminDisplayName");
   if (adminDisplayName) adminDisplayName.textContent = user.displayName || user.email || "Admin";
 
