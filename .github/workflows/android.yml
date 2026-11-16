@@ -38,6 +38,15 @@ jobs:
           node --input-type=module --check < www/appearance.js
           node --input-type=module --check < www/inbox.js
 
+      - name: Set unique Android update version code
+        run: |
+          set -euo pipefail
+          BASE_VERSION_CODE="$(grep -E '^[[:space:]]*versionCode[[:space:]]+[0-9]+' android/app/build.gradle | head -n 1 | awk '{print $2}')"
+          test -n "$BASE_VERSION_CODE"
+          NEW_VERSION_CODE="$((BASE_VERSION_CODE + GITHUB_RUN_NUMBER))"
+          sed -i -E "s/^([[:space:]]*versionCode[[:space:]]+)[0-9]+/\\1${NEW_VERSION_CODE}/" android/app/build.gradle
+          echo "Android versionCode: $NEW_VERSION_CODE"
+
       - name: Sync Capacitor
         run: npx cap sync android
 
