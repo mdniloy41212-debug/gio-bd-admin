@@ -732,3 +732,96 @@ body { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
 @keyframes gioAdSpark{0%,100%{opacity:.35;transform:scale(.8) rotate(0)}50%{opacity:1;transform:scale(1.35) rotate(35deg)}}
 @media(max-width:380px){.gio-flash-ad{min-height:82px;padding:8px 7px}.gio-ad-person{flex-basis:62px}.gio-ad-person-icon{font-size:34px}.gio-ad-welcome small{font-size:8px}.gio-ad-tagline{font-size:7px}}
 @media(prefers-reduced-motion:reduce){.gio-flash-ad:before,.gio-ad-diamonds,.gio-ad-welcome,.gio-ad-person,.gio-ad-glint{animation:none}}
+
+
+/* GIO BD OWNER LOGIN — animated diamond sparkle backdrop (visual-only) */
+@keyframes gioOwnerGemDrift {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(.88); opacity: .48; }
+  50% { transform: translate3d(12px, -22px, 0) rotate(18deg) scale(1.08); opacity: .95; }
+  100% { transform: translate3d(-8px, -42px, 0) rotate(36deg) scale(.9); opacity: .55; }
+}
+@keyframes gioOwnerGemTwinkle {
+  0%,100% { opacity:.28; filter:brightness(.8); }
+  45% { opacity:.95; filter:brightness(1.65); }
+  70% { opacity:.55; filter:brightness(1.15); }
+}
+@keyframes gioOwnerLightSweep {
+  0% { transform:translateX(-120%) rotate(18deg); opacity:0; }
+  30% { opacity:.55; }
+  65% { opacity:.18; }
+  100% { transform:translateX(120%) rotate(18deg); opacity:0; }
+}
+body:has(#loginPage.active) {
+  min-height:100svh;
+  background:
+    radial-gradient(ellipse at 50% 8%,rgba(24,111,220,.52),transparent 42%),
+    radial-gradient(ellipse at 8% 72%,rgba(73,31,176,.32),transparent 38%),
+    radial-gradient(ellipse at 92% 66%,rgba(13,151,205,.25),transparent 35%),
+    linear-gradient(145deg,#02091d 0%,#071b49 48%,#090b28 100%) !important;
+  background-attachment:fixed !important;
+}
+body:has(#loginPage.active)::before {
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.8;
+  background-image:
+    radial-gradient(circle,rgba(255,255,255,.95) 0 1px,transparent 1.8px),
+    radial-gradient(circle,rgba(105,221,255,.9) 0 1.2px,transparent 2px),
+    radial-gradient(circle,rgba(255,215,116,.85) 0 1px,transparent 2px),
+    linear-gradient(135deg,transparent 47%,rgba(103,211,255,.11) 49%,transparent 52%);
+  background-size:47px 53px,79px 83px,113px 97px,82px 82px;
+  background-position:0 0,18px 29px,42px 13px,0 0;
+  animation:gioOwnerGemTwinkle 4.8s ease-in-out infinite;
+}
+body:has(#loginPage.active)::after {
+  content:"";
+  position:fixed;
+  z-index:-1;
+  pointer-events:none;
+  top:-25%;
+  bottom:-25%;
+  left:0;
+  width:55%;
+  background:linear-gradient(90deg,transparent,rgba(110,221,255,.12),rgba(255,255,255,.25),transparent);
+  filter:blur(13px);
+  animation:gioOwnerLightSweep 8s ease-in-out infinite;
+}
+#loginPage.active {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(155deg,rgba(4,17,48,.78),rgba(9,13,45,.68)) !important;
+  border:1px solid rgba(126,225,255,.55) !important;
+  box-shadow:0 18px 48px rgba(0,0,0,.48),0 0 30px rgba(32,174,255,.2),inset 0 1px rgba(255,255,255,.16) !important;
+  backdrop-filter:blur(7px);
+}
+#loginPage.active::before,
+#loginPage.active::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:34px;
+  height:34px;
+  border:1px solid rgba(191,245,255,.85);
+  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(68,190,255,.2) 42%,rgba(39,67,176,.42) 70%,rgba(255,255,255,.55));
+  box-shadow:0 0 12px rgba(105,224,255,.85),inset 0 0 12px rgba(255,255,255,.65);
+  transform:rotate(45deg);
+  animation:gioOwnerGemDrift 6s ease-in-out infinite;
+  pointer-events:none;
+}
+#loginPage.active::before { top:22%;left:5%; }
+#loginPage.active::after { right:6%;bottom:17%;width:23px;height:23px;animation-delay:-2.7s; }
+#loginPage.active .gio-login-brand {
+  background:radial-gradient(circle at 50% 8%,rgba(93,211,255,.42),transparent 42%),linear-gradient(145deg,rgba(4,24,66,.84),rgba(24,17,79,.86)) !important;
+  border-color:rgba(154,231,255,.8) !important;
+  box-shadow:0 12px 34px rgba(0,0,0,.35),0 0 24px rgba(63,197,255,.3),inset 0 1px rgba(255,255,255,.3) !important;
+}
+@media(prefers-reduced-motion:reduce) {
+  body:has(#loginPage.active)::before,
+  body:has(#loginPage.active)::after,
+  #loginPage.active::before,
+  #loginPage.active::after { animation:none !important; }
+}
