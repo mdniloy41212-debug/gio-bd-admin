@@ -651,7 +651,7 @@ if (supportContactForm) {
   detail.style.cssText = "margin:8px 0;font-size:14px";
   const action = document.createElement("button");
   action.type = "button";
-  action.textContent = "আপডেট ডাউনলোড ও ইনস্টল করুন";
+  action.textContent = "আপডেট নাও";
   action.style.cssText = "padding:10px 14px;border:0;border-radius:9px;background:#a78bfa;color:#160d2b;font-weight:700";
   const status = document.createElement("p");
   status.style.cssText = "margin:8px 0 0;font-size:13px";
@@ -680,6 +680,7 @@ if (supportContactForm) {
     const response = await fetch(manifestUrl, { cache: "no-store" });
     if (!response.ok) throw new Error("Update server response: " + response.status);
     const manifest = await response.json();
+    if (manifest.appId !== "com.giobd.admin") throw new Error("এই আপডেটটি GIO BD Owner অ্যাপের জন্য নয়");
     const latestCode = Number(manifest.versionCode);
     const currentCode = Number(installed.versionCode);
     const apk = new URL(manifest.apkUrl);
