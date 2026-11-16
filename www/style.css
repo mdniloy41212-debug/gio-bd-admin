@@ -825,3 +825,102 @@ body:has(#loginPage.active)::after {
   #loginPage.active::before,
   #loginPage.active::after { animation:none !important; }
 }
+
+
+/* GIO BD OWNER LOGIN — red / yellow / green luxury 3D diamond theme */
+body:has(#loginPage.active) {
+  background:
+    radial-gradient(ellipse at 50% 4%, rgba(255,220,55,.24), transparent 34%),
+    radial-gradient(ellipse at 5% 55%, rgba(255,35,65,.25), transparent 38%),
+    radial-gradient(ellipse at 96% 62%, rgba(25,235,120,.23), transparent 38%),
+    linear-gradient(145deg,#16030b 0%,#07190f 48%,#170b05 100%) !important;
+}
+body:has(#loginPage.active)::before {
+  opacity:.9;
+  background-image:
+    radial-gradient(circle,rgba(255,255,255,.98) 0 1px,transparent 2px),
+    radial-gradient(circle,rgba(255,218,55,.95) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle,rgba(55,255,145,.9) 0 1.2px,transparent 2.2px),
+    radial-gradient(circle,rgba(255,65,85,.9) 0 1.4px,transparent 2.5px);
+  background-size:43px 47px,79px 83px,101px 93px,127px 111px;
+  animation:gioOwnerGemTwinkle 3.8s ease-in-out infinite;
+}
+body:has(#loginPage.active)::after {
+  width:70%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),rgba(255,222,76,.22),rgba(255,255,255,.3),transparent);
+}
+#loginPage.active {
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.16),transparent 48%),
+    linear-gradient(150deg,rgba(62,5,19,.91),rgba(7,47,25,.9) 52%,rgba(48,27,3,.92)) !important;
+  border:1px solid rgba(255,222,104,.82) !important;
+  box-shadow:0 20px 55px #000b,0 0 32px rgba(255,196,36,.25),inset 0 1px 0 #fff9,inset 0 -15px 35px rgba(0,0,0,.25) !important;
+}
+#loginPage.active::before,#loginPage.active::after {
+  width:48px;height:48px;
+  border:1px solid rgba(255,255,255,.9);
+  background:linear-gradient(135deg,#fff 0%,#ffec91 18%,#ff355d 38%,#fff 50%,#19d875 70%,#ffe34d 100%);
+  box-shadow:0 0 18px rgba(255,220,70,.9),inset 0 0 15px #fff;
+}
+#loginPage.active::before {top:17%;left:4%;animation-duration:5.5s}
+#loginPage.active::after {right:4%;bottom:15%;animation-duration:7s}
+#loginPage.active .gio-login-brand {
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,255,255,.38),transparent 42%),
+    linear-gradient(145deg,rgba(133,9,29,.94),rgba(13,112,55,.92) 53%,rgba(132,88,0,.94)) !important;
+  border:1px solid rgba(255,237,153,.95) !important;
+  box-shadow:0 16px 38px #0009,0 0 30px rgba(255,213,62,.35),inset 0 2px 0 #fff9,inset 0 -12px 25px #0005 !important;
+}
+#loginPage.active .gio-diamond-mark {
+  filter:drop-shadow(0 0 14px #fff) drop-shadow(0 0 22px #ffd83e) !important;
+}
+#loginPage.active .gio-diamond-mark svg {overflow:visible}
+#loginPage.active .gio-brand-name span {color:#fff078!important;text-shadow:0 0 12px #ffdc32}
+#loginPage.active .gio-brand-subtitle,#loginPage.active .gio-brand-glow {color:#fff5c4!important;text-shadow:0 0 10px #ffdc49}
+#loginPage.active h2 {color:#fff2a6!important;text-shadow:0 0 15px #ffb52e}
+#loginPage.active>p {color:#fff3d1}
+#loginPage.active label {color:#fff0b0}
+#loginPage.active input {
+  background:linear-gradient(145deg,rgba(22,8,15,.96),rgba(5,38,21,.96))!important;
+  border:1px solid rgba(255,226,111,.85)!important;
+  box-shadow:inset 0 2px 9px #0009,0 0 12px rgba(255,209,60,.12);
+}
+#loginPage.active form button {
+  background:linear-gradient(110deg,#b90e32 0%,#e8b91b 48%,#078b45 100%)!important;
+  border:1px solid #fff2a8!important;color:#fff!important;
+  text-shadow:0 1px 3px #381000;
+  box-shadow:0 8px 22px #0008,0 0 18px rgba(255,215,50,.28),inset 0 1px 0 #fff9;
+}
+.gio-owner-gem-strip {
+  position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-evenly;
+  gap:10px;width:min(100%,520px);height:82px;margin:0 auto 14px;padding:8px 12px;
+  overflow:hidden;border:1px solid rgba(255,224,100,.75);border-radius:17px;
+  background:linear-gradient(110deg,rgba(80,5,23,.92),rgba(6,57,30,.94) 52%,rgba(78,48,0,.92));
+  box-shadow:0 8px 25px #0008,0 0 22px rgba(255,215,55,.22),inset 0 1px 0 #fff8;
+}
+.gio-owner-gem-strip::before {
+  content:"";position:absolute;inset:-80% -35%;z-index:-1;pointer-events:none;
+  background:linear-gradient(100deg,transparent 43%,rgba(255,255,255,.55) 50%,rgba(255,228,110,.18) 54%,transparent 61%);
+  animation:gioGemStripSweep 4.8s ease-in-out infinite;
+}
+.owner-gem {
+  position:relative;display:block;flex:0 0 35px;width:35px;height:35px;
+  clip-path:polygon(50% 0,88% 22%,100% 42%,50% 100%,0 42%,12% 22%);
+  border:1px solid #fff;
+  filter:drop-shadow(0 0 8px currentColor);
+  animation:gioGemStripFloat 2.8s ease-in-out infinite;
+}
+.owner-gem::before {
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.98) 0 12%,transparent 13% 38%,rgba(255,255,255,.58) 39% 43%,transparent 44%),
+    linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 48%,transparent 62%);
+}
+.gem-red{background:linear-gradient(135deg,#fff 0%,#ff9ba9 18%,#e50939 48%,#740019 100%);color:#ff355f}
+.gem-yellow{background:linear-gradient(135deg,#fff 0%,#fff5a3 20%,#ffcb18 52%,#a66b00 100%);color:#ffe04c;animation-delay:-.7s}
+.gem-green{background:linear-gradient(135deg,#fff 0%,#aaffd1 20%,#08d66a 52%,#005b31 100%);color:#20ff8a;animation-delay:-1.3s}
+.owner-gem.gem-small{flex-basis:23px;width:23px;height:23px;animation-duration:3.4s}
+.gem-strip-label{position:absolute;left:0;right:0;bottom:3px;text-align:center;color:#fff4bd;font-size:9px;font-weight:900;letter-spacing:2px;text-shadow:0 0 9px #ffda48}
+@keyframes gioGemStripFloat{0%,100%{transform:translateY(4px) rotateY(0) rotateZ(-7deg) scale(.92)}50%{transform:translateY(-9px) rotateY(45deg) rotateZ(8deg) scale(1.12)}}
+@keyframes gioGemStripSweep{0%,25%{transform:translateX(-55%)}70%,100%{transform:translateX(55%)}}
+@media(max-width:380px){.gio-owner-gem-strip{height:72px;gap:6px;padding:6px}.owner-gem{flex-basis:29px;width:29px;height:29px}.owner-gem.gem-small{flex-basis:19px;width:19px;height:19px}}
+@media(prefers-reduced-motion:reduce){.gio-owner-gem-strip::before,.owner-gem{animation:none!important}}
