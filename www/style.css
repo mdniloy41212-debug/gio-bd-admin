@@ -924,3 +924,8 @@ body:has(#loginPage.active)::after {
 @keyframes gioGemStripSweep{0%,25%{transform:translateX(-55%)}70%,100%{transform:translateX(55%)}}
 @media(max-width:380px){.gio-owner-gem-strip{height:72px;gap:6px;padding:6px}.owner-gem{flex-basis:29px;width:29px;height:29px}.owner-gem.gem-small{flex-basis:19px;width:19px;height:19px}}
 @media(prefers-reduced-motion:reduce){.gio-owner-gem-strip::before,.owner-gem{animation:none!important}}
+
+
+/* Login-only layout: remove the old header labels above the login panel */
+body:has(#loginPage.active) > header { display:none !important; }
+body:has(#loginPage.active) main { padding-top:12px; }
