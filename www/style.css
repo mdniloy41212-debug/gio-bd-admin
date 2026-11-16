@@ -969,3 +969,11 @@ body:has(#loginPage.active) main { padding-top:12px; }
 @keyframes gioSajibWave{0%,100%{transform:translateY(0) skewX(0deg);filter:brightness(1)}25%{transform:translateY(-2px) skewX(-1deg);filter:brightness(1.12)}50%{transform:translateY(0) skewX(0deg);filter:brightness(1.04)}75%{transform:translateY(2px) skewX(1deg);filter:brightness(1.12)}}
 @keyframes gioSajibColor{0%{background-position:0% 50%}100%{background-position:220% 50%}}
 @media(prefers-reduced-motion:reduce){.gio-presented-by,.gio-presented-by strong{animation:none}}
+
+
+/* Global top-corner Back and Refresh controls */
+.gio-global-controls{position:fixed;top:calc(env(safe-area-inset-top,0px) + 9px);left:10px;right:10px;z-index:2000;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.gio-global-control{pointer-events:auto;width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(112,225,255,.7);border-radius:14px;background:linear-gradient(145deg,rgba(23,61,112,.97),rgba(42,27,91,.97));color:#fff;font:700 27px/1 Arial,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35),0 0 15px rgba(0,207,255,.2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer}
+.gio-global-control:active{transform:scale(.94)}
+.header{padding-top:58px!important}
+@media(min-width:700px){.gio-global-control{width:46px;height:46px;border-radius:15px}}
