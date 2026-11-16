@@ -956,7 +956,7 @@ body:has(#loginPage.active) main { padding-top:12px; }
 @media(prefers-reduced-motion:reduce){.gio-five-second-ad,.gio-five-second-ad:before,.gio-ad-copy,.gio-ad-character,.gio-ad-phone-svg{animation:none!important}}
 
 
-/* Show the login promo for 5 seconds in each 10-second cycle */
+/* Login promo timing: visible for 5 seconds, hidden for 5 seconds; repeats every 10 seconds. */
 .gio-five-second-ad{animation:gioAdTenSecondCycle 10s linear infinite!important;}
 .gio-five-second-ad:before{animation:gioAdFiveSweep 5s ease-in-out infinite!important;}
 @keyframes gioAdTenSecondCycle{0%,49.9%{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}50%,99.9%{opacity:0;visibility:hidden;transform:translateY(-5px);pointer-events:none}100%{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}}
