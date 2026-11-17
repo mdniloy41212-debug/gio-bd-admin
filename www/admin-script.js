@@ -598,9 +598,9 @@ async function loadAdminPackages() {
       if (quantityInput) quantityInput.value = data.active !== false && data.diamondQuantity ? String(data.diamondQuantity) : "";
       if (priceInput) priceInput.value = data.active !== false && data.price ? String(data.price) : "";
       const card = document.createElement("div"); card.className = "order-card";
-      const title = document.createElement("h4"); title.textContent = "প্যাকেজ " + slot;
+      const title = document.createElement("h4"); title.textContent = "Black প্যাকেজ " + slot;
       const details = document.createElement("p");
-      details.textContent = data.active !== false && data.diamondQuantity && data.price ? Number(data.diamondQuantity) + " Diamond — ৳" + Number(data.price) : "এখনো সেট করা হয়নি / বন্ধ";
+      details.textContent = data.active !== false && data.diamondQuantity && data.price ? Number(data.diamondQuantity) + " Black Diamond — ৳" + Number(data.price) : "এখনো সেট করা হয়নি / বন্ধ";
       card.append(title, details); container.appendChild(card);
     }
   } catch (error) { console.error("Packages error:", error); container.textContent = "প্যাকেজ লোড করা যায়নি।"; }
@@ -628,7 +628,7 @@ if (packageForm) {
         name: item.active ? item.diamondQuantity + " Diamond" : "", price: item.active ? item.price : 0,
         updatedAt: serverTimestamp()
       });
-      showMessage(message, "৫টি প্যাকেজের সেটিংস সংরক্ষণ হয়েছে।", true);
+      showMessage(message, "৫টি Black Diamond প্যাকেজের সেটিংস সংরক্ষণ হয়েছে।", true);
       await loadAdminPackages();
     } catch (error) {
       console.error("Save five packages:", error);
