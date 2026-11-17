@@ -529,6 +529,10 @@ async function loadAdminPackages() {
     container.replaceChildren();
     for (let slot = 1; slot <= 5; slot++) {
       const data = bySlot.get(slot) || {};
+      const quantityInput = $("packageDiamond" + slot);
+      const priceInput = $("packagePrice" + slot);
+      if (quantityInput) quantityInput.value = data.active !== false && data.diamondQuantity ? String(data.diamondQuantity) : "";
+      if (priceInput) priceInput.value = data.active !== false && data.price ? String(data.price) : "";
       const card = document.createElement("div"); card.className = "order-card";
       const title = document.createElement("h4"); title.textContent = "প্যাকেজ " + slot;
       const details = document.createElement("p");
