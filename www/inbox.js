@@ -35,6 +35,7 @@ main?.appendChild(adminContactPage);
 let stopOwnerContacts = null;
 let stopOwnerChat = null;
 let activeContactUid = null;
+function isContactOnline(data){const last=data.lastSeenAt?.toDate?.()?.getTime?.()||0;return data.isOnline===true&&last>0&&(Date.now()-last)<120000;}
 function openOwnerUserChat(uid, profile) {
  activeContactUid = uid;
  const panel = document.getElementById("gioOwnerUserChat");
@@ -77,7 +78,7 @@ async function loadOwnerContacts(){
   stopOwnerContacts=onSnapshot(collection(db,"customerProfiles"),snap=>{
    const users=snap.docs.map(item=>({id:item.id,data:item.data()}));
    if(total)total.textContent=String(users.length);
-   const onlineCount=users.filter(u=>u.data.isOnline===true).length;
+   const onlineCount=users.filter(u=>isContactOnline(u.data)).length;
    if(online)online.textContent=String(onlineCount);
    list.replaceChildren();
    if(!users.length){list.textContent="এখনো কোনো কাস্টমার প্রোফাইল নেই।";return;}
@@ -87,11 +88,11 @@ async function loadOwnerContacts(){
     const avatar=document.createElement("div");avatar.className="gio-contact-avatar";
     if(data.photoURL){const img=document.createElement("img");img.src=data.photoURL;img.alt="";avatar.appendChild(img);}
     else avatar.textContent=String(data.displayName||data.name||data.email||"U").charAt(0).toUpperCase();
-    if(data.isOnline===true){const dot=document.createElement("i");dot.className="gio-contact-online-dot";dot.title="Online";avatar.appendChild(dot);}
+    if(isContactOnline(data)){const dot=document.createElement("i");dot.className="gio-contact-online-dot";dot.title="Online";avatar.appendChild(dot);}
     const info=document.createElement("div");info.className="gio-contact-user-info";
     const name=document.createElement("strong");name.textContent=data.displayName||data.name||data.email||"GIO BD User";
     const email=document.createElement("small");email.textContent=data.email||"ইমেইল পাওয়া যায়নি";
-    const state=document.createElement("small");state.textContent=data.isOnline===true?"Online":"Offline";
+    const state=document.createElement("small");state.textContent=isContactOnline(data)?"Online":"Offline";
     info.append(name,email,state);
     const chat=document.createElement("button");chat.type="button";chat.textContent="Chat";chat.addEventListener("click",()=>openOwnerUserChat(id,data));
     card.append(avatar,info,chat);list.appendChild(card);
