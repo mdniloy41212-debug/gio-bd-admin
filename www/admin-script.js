@@ -1,8 +1,4 @@
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { registerPlugin } from "https://cdn.jsdelivr.net/npm/@capacitor/core@8.6.0/dist/index.js";
-
-const AppUpdate = registerPlugin("AppUpdate");
-
 import {
   getAuth,
   signInWithCustomToken,
@@ -777,6 +773,17 @@ if (supportContactForm) {
   const manifestUrl = "https://gio-bd-admin.web.app/updates/admin-version.json";
   const nativePlatform = window.Capacitor?.isNativePlatform?.() === true;
   if (!nativePlatform) return;
+
+  let AppUpdate;
+  try {
+    // Load the optional native updater only after the login handlers are registered.
+    // A CDN/plugin failure must never prevent the OTP login module from starting.
+    const capacitorCore = await import("https://cdn.jsdelivr.net/npm/@capacitor/core@8.6.0/dist/index.js");
+    AppUpdate = capacitorCore.registerPlugin("AppUpdate");
+  } catch (error) {
+    console.warn("App updater module unavailable; continuing without updater:", error);
+    return;
+  }
 
   let installed;
   try {
