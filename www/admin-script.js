@@ -2,6 +2,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import {
   getAuth,
   signInWithEmailAndPassword,
+  signInWithCustomToken,
   onAuthStateChanged,
   signOut,
   setPersistence,
@@ -173,6 +174,87 @@ if (ownerPasswordLoginButton) {
       showMessage(loginMessage, messages[error.code] || error.message || "লগইন করা যায়নি।");
     } finally {
       ownerPasswordLoginButton.disabled = false;
+    }
+  });
+}
+
+
+const ownerOtpEmailInput = $("ownerOtpEmail");
+const ownerOtpCodeInput = $("ownerOtpCode");
+const ownerSendOtpButton = $("ownerSendOtpBtn");
+const ownerVerifyOtpButton = $("ownerVerifyOtpBtn");
+
+async function ownerAuthRequest(path, payload) {
+  const response = await fetch(OWNER_AUTH_API_BASE_URL + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.ok === false) {
+    throw new Error(result.message || result.error || "অনুরোধটি সম্পন্ন হয়নি।");
+  }
+  return result;
+}
+
+if (ownerSendOtpButton) {
+  ownerSendOtpButton.addEventListener("click", async () => {
+    const email = ownerOtpEmailInput?.value.trim().toLowerCase();
+    if (!email) {
+      showMessage(loginMessage, "প্রথমে Owner Gmail লিখুন।");
+      ownerOtpEmailInput?.focus();
+      return;
+    }
+    if (email !== "mdniloy41212@gmail.com") {
+      showMessage(loginMessage, "এই Gmail দিয়ে Owner Login অনুমোদিত নয়।");
+      return;
+    }
+    ownerSendOtpButton.disabled = true;
+    showMessage(loginMessage, "আপনার Gmail-এ OTP পাঠানো হচ্ছে...", true);
+    try {
+      await ownerAuthRequest("/api/owner/send-otp", { email });
+      showMessage(loginMessage, "OTP পাঠানো হয়েছে। Gmail Inbox/Spam পরীক্ষা করুন।", true);
+      ownerOtpCodeInput?.focus();
+    } catch (error) {
+      console.error("Owner send OTP error:", error);
+      showMessage(loginMessage, error.message || "OTP পাঠানো যায়নি।");
+    } finally {
+      ownerSendOtpButton.disabled = false;
+    }
+  });
+}
+
+if (ownerVerifyOtpButton) {
+  ownerVerifyOtpButton.addEventListener("click", async () => {
+    const email = ownerOtpEmailInput?.value.trim().toLowerCase();
+    const otp = ownerOtpCodeInput?.value.trim();
+    if (!email || email !== "mdniloy41212@gmail.com") {
+      showMessage(loginMessage, "অনুমোদিত Owner Gmail লিখুন।");
+      ownerOtpEmailInput?.focus();
+      return;
+    }
+    if (!/^[0-9]{6}$/.test(otp || "")) {
+      showMessage(loginMessage, "সঠিক ৬ সংখ্যার OTP লিখুন।");
+      ownerOtpCodeInput?.focus();
+      return;
+    }
+    ownerVerifyOtpButton.disabled = true;
+    showMessage(loginMessage, "OTP যাচাই করা হচ্ছে...", true);
+    try {
+      const verification = await ownerAuthRequest("/api/owner/verify-otp", { email, otp });
+      if (!verification.verificationToken) throw new Error("OTP যাচাইয়ের টোকেন পাওয়া যায়নি।");
+      const completed = await ownerAuthRequest("/api/owner/complete-login", {
+        email,
+        verificationToken: verification.verificationToken
+      });
+      if (!completed.customToken) throw new Error("Firebase Login Token পাওয়া যায়নি।");
+      showMessage(loginMessage, "OTP সঠিক। Owner Login হচ্ছে...", true);
+      await signInWithCustomToken(auth, completed.customToken);
+    } catch (error) {
+      console.error("Owner OTP login error:", error);
+      showMessage(loginMessage, error.message || "OTP যাচাই করে লগইন করা যায়নি।");
+    } finally {
+      ownerVerifyOtpButton.disabled = false;
     }
   });
 }
