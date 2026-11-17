@@ -656,7 +656,7 @@ async function loadYellowDiamondPackages() {
     const bySlot = new Map();
     snapshot.forEach(item => { const slot = Number(item.data().slot); if (Number.isInteger(slot) && slot >= 1 && slot <= 3) bySlot.set(slot, item.data()); });
     container.replaceChildren();
-    for (let slot = 1; slot <= 5; slot++) {
+    for (let slot = 1; slot <= 3; slot++) {
       const data = bySlot.get(slot) || {};
       const quantity = $("yellowPackageDiamond" + slot), price = $("yellowPackagePrice" + slot);
       if (quantity) quantity.value = data.active !== false && data.diamondQuantity ? String(data.diamondQuantity) : "";
