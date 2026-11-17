@@ -367,7 +367,9 @@ if (main && !document.getElementById("adminInboxPage")) {
   });
 }
 
+let inboxAuthRevision = 0;
 onAuthStateChanged(auth, async user => {
+  const revision = ++inboxAuthRevision;
   document.querySelectorAll(".admin-profile-avatar").forEach(element => setOwnerAvatar(element, user));
   const button = document.getElementById("adminInboxButton");
   if (stopListening) stopListening();
@@ -384,8 +386,10 @@ onAuthStateChanged(auth, async user => {
 
   try {
     const snap = await getDoc(doc(db, "users", "admin"));
+    if (revision !== inboxAuthRevision) return;
     const data = snap.exists() ? snap.data() : {};
-    if (data.uid !== user.uid || String(data.role || "").toLowerCase() !== "admin") {
+    const role = String(data.role || "").trim().toLowerCase();
+    if (data.uid !== user.uid || !["admin", "owner"].includes(role)) {
       if (button) button.hidden = true;
       return;
     }
