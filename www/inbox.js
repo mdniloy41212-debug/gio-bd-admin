@@ -1,7 +1,7 @@
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, query, orderBy,
+  getFirestore, collection, addDoc, query, orderBy, where,
   onSnapshot, doc, getDoc, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -30,36 +30,81 @@ adminProfilePage.innerHTML = '<div class="admin-profile-strip"><div class="admin
 main?.appendChild(adminProfilePage);
 const adminContactPage = document.createElement("section");
 adminContactPage.id = "adminContactPage"; adminContactPage.className = "page"; adminContactPage.hidden = true;
-adminContactPage.innerHTML = '<h2>👥 Customer Contact</h2><div class="order-card"><strong>মোট কাস্টমার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন কাস্টমার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div>';
+adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card" hidden><h3 id="gioOwnerChatTitle">Chat</h3><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="মেসেজ লিখুন"></textarea><button type="button" id="gioOwnerChatSend">মেসেজ পাঠান</button><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
 main?.appendChild(adminContactPage);
+let stopOwnerContacts = null;
+let stopOwnerChat = null;
+let activeContactUid = null;
+function openOwnerUserChat(uid, profile) {
+ activeContactUid = uid;
+ const panel = document.getElementById("gioOwnerUserChat");
+ const voiceStatus=document.getElementById("gioOwnerChatVoiceStatus");
+ const oldVoice=document.getElementById("gioOwnerChatVoiceButton");oldVoice?.remove();
+ const voice=createOwnerContactVoice(uid,voiceStatus);voice.id="gioOwnerChatVoiceButton";voiceStatus?.insertAdjacentElement("afterend",voice);
+ if (!panel) return;
+ panel.hidden = false;
+ document.getElementById("gioOwnerChatTitle").textContent = (profile.displayName || profile.name || profile.email || "কাস্টমার") + " — Chat";
+ const messages = document.getElementById("gioOwnerUserChatMessages");
+ messages.textContent = "চ্যাট লোড হচ্ছে…";
+ if (stopOwnerChat) stopOwnerChat();
+ const q = query(collection(db,"supportMessages"),where("userUid","==",uid));
+ stopOwnerChat = onSnapshot(q,snap=>{
+  messages.replaceChildren();
+  snap.docs.slice().sort((a,b)=>(a.data().createdAt?.toMillis?.()||0)-(b.data().createdAt?.toMillis?.()||0)).forEach(item=>{
+   const d=item.data(); const card=document.createElement("article"); card.className="order-card";
+   const who=document.createElement("strong"); who.textContent=d.senderRole==="admin"?"আপনি":"কাস্টমার";
+   const body=document.createElement("p"); body.textContent=d.text||"";
+   const time=document.createElement("small"); time.textContent=d.createdAt?.toDate?.().toLocaleString("bn-BD")||"";
+   card.append(who,body,time); appendVoicePlayer(card,d); messages.appendChild(card);
+  });
+  if(!snap.size) messages.textContent="এখনো কোনো মেসেজ নেই।";
+ },err=>messages.textContent="চ্যাট লোড হয়নি: "+err.message);
+ panel.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function createOwnerContactVoice(uid,status){
+ return createVoiceRecorder(async(audioData,audioMimeType)=>{
+  await addDoc(collection(db,"supportMessages"),{userUid:uid,senderRole:"admin",senderName:"GIO BD Owner",text:"🎤 ভয়েস মেসেজ",audioData,audioMimeType,audioDurationLimit:15,createdAt:serverTimestamp()});
+ },status);
+}
 async function loadOwnerContacts(){
  const list=document.getElementById("gioOwnerContactList");
  const total=document.getElementById("gioOwnerTotalCustomers");
  const online=document.getElementById("gioOwnerOnlineCustomers");
  if(!list)return;
+ if(stopOwnerContacts)stopOwnerContacts();
  list.textContent="কাস্টমার তালিকা লোড হচ্ছে…";
  try{
-  const snap=await getDocs(collection(db,"customerProfiles"));
-  const users=snap.docs.map(item=>({id:item.id,data:item.data()}));
-  if(total)total.textContent=String(users.length);
-  const onlineUsers=users.filter(user=>user.data.isOnline===true);
-  if(online)online.textContent=String(onlineUsers.length)+" (যাদের isOnline স্ট্যাটাস সংরক্ষিত আছে)";
-  list.replaceChildren();
-  if(!users.length){list.textContent="এখনো কোনো কাস্টমার প্রোফাইল নেই।";return;}
-  users.forEach(({id,data})=>{
-   const card=document.createElement("article");card.className="order-card";
-   const name=document.createElement("strong");name.textContent=data.displayName||data.name||"নাম দেওয়া হয়নি";
-   const details=document.createElement("p");details.textContent=(data.email||"ইমেইল নেই")+" · "+(data.phone||data.mobile||"ফোন নেই");
-   const status=document.createElement("p");status.textContent=data.isOnline===true?"🟢 Online":"⚪ Offline / status unavailable";
-   card.append(name,details,status);list.appendChild(card);
-  });
- }catch(error){console.error("Owner contacts:",error);list.textContent="কাস্টমার তালিকা পড়া যায়নি। customerProfiles Firestore Rules পরীক্ষা করুন।";if(total)total.textContent="—";if(online)online.textContent="—";}
+  stopOwnerContacts=onSnapshot(collection(db,"customerProfiles"),snap=>{
+   const users=snap.docs.map(item=>({id:item.id,data:item.data()}));
+   if(total)total.textContent=String(users.length);
+   const onlineCount=users.filter(u=>u.data.isOnline===true).length;
+   if(online)online.textContent=String(onlineCount);
+   list.replaceChildren();
+   if(!users.length){list.textContent="এখনো কোনো কাস্টমার প্রোফাইল নেই।";return;}
+   users.sort((a,b)=>String(a.data.displayName||a.data.email||"").localeCompare(String(b.data.displayName||b.data.email||"")));
+   users.forEach(({id,data})=>{
+    const card=document.createElement("article");card.className="gio-contact-user-card";
+    const avatar=document.createElement("div");avatar.className="gio-contact-avatar";
+    if(data.photoURL){const img=document.createElement("img");img.src=data.photoURL;img.alt="";avatar.appendChild(img);}
+    else avatar.textContent=String(data.displayName||data.name||data.email||"U").charAt(0).toUpperCase();
+    if(data.isOnline===true){const dot=document.createElement("i");dot.className="gio-contact-online-dot";dot.title="Online";avatar.appendChild(dot);}
+    const info=document.createElement("div");info.className="gio-contact-user-info";
+    const name=document.createElement("strong");name.textContent=data.displayName||data.name||data.email||"GIO BD User";
+    const email=document.createElement("small");email.textContent=data.email||"ইমেইল পাওয়া যায়নি";
+    const state=document.createElement("small");state.textContent=data.isOnline===true?"Online":"Offline";
+    info.append(name,email,state);
+    const chat=document.createElement("button");chat.type="button";chat.textContent="Chat";chat.addEventListener("click",()=>openOwnerUserChat(id,data));
+    card.append(avatar,info,chat);list.appendChild(card);
+   });
+  },err=>{list.textContent="কাস্টমার তালিকা পড়া যায়নি: "+err.message;});
+ }catch(error){console.error("Owner contacts:",error);list.textContent="কাস্টমার তালিকা পড়া যায়নি: "+error.message;}
 }
 
 const adminNavStyle = document.createElement("style");
 adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
 adminNavStyle.textContent += '.gio-owner-page-back{display:inline-flex;align-items:center;margin:4px 0 14px;padding:10px 15px;border:1px solid #70ddff66;border-radius:12px;background:linear-gradient(135deg,#174a83,#34206e);color:#fff;font-weight:700}.gio-admin-bottom-nav button.is-active{outline:2px solid #ffd66b;background:linear-gradient(145deg,#72521a,#5a327f);box-shadow:0 0 14px #ffd66b55}.admin-order-alert{display:block;width:100%;margin:0 0 12px;padding:13px;border:1px solid #ffcf6a88;border-radius:13px;background:linear-gradient(110deg,#9a4b13,#6234a8);font-weight:800}.notification-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:20px;background:#ff3158;color:#fff;font-size:11px;font-weight:900}.notification-count[hidden]{display:none!important}';
 document.head.appendChild(adminNavStyle);
+const contactStyle=document.createElement("style");contactStyle.textContent=".gio-contact-user-card{display:flex;align-items:center;gap:11px;padding:12px;margin:9px 0;border:1px solid #71dfff44;border-radius:15px;background:#101a3dcc}.gio-contact-avatar{position:relative;flex:0 0 48px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#1b80a7,#51318d);font-size:20px;font-weight:800}.gio-contact-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}.gio-contact-online-dot{position:absolute;width:13px;height:13px;right:-1px;bottom:0;border:2px solid #101a3d;border-radius:50%;background:#21df70;box-shadow:0 0 9px #21df70}.gio-contact-user-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}.gio-contact-user-info small{font-size:11px;overflow-wrap:anywhere;color:#b9d8f5}.gio-contact-user-card button{padding:9px 12px}.gio-owner-page-back{position:relative}";document.head.appendChild(contactStyle);
 const adminHelp = document.createElement("button"); adminHelp.type="button"; adminHelp.className="gio-admin-help"; adminHelp.textContent="☎ Help";
 const adminHelpPanel = document.createElement("div"); adminHelpPanel.className="gio-admin-help-panel"; adminHelpPanel.hidden=true;
 adminHelpPanel.innerHTML='<strong>GIO BD Owner Support</strong><a id="gioOwnerWhatsApp" href="#" target="_blank" rel="noopener">WhatsApp</a><a href="https://www.facebook.com/profile.php?id=61582121766890" target="_blank" rel="noopener">Facebook Page</a><a href="mailto:mdniloy41212@gmail.com">Gmail</a>';
@@ -121,6 +166,12 @@ function showAdminTab(tab, options = {}){
    visiblePage.prepend(back);
  }
 }
+document.getElementById("gioOwnerChatSend")?.addEventListener("click",async()=>{
+ const input=document.getElementById("gioOwnerChatText"); if(!activeContactUid||!input?.value.trim())return;
+ try{await addDoc(collection(db,"supportMessages"),{userUid:activeContactUid,senderRole:"admin",senderName:"GIO BD Owner",text:input.value.trim(),createdAt:serverTimestamp()});input.value="";}catch(e){alert("মেসেজ পাঠানো যায়নি: "+e.message);}
+});
+
+document.getElementById("gioOwnerChatClose")?.addEventListener("click",()=>{document.getElementById("gioOwnerUserChat").hidden=true;if(stopOwnerChat)stopOwnerChat();activeContactUid=null;});
 adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
 document.querySelector("header nav")?.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
 let stopOrderAlertsListening = null;
