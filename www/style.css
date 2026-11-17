@@ -977,3 +977,16 @@ body:has(#loginPage.active) main { padding-top:12px; }
 .gio-global-control:active{transform:scale(.94)}
 .header{padding-top:58px!important}
 @media(min-width:700px){.gio-global-control{width:46px;height:46px;border-radius:15px}}
+
+
+/* GIO BD Owner Premium 3D dashboard polish — additive only; existing controls and layout remain intact. */
+#adminPage .admin-profile-strip,#adminPage .order-card,#adminPage #dashboardStats>div,#adminPage #dashboardStats .stat-card,#adminPage .dashboard-stat-card,#adminSettingsPage .inbox-folder,#adminSettingsPage .stock-settings-form,#adminSettingsPage .package-slot-editor,.panel,.order-card,.balance-card,.inbox-folder{position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(116,197,255,.24);border-radius:18px;background:linear-gradient(145deg,rgba(22,47,88,.94),rgba(8,18,43,.97));box-shadow:0 14px 30px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.13),inset 0 -1px 0 rgba(76,155,255,.12);}
+#dashboardStats .dashboard-stat-card,#dashboardStats>div{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;}
+#dashboardStats .dashboard-stat-card strong,#dashboardStats>div strong{display:inline-block;text-shadow:0 2px 12px rgba(80,181,255,.25);}
+#dashboardStats .dashboard-stat-card:after,#dashboardStats>div:after,#adminPage .order-card:after,#adminSettingsPage .inbox-folder:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(118deg,transparent 0%,rgba(255,255,255,.07) 44%,transparent 60%);}
+#adminPage .admin-profile-strip{box-shadow:0 16px 32px rgba(0,0,0,.3),0 0 20px rgba(56,155,255,.12),inset 0 1px rgba(255,255,255,.17);}
+#adminPage .order-card{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;}
+#adminPage button,#adminSettingsPage button{box-shadow:0 6px 14px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18);}
+#adminSettingsPage input,#adminSettingsPage select,#adminSettingsPage textarea{box-shadow:inset 0 3px 8px rgba(0,0,0,.2),0 1px 0 rgba(255,255,255,.05);}
+@media(hover:hover){#dashboardStats .dashboard-stat-card:hover,#dashboardStats>div:hover,#adminPage .order-card:hover{transform:translateY(-3px);border-color:rgba(116,211,255,.55);box-shadow:0 19px 34px rgba(0,0,0,.34),0 0 18px rgba(50,157,255,.15),inset 0 1px rgba(255,255,255,.17);}}
+@media(prefers-reduced-motion:reduce){#dashboardStats .dashboard-stat-card,#dashboardStats>div,#adminPage .order-card{transition:none!important;}}
