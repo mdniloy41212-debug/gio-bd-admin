@@ -654,7 +654,7 @@ async function loadYellowDiamondPackages() {
   try {
     const snapshot = await getDocs(collection(db, "yellowDiamondPackages"));
     const bySlot = new Map();
-    snapshot.forEach(item => { const slot = Number(item.data().slot); if (Number.isInteger(slot) && slot >= 1 && slot <= 5) bySlot.set(slot, item.data()); });
+    snapshot.forEach(item => { const slot = Number(item.data().slot); if (Number.isInteger(slot) && slot >= 1 && slot <= 3) bySlot.set(slot, item.data()); });
     container.replaceChildren();
     for (let slot = 1; slot <= 5; slot++) {
       const data = bySlot.get(slot) || {};
@@ -698,7 +698,7 @@ if (yellowPackageForm) {
         price:item.active?item.price:0, updatedAt:serverTimestamp(),
         updatedBy:auth.currentUser?.uid || ""
       });
-      showMessage(message, "৫টি Yellow Diamond প্যাকেজ সংরক্ষণ হয়েছে।", true);
+      // Retire legacy slots 4–5 so only the three configured Yellow packages remain active.\n      for (const slot of [4, 5]) await setDoc(doc(db,"yellowDiamondPackages","yellow_package_slot_"+slot), {slot,active:false,diamondQuantity:0,name:"",price:0,updatedAt:serverTimestamp(),updatedBy:auth.currentUser?.uid || ""});\n      showMessage(message, "৩টি Yellow Diamond প্যাকেজ সংরক্ষণ হয়েছে।", true);
       await loadYellowDiamondPackages();
     } catch(error) {
       console.error("Save Yellow Diamond packages:", error);
