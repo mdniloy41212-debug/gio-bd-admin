@@ -301,7 +301,10 @@ async function updateOrderStatus(orderId, status) {
       const orderSnap = await transaction.get(orderRef);
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
       const order = orderSnap.data();
-      const shouldDeduct = ["Approved", "Completed"].includes(status)
+      // Only Black Diamond orders consume the shared Diamond Stock.
+      // Deduct exactly once, and only when the Owner explicitly approves.
+      const shouldDeduct = order.packageType === "diamond"
+        && status === "Approved"
         && ["Pending", "Processing"].includes(order.status || "Pending")
         && order.stockDeducted !== true;
       if (shouldDeduct) {
