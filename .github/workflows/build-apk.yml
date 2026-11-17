@@ -73,6 +73,12 @@ jobs:
           test -n "$ANDROID_KEY_ALIAS"
           keytool -list -v -keystore android/app/release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" | grep -E 'SHA1:|SHA256:'
 
+      - name: Set Owner app version
+        run: |
+          set -euo pipefail
+          sed -i 's/versionCode 7/versionCode 8/' android/app/build.gradle
+          sed -i 's/versionName "1.5"/versionName "1.6"/' android/app/build.gradle
+
       - name: Build signed Owner Release APK
         working-directory: android
         env:
@@ -83,24 +89,41 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x gradlew
-          ./gradlew assembleRelease
-          cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/GIO-BD-Owner.apk
+          ./gradlew --no-daemon clean assembleRelease
+          APK="app/build/outputs/apk/release/app-release.apk"
+          test -s "$APK"
+          unzip -t "$APK"
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          "$BUILD_TOOLS/aapt" dump badging "$APK" > /tmp/owner-apk-badging.txt
+          grep -q "name='com.giobd.admin'" /tmp/owner-apk-badging.txt
+          grep -q "application-label:'GIO BD Owner'" /tmp/owner-apk-badging.txt
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
+          mkdir -p ../release
+          cp "$APK" ../release/GIO-BD-Owner.apk
+          sha256sum ../release/GIO-BD-Owner.apk > ../release/SHA256SUMS.txt
 
       - name: Upload signed Owner APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GIO-BD-Owner-Release-APK
-          path: android/app/build/outputs/apk/release/GIO-BD-Owner.apk
+          name: GIO-BD-Owner-APK-Artifact
+          path: |
+            release/GIO-BD-Owner.apk
+            release/SHA256SUMS.txt
           if-no-files-found: error
 
       - name: Publish Owner APK release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: owner-v1.5-7-${{ github.run_number }}
-          name: GIO BD Owner v1.5 (Build ${{ github.run_number }})
+          tag_name: owner-v1.6-8-${{ github.run_number }}
+          name: GIO BD Owner v1.6 (Build ${{ github.run_number }})
           body: |
             GIO BD Owner signed Android release.
-            Version: 1.5
-            Version code: 7
-          files: android/app/build/outputs/apk/release/GIO-BD-Owner.apk
+            Version: 1.6
+            Version code: 8
+            Package: com.giobd.admin
+            App name: GIO BD Owner
+            APK archive integrity and release signature verified during build.
+          files: |
+            release/GIO-BD-Owner.apk
+            release/SHA256SUMS.txt
           make_latest: true
