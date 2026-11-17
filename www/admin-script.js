@@ -2,6 +2,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import {
   getAuth,
   signInWithCustomToken,
+  signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut,
   setPersistence,
@@ -120,6 +121,44 @@ const ownerOtpInput = $("ownerOtpCode");
 const ownerSendOtpButton = $("ownerSendOtpBtn");
 const ownerVerifyOtpButton = $("ownerVerifyOtpBtn");
 const ownerOtpVerifySection = $("ownerOtpVerifySection");
+const ownerPasswordInput = $("ownerPassword");
+const ownerPasswordLoginButton = $("ownerPasswordLoginBtn");
+
+if (ownerPasswordLoginButton) {
+  ownerPasswordLoginButton.addEventListener("click", async () => {
+    const email = ownerEmailInput?.value.trim().toLowerCase();
+    const password = ownerPasswordInput?.value || "";
+    if (!email) {
+      showMessage(loginMessage, "প্রথমে Owner Gmail লিখুন।");
+      ownerEmailInput?.focus();
+      return;
+    }
+    if (!password) {
+      showMessage(loginMessage, "Owner Password লিখুন।");
+      ownerPasswordInput?.focus();
+      return;
+    }
+    ownerPasswordLoginButton.disabled = true;
+    showMessage(loginMessage, "Gmail ও Password দিয়ে লগইন করা হচ্ছে...", true);
+    try {
+      await persistenceReady;
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error("Owner password login error:", error);
+      const messages = {
+        "auth/invalid-credential": "Gmail অথবা Password সঠিক নয়।",
+        "auth/user-not-found": "এই Gmail-এর Firebase অ্যাকাউন্ট পাওয়া যায়নি।",
+        "auth/wrong-password": "Password সঠিক নয়।",
+        "auth/too-many-requests": "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+        "auth/invalid-email": "সঠিক Gmail লিখুন।",
+        "auth/network-request-failed": "ইন্টারনেট সংযোগ পরীক্ষা করুন।"
+      };
+      showMessage(loginMessage, messages[error.code] || ("Password দিয়ে লগইন করা যায়নি: " + (error.message || error.code || "অজানা সমস্যা")));
+    } finally {
+      ownerPasswordLoginButton.disabled = false;
+    }
+  });
+}
 
 async function ownerAuthRequest(path, payload) {
   const response = await fetch(OWNER_AUTH_API_BASE_URL + path, {
