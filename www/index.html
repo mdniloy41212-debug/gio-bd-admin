@@ -43,11 +43,25 @@
     <h2 class="owner-login-heading">Owner Login</h2>
     <p class="owner-login-description">শুধুমাত্র অনুমোদিত Owner প্রবেশ করতে পারবেন।</p>
     <div id="ownerPasswordLogin">
+      <h3>Gmail ও Password দিয়ে লগইন</h3>
       <label for="adminEmail">Owner Gmail</label>
       <input id="adminEmail" type="email" placeholder="Owner Gmail লিখুন" autocomplete="username" required>
       <label for="ownerPassword">Password</label>
       <input id="ownerPassword" type="password" placeholder="আপনার Password লিখুন" autocomplete="current-password" required>
-      <button id="ownerPasswordLoginBtn" type="button">Gmail ও Password দিয়ে লগইন</button>
+      <button id="ownerPasswordLoginBtn" type="button">Gmail ও Password দিয়ে লগইন সাবমিট</button>
+    </div>
+    <div id="ownerOtpLogin" class="owner-otp-login" aria-label="Gmail OTP Login">
+      <h3>Gmail OTP দিয়ে লগইন</h3>
+      <p>এই লগইন পদ্ধতিটি পরবর্তীতে সক্রিয় করা হবে।</p>
+      <fieldset disabled>
+        <label for="ownerOtpEmail">Owner Gmail</label>
+        <input id="ownerOtpEmail" type="email" placeholder="Owner Gmail লিখুন" autocomplete="email">
+        <button id="ownerSendOtpBtn" type="button" disabled>OTP পাঠান</button>
+        <label for="ownerOtpCode">OTP কোড</label>
+        <input id="ownerOtpCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="Gmail-এ পাওয়া OTP লিখুন">
+        <button id="ownerVerifyOtpBtn" type="button" disabled>OTP যাচাই করুন ও লগইন সাবমিট</button>
+      </fieldset>
+      <small>OTP Login বর্তমানে নিষ্ক্রিয়। Password Login ব্যবহার করুন।</small>
     </div>
     <p id="loginMessage" role="status" aria-live="polite"></p>
   </section>
