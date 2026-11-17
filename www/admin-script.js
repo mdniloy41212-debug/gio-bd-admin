@@ -681,7 +681,7 @@ if (yellowPackageForm) {
     event.preventDefault();
     if (!isAdmin) return;
     const message = $("yellowPackageMessage"), slots = [];
-    for (let slot = 1; slot <= 5; slot++) {
+    for (let slot = 1; slot <= 3; slot++) {
       const quantityRaw = $("yellowPackageDiamond" + slot)?.value.trim() || "";
       const priceRaw = $("yellowPackagePrice" + slot)?.value.trim() || "";
       if (!quantityRaw && !priceRaw) { slots.push({slot,active:false}); continue; }
@@ -698,7 +698,9 @@ if (yellowPackageForm) {
         price:item.active?item.price:0, updatedAt:serverTimestamp(),
         updatedBy:auth.currentUser?.uid || ""
       });
-      // Retire legacy slots 4–5 so only the three configured Yellow packages remain active.\n      for (const slot of [4, 5]) await setDoc(doc(db,"yellowDiamondPackages","yellow_package_slot_"+slot), {slot,active:false,diamondQuantity:0,name:"",price:0,updatedAt:serverTimestamp(),updatedBy:auth.currentUser?.uid || ""});\n      showMessage(message, "৩টি Yellow Diamond প্যাকেজ সংরক্ষণ হয়েছে।", true);
+      // Retire legacy slots 4–5 so only the three configured Yellow packages remain active.
+      for (const slot of [4, 5]) await setDoc(doc(db,"yellowDiamondPackages","yellow_package_slot_"+slot), {slot,active:false,diamondQuantity:0,name:"",price:0,updatedAt:serverTimestamp(),updatedBy:auth.currentUser?.uid || ""});
+      showMessage(message, "৩টি Yellow Diamond প্যাকেজ সংরক্ষণ হয়েছে।", true);
       await loadYellowDiamondPackages();
     } catch(error) {
       console.error("Save Yellow Diamond packages:", error);
