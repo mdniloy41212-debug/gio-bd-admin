@@ -172,20 +172,32 @@
   <p id="supportContactMessage"></p>
   </details>
 
-  <details class="inbox-folder"><summary>💎 প্যাকেজ পরিচালনা</summary>
-  <h3>নতুন প্যাকেজ যোগ করুন</h3>
+  <details class="inbox-folder"><summary>💎 ৫টি Diamond প্যাকেজ পরিচালনা</summary>
+    <p>প্রতিটি প্যাকেজে Diamond সংখ্যা ও মূল্য লিখুন। কোনো প্যাকেজ ফাঁকা রাখলে সেটি Agent App-এ দেখাবে না।</p>
     <form id="packageForm">
-      <label for="newPackageName">প্যাকেজের নাম</label>
-      <input id="newPackageName" type="text" placeholder="যেমন: 1000 Diamonds" required>
-      <label for="newPackageQuantity">Diamond পরিমাণ</label>
-      <input id="newPackageQuantity" type="number" min="1" step="1" placeholder="যেমন: 1000" required>
-      <label for="newPackagePrice">প্যাকেজের মূল্য</label>
-      <input id="newPackagePrice" type="number" min="1" placeholder="মূল্য লিখুন" required>
-      <button type="submit">প্যাকেজ যোগ করুন</button>
+      <div class="package-slot-editor"><h3>প্যাকেজ 1</h3>
+        <label for="packageDiamond1">Diamond সংখ্যা</label><input id="packageDiamond1" type="number" min="1" step="1" placeholder="যেমন: 1000">
+        <label for="packagePrice1">টাকা (৳)</label><input id="packagePrice1" type="number" min="0.01" step="0.01" placeholder="যেমন: 500">
+      </div>
+      <div class="package-slot-editor"><h3>প্যাকেজ 2</h3>
+        <label for="packageDiamond2">Diamond সংখ্যা</label><input id="packageDiamond2" type="number" min="1" step="1" placeholder="যেমন: 1000">
+        <label for="packagePrice2">টাকা (৳)</label><input id="packagePrice2" type="number" min="0.01" step="0.01" placeholder="যেমন: 500">
+      </div>
+      <div class="package-slot-editor"><h3>প্যাকেজ 3</h3>
+        <label for="packageDiamond3">Diamond সংখ্যা</label><input id="packageDiamond3" type="number" min="1" step="1" placeholder="যেমন: 1000">
+        <label for="packagePrice3">টাকা (৳)</label><input id="packagePrice3" type="number" min="0.01" step="0.01" placeholder="যেমন: 500">
+      </div>
+      <div class="package-slot-editor"><h3>প্যাকেজ 4</h3>
+        <label for="packageDiamond4">Diamond সংখ্যা</label><input id="packageDiamond4" type="number" min="1" step="1" placeholder="যেমন: 1000">
+        <label for="packagePrice4">টাকা (৳)</label><input id="packagePrice4" type="number" min="0.01" step="0.01" placeholder="যেমন: 500">
+      </div>
+      <div class="package-slot-editor"><h3>প্যাকেজ 5</h3>
+        <label for="packageDiamond5">Diamond সংখ্যা</label><input id="packageDiamond5" type="number" min="1" step="1" placeholder="যেমন: 1000">
+        <label for="packagePrice5">টাকা (৳)</label><input id="packagePrice5" type="number" min="0.01" step="0.01" placeholder="যেমন: 500">
+      </div>
+      <button type="submit">৫টি প্যাকেজ সংরক্ষণ করুন</button>
     </form>
-    <p id="packageMessage"></p>
-    <h3>প্যাকেজ পরিচালনা</h3>
-    <div id="adminPackages">প্যাকেজ লোড হচ্ছে...</div>
+    <p id="packageMessage"></p><h3>বর্তমান প্যাকেজ</h3><div id="adminPackages">প্যাকেজ লোড হচ্ছে...</div>
   </details>
   </section>
 </main>
