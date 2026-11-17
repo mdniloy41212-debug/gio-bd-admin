@@ -42,15 +42,12 @@
     </div>
     <h2 class="owner-login-heading">Owner Login</h2>
     <p class="owner-login-description">শুধুমাত্র অনুমোদিত Owner প্রবেশ করতে পারবেন।</p>
-    <div id="ownerOtpLogin">
+    <div id="ownerPasswordLogin">
       <label for="adminEmail">Owner Gmail</label>
-      <input id="adminEmail" type="email" placeholder="Owner Gmail লিখুন" autocomplete="email" required>
-      <button id="ownerSendOtpBtn" type="button">OTP পাঠান</button>
-      <div id="ownerOtpVerifySection" hidden>
-        <label for="ownerOtpCode">৬ সংখ্যার OTP</label>
-        <input id="ownerOtpCode" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="৬ সংখ্যার OTP লিখুন" autocomplete="one-time-code">
-        <button id="ownerVerifyOtpBtn" type="button">OTP যাচাই করে লগইন</button>
-      </div>
+      <input id="adminEmail" type="email" placeholder="Owner Gmail লিখুন" autocomplete="username" required>
+      <label for="ownerPassword">Password</label>
+      <input id="ownerPassword" type="password" placeholder="আপনার Password লিখুন" autocomplete="current-password" required>
+      <button id="ownerPasswordLoginBtn" type="button">Gmail ও Password দিয়ে লগইন</button>
     </div>
     <p id="loginMessage" role="status" aria-live="polite"></p>
   </section>
