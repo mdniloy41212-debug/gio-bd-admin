@@ -138,7 +138,7 @@ async function ownerAuthRequest(path, payload) {
   return result;
 }
 
-if (ownerSendOtpButton) {
+if (ownerSendOtpButton && !window.__gioOtpSendHandlerAttached) {
   ownerSendOtpButton.addEventListener("click", async () => {
     const email = ownerEmailInput?.value.trim().toLowerCase();
     if (!email) {
