@@ -521,81 +521,50 @@ if (paymentSettingsForm) {
 async function loadAdminPackages() {
   const container = $("adminPackages");
   if (!container || !isAdmin) return;
-
   container.textContent = "প্যাকেজ লোড হচ্ছে...";
-
   try {
     const snapshot = await getDocs(collection(db, "packages"));
+    const bySlot = new Map();
+    snapshot.forEach(item => { const slot = Number(item.data().slot); if (Number.isInteger(slot) && slot >= 1 && slot <= 5) bySlot.set(slot, item.data()); });
     container.replaceChildren();
-
-    if (snapshot.empty) {
-      container.textContent = "এখনো কোনো প্যাকেজ যোগ করা হয়নি।";
-      return;
-    }
-
-    snapshot.forEach((item) => {
-      const data = item.data();
-      const card = document.createElement("div");
-      card.className = "order-card";
-
+    for (let slot = 1; slot <= 5; slot++) {
+      const data = bySlot.get(slot) || {};
+      const card = document.createElement("div"); card.className = "order-card";
+      const title = document.createElement("h4"); title.textContent = "প্যাকেজ " + slot;
       const details = document.createElement("p");
-      details.textContent =
-        (data.name || "নাম নেই") + " (" + (Number(data.diamondQuantity) || Number(String(data.name || "").match(/[0-9]+/)?.[0]) || "পরিমাণ নেই") + " Diamond) - ৳" + (data.price ?? "নেই");
-
-      card.appendChild(details);
-      card.appendChild(makeButton("Delete", async () => {
-        if (!confirm("এই প্যাকেজটি মুছে ফেলবেন?")) return;
-
-        try {
-          await deleteDoc(doc(db, "packages", item.id));
-          await loadAdminPackages();
-        } catch (error) {
-          console.error("Delete package error:", error);
-          alert("প্যাকেজ মুছে ফেলা যায়নি।");
-        }
-      }));
-
-      container.appendChild(card);
-    });
-  } catch (error) {
-    console.error("Packages error:", error);
-    container.textContent = "প্যাকেজ লোড করা যায়নি।";
-  }
+      details.textContent = data.active !== false && data.diamondQuantity && data.price ? Number(data.diamondQuantity) + " Diamond — ৳" + Number(data.price) : "এখনো সেট করা হয়নি / বন্ধ";
+      card.append(title, details); container.appendChild(card);
+    }
+  } catch (error) { console.error("Packages error:", error); container.textContent = "প্যাকেজ লোড করা যায়নি।"; }
 }
 
 const packageForm = $("packageForm");
-
 if (packageForm) {
-  packageForm.addEventListener("submit", async (event) => {
+  packageForm.addEventListener("submit", async event => {
     event.preventDefault();
-
     if (!isAdmin) return;
-
-    const name = $("newPackageName")?.value.trim();
-    const diamondQuantity = Number($("newPackageQuantity")?.value) || Number(String(name || "").match(/[0-9]+/)?.[0]) || 0;
-    const price = Number($("newPackagePrice")?.value);
-    const message = $("packageMessage");
-
-    if (!name || !Number.isFinite(price) || price <= 0 || !Number.isFinite(diamondQuantity) || diamondQuantity <= 0) {
-      showMessage(message, "সঠিক প্যাকেজের নাম ও মূল্য দিন।");
-      return;
+    const message = $("packageMessage"), slots = [];
+    for (let slot = 1; slot <= 5; slot++) {
+      const quantityRaw = $("packageDiamond" + slot)?.value.trim() || "";
+      const priceRaw = $("packagePrice" + slot)?.value.trim() || "";
+      if (!quantityRaw && !priceRaw) { slots.push({ slot, active: false }); continue; }
+      const diamondQuantity = Number(quantityRaw), price = Number(priceRaw);
+      if (!Number.isSafeInteger(diamondQuantity) || diamondQuantity <= 0 || !Number.isFinite(price) || price <= 0) {
+        showMessage(message, "প্যাকেজ " + slot + ": Diamond সংখ্যা ও সঠিক টাকা লিখুন।"); return;
+      }
+      slots.push({ slot, active: true, diamondQuantity, price });
     }
-
     try {
-      await addDoc(collection(db, "packages"), {
-        name,
-        diamondQuantity,
-        price,
-        active: true,
-        createdAt: serverTimestamp()
+      for (const item of slots) await setDoc(doc(db, "packages", "package_slot_" + item.slot), {
+        slot: item.slot, active: item.active, diamondQuantity: item.active ? item.diamondQuantity : 0,
+        name: item.active ? item.diamondQuantity + " Diamond" : "", price: item.active ? item.price : 0,
+        updatedAt: serverTimestamp()
       });
-
-      packageForm.reset();
-      showMessage(message, "প্যাকেজ সফলভাবে যোগ হয়েছে।", true);
+      showMessage(message, "৫টি প্যাকেজের সেটিংস সংরক্ষণ হয়েছে।", true);
       await loadAdminPackages();
     } catch (error) {
-      console.error("Add package error:", error);
-      showMessage(message, "প্যাকেজ যোগ করা যায়নি।");
+      console.error("Save five packages:", error);
+      showMessage(message, "প্যাকেজ সংরক্ষণ হয়নি। Firestore Rules পরীক্ষা করুন।");
     }
   });
 }
