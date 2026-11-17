@@ -171,6 +171,7 @@ onAuthStateChanged(auth, async (user) => {
   await loadDashboardStats();
   await loadPaymentSettings();
   await loadAdminPackages();
+  await loadYellowDiamondPackages();
   await loadSupportContact();
 });
 
@@ -514,6 +515,66 @@ if (paymentSettingsForm) {
     } catch (error) {
       console.error("Payment save:", error);
       showMessage($("paymentMessage"), "সংরক্ষণ হয়নি। Firestore Rules পরীক্ষা করুন।");
+    }
+  });
+}
+
+async function loadYellowDiamondPackages() {
+  const container = $("adminYellowPackages");
+  if (!container || !isAdmin) return;
+  container.textContent = "Yellow Diamond প্যাকেজ লোড হচ্ছে...";
+  try {
+    const snapshot = await getDocs(collection(db, "yellowDiamondPackages"));
+    const bySlot = new Map();
+    snapshot.forEach(item => { const slot = Number(item.data().slot); if (Number.isInteger(slot) && slot >= 1 && slot <= 5) bySlot.set(slot, item.data()); });
+    container.replaceChildren();
+    for (let slot = 1; slot <= 5; slot++) {
+      const data = bySlot.get(slot) || {};
+      const quantity = $("yellowPackageDiamond" + slot), price = $("yellowPackagePrice" + slot);
+      if (quantity) quantity.value = data.active !== false && data.diamondQuantity ? String(data.diamondQuantity) : "";
+      if (price) price.value = data.active !== false && data.price ? String(data.price) : "";
+      const card = document.createElement("div"); card.className = "order-card";
+      const title = document.createElement("h4"); title.textContent = "Yellow প্যাকেজ " + slot;
+      const details = document.createElement("p");
+      details.textContent = data.active !== false && data.diamondQuantity && data.price
+        ? Number(data.diamondQuantity) + " Yellow Diamond — ৳" + Number(data.price)
+        : "এখনো সেট করা হয়নি / বন্ধ";
+      card.append(title, details); container.appendChild(card);
+    }
+  } catch (error) {
+    console.error("Yellow Diamond packages:", error);
+    container.textContent = "Yellow Diamond প্যাকেজ লোড করা যায়নি। Firestore Rules পরীক্ষা করুন।";
+  }
+}
+
+const yellowPackageForm = $("yellowPackageForm");
+if (yellowPackageForm) {
+  yellowPackageForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!isAdmin) return;
+    const message = $("yellowPackageMessage"), slots = [];
+    for (let slot = 1; slot <= 5; slot++) {
+      const quantityRaw = $("yellowPackageDiamond" + slot)?.value.trim() || "";
+      const priceRaw = $("yellowPackagePrice" + slot)?.value.trim() || "";
+      if (!quantityRaw && !priceRaw) { slots.push({slot,active:false}); continue; }
+      const diamondQuantity = Number(quantityRaw), price = Number(priceRaw);
+      if (!Number.isSafeInteger(diamondQuantity) || diamondQuantity <= 0 || !Number.isFinite(price) || price <= 0) {
+        showMessage(message, "Yellow প্যাকেজ " + slot + ": সঠিক Diamond সংখ্যা ও টাকা লিখুন।"); return;
+      }
+      slots.push({slot,active:true,diamondQuantity,price});
+    }
+    try {
+      for (const item of slots) await setDoc(doc(db,"yellowDiamondPackages","yellow_package_slot_"+item.slot), {
+        slot:item.slot, active:item.active, diamondQuantity:item.active?item.diamondQuantity:0,
+        name:item.active?item.diamondQuantity+" Yellow Diamond":"",
+        price:item.active?item.price:0, updatedAt:serverTimestamp(),
+        updatedBy:auth.currentUser?.uid || ""
+      });
+      showMessage(message, "৫টি Yellow Diamond প্যাকেজ সংরক্ষণ হয়েছে।", true);
+      await loadYellowDiamondPackages();
+    } catch(error) {
+      console.error("Save Yellow Diamond packages:", error);
+      showMessage(message, "Yellow Diamond প্যাকেজ সংরক্ষণ হয়নি। Firestore Rules পরীক্ষা করুন।");
     }
   });
 }
