@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, query, orderBy,
-  onSnapshot, doc, getDoc, serverTimestamp
+  onSnapshot, doc, getDoc, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const config = {
@@ -21,13 +21,41 @@ const db = getFirestore(app);
 const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
-adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">🏠<span>Home</span></button><button type="button" data-admin-tab="offers">🎁<span>Offers</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button><button type="button" data-admin-tab="inbox">📥<span>Inbox</span></button><button type="button" data-admin-tab="profile">👤<span>Profile</span></button>';
+adminBottomNav.innerHTML = '<button type="button" data-admin-tab="inbox">📥<span>Inbox</span></button><button type="button" data-admin-tab="contact">👥<span>Contact</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button>';
 adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const adminProfilePage = document.createElement("section");
 adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
 adminProfilePage.innerHTML = '<div class="admin-profile-strip"><div class="admin-profile-avatar">👤</div><div><strong>GIO BD OWNER</strong><p>Owner Account Profile</p></div></div><h2>👤 Profile</h2><div class="order-card"><strong>Admin Email</strong><p id="gioOwnerProfileEmail">Admin account</p><p>নিরাপত্তার জন্য অ্যাডমিন অ্যাকাউন্টের অনুমতি Firebase থেকে যাচাই করা হয়।</p></div><div class="order-card"><strong>Help & Support</strong><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><a id="gioOwnerProfileWhatsApp" href="#" target="_blank" rel="noopener">WhatsApp Support</a><a href="https://www.facebook.com/profile.php?id=61582121766890" target="_blank" rel="noopener">Facebook Page</a></div><button type="button" id="gioOwnerProfileLogout">🚪 Logout</button>';
 main?.appendChild(adminProfilePage);
+const adminContactPage = document.createElement("section");
+adminContactPage.id = "adminContactPage"; adminContactPage.className = "page"; adminContactPage.hidden = true;
+adminContactPage.innerHTML = '<h2>👥 Customer Contact</h2><div class="order-card"><strong>মোট কাস্টমার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন কাস্টমার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div>';
+main?.appendChild(adminContactPage);
+async function loadOwnerContacts(){
+ const list=document.getElementById("gioOwnerContactList");
+ const total=document.getElementById("gioOwnerTotalCustomers");
+ const online=document.getElementById("gioOwnerOnlineCustomers");
+ if(!list)return;
+ list.textContent="কাস্টমার তালিকা লোড হচ্ছে…";
+ try{
+  const snap=await getDocs(collection(db,"customerProfiles"));
+  const users=snap.docs.map(item=>({id:item.id,data:item.data()}));
+  if(total)total.textContent=String(users.length);
+  const onlineUsers=users.filter(user=>user.data.isOnline===true);
+  if(online)online.textContent=String(onlineUsers.length)+" (যাদের isOnline স্ট্যাটাস সংরক্ষিত আছে)";
+  list.replaceChildren();
+  if(!users.length){list.textContent="এখনো কোনো কাস্টমার প্রোফাইল নেই।";return;}
+  users.forEach(({id,data})=>{
+   const card=document.createElement("article");card.className="order-card";
+   const name=document.createElement("strong");name.textContent=data.displayName||data.name||"নাম দেওয়া হয়নি";
+   const details=document.createElement("p");details.textContent=(data.email||"ইমেইল নেই")+" · "+(data.phone||data.mobile||"ফোন নেই");
+   const status=document.createElement("p");status.textContent=data.isOnline===true?"🟢 Online":"⚪ Offline / status unavailable";
+   card.append(name,details,status);list.appendChild(card);
+  });
+ }catch(error){console.error("Owner contacts:",error);list.textContent="কাস্টমার তালিকা পড়া যায়নি। customerProfiles Firestore Rules পরীক্ষা করুন।";if(total)total.textContent="—";if(online)online.textContent="—";}
+}
+
 const adminNavStyle = document.createElement("style");
 adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
 adminNavStyle.textContent += '.gio-owner-page-back{display:inline-flex;align-items:center;margin:4px 0 14px;padding:10px 15px;border:1px solid #70ddff66;border-radius:12px;background:linear-gradient(135deg,#174a83,#34206e);color:#fff;font-weight:700}.gio-admin-bottom-nav button.is-active{outline:2px solid #ffd66b;background:linear-gradient(145deg,#72521a,#5a327f);box-shadow:0 0 14px #ffd66b55}.admin-order-alert{display:block;width:100%;margin:0 0 12px;padding:13px;border:1px solid #ffcf6a88;border-radius:13px;background:linear-gradient(110deg,#9a4b13,#6234a8);font-weight:800}.notification-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:20px;background:#ff3158;color:#fff;font-size:11px;font-weight:900}.notification-count[hidden]{display:none!important}';
@@ -66,9 +94,9 @@ function goBackOwnerPage() {
 }
 window.addEventListener("popstate", () => goBackOwnerPage());
 function showAdminTab(tab, options = {}){
- const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage");
+ const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage"), contacts=adminContactPage;
  adminBottomNav.querySelectorAll("[data-admin-tab]").forEach(button=>button.classList.toggle("is-active",button.dataset.adminTab===tab));
- [login,dash,settings,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
+ [login,dash,settings,inbox,adminProfilePage,contacts].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
  if(tab==="orders"&&dash){dash.hidden=false;dash.classList.add("active");document.getElementById("adminOrders")?.scrollIntoView({behavior:"smooth",block:"start"});}
  if(tab==="offers"&&settings){settings.hidden=false;settings.classList.add("active");document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
@@ -76,6 +104,7 @@ function showAdminTab(tab, options = {}){
  if(tab==="manage"&&settings){settings.hidden=false;settings.classList.add("active");document.getElementById("adminPackages")?.scrollIntoView({behavior:"smooth",block:"start"});}
  if(tab==="settings"&&settings){settings.hidden=false;settings.classList.add("active");}
  if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";}
+ if(tab==="contact"){contacts.hidden=false;contacts.classList.add("active");loadOwnerContacts();}
  if(tab==="inbox"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
  if (!options.fromBack && activeOwnerTab !== tab) {
    ownerPageHistory.push(activeOwnerTab);
