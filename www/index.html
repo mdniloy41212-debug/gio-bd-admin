@@ -52,16 +52,16 @@
     </div>
     <div id="ownerOtpLogin" class="owner-otp-login" aria-label="Gmail OTP Login">
       <h3>Gmail OTP দিয়ে লগইন</h3>
-      <p>এই লগইন পদ্ধতিটি পরবর্তীতে সক্রিয় করা হবে।</p>
-      <fieldset disabled>
+      <p>আপনার Owner Gmail-এ ৬ সংখ্যার OTP পাঠানো হবে।</p>
+      <fieldset>
         <label for="ownerOtpEmail">Owner Gmail</label>
         <input id="ownerOtpEmail" type="email" placeholder="Owner Gmail লিখুন" autocomplete="email">
-        <button id="ownerSendOtpBtn" type="button" disabled>OTP পাঠান</button>
+        <button id="ownerSendOtpBtn" type="button">OTP পাঠান</button>
         <label for="ownerOtpCode">OTP কোড</label>
         <input id="ownerOtpCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="Gmail-এ পাওয়া OTP লিখুন">
-        <button id="ownerVerifyOtpBtn" type="button" disabled>OTP যাচাই করুন ও লগইন সাবমিট</button>
+        <button id="ownerVerifyOtpBtn" type="button">OTP যাচাই করুন ও লগইন সাবমিট</button>
       </fieldset>
-      <small>OTP Login বর্তমানে নিষ্ক্রিয়। Password Login ব্যবহার করুন।</small>
+      <small>OTP পাওয়ার পর ৬ সংখ্যার কোড দিয়ে যাচাই করুন।</small>
     </div>
     <p id="loginMessage" role="status" aria-live="polite"></p>
   </section>
