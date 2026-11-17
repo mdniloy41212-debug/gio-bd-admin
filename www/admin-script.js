@@ -87,7 +87,20 @@ async function checkAdmin(user) {
 function showMessage(element, message, success = false) {
   if (!element) return;
   element.textContent = message;
-  element.style.color = success ? "green" : "red";
+  element.hidden = false;
+  element.setAttribute("role", "alert");
+  element.style.display = "block";
+  element.style.visibility = "visible";
+  element.style.opacity = "1";
+  element.style.padding = "12px";
+  element.style.margin = "12px 0";
+  element.style.borderRadius = "10px";
+  element.style.whiteSpace = "pre-wrap";
+  element.style.overflowWrap = "anywhere";
+  element.style.background = success ? "#123d2b" : "#4a1720";
+  element.style.border = success ? "1px solid #35c982" : "1px solid #ff6578";
+  element.style.color = "#ffffff";
+  element.style.fontWeight = "700";
 }
 
 function makeButton(label, onClick) {
@@ -172,13 +185,20 @@ onAuthStateChanged(auth, async (user) => {
   try {
     allowed = await checkAdmin(user);
   } catch (error) {
-    showMessage(loginMessage, error.message || "Owner অনুমতি যাচাই করা যায়নি।");
-    await signOut(auth);
+    console.error("Owner authorization check failed:", error);
+    const detail = error?.message || error?.code || "অজানা সমস্যা";
+    showMessage(loginMessage, "Owner অনুমতি যাচাই ব্যর্থ: " + detail + "\nFirestore Rules, users/admin UID ও role পরীক্ষা করুন।");
+    try {
+      await signOut(auth);
+    } catch (signOutError) {
+      console.error("Sign-out after authorization failure also failed:", signOutError);
+      showMessage(loginMessage, "Owner যাচাই ব্যর্থ: " + detail + "\nনিরাপত্তার কারণে সেশন বন্ধ করা যায়নি। অ্যাপ বন্ধ করে আবার খুলুন।");
+    }
     return;
   }
 
   if (!allowed) {
-    showMessage(loginMessage, "এই অ্যাকাউন্টের Owner অনুমতি নেই।");
+    showMessage(loginMessage, "এই অ্যাকাউন্টের Owner অনুমতি নেই। Firebase Authentication UID ও users/admin UID মিলিয়ে দেখুন।");
     await signOut(auth);
     return;
   }
@@ -203,6 +223,9 @@ onAuthStateChanged(auth, async (user) => {
   await loadAdminPackages();
   await loadYellowDiamondPackages();
   await loadSupportContact();
+}, (error) => {
+  console.error("Firebase Auth state listener failed:", error);
+  showMessage(loginMessage, "Firebase লগইন অবস্থা যাচাই করা যায়নি: " + (error?.code || error?.message || "অজানা সমস্যা"));
 });
 
 const settingsButton = $("adminSettingsButton");
