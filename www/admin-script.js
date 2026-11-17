@@ -98,7 +98,11 @@ function makeButton(label, onClick) {
   return button;
 }
 
-await setPersistence(auth, browserLocalPersistence);
+// Start persistence setup without blocking the module from registering UI handlers.
+const persistenceReady = setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("Firebase Auth persistence setup failed:", error);
+  return null; // Firebase Auth can still attempt sign-in with its default persistence.
+});
 
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
@@ -106,21 +110,47 @@ if (loginForm) {
 
     const email = $("adminEmail")?.value.trim();
     const password = $("adminPassword")?.value;
+    const submitButton = loginForm.querySelector('button[type="submit"]');
 
     if (!email || !password) {
       showMessage(loginMessage, "ইমেইল ও পাসওয়ার্ড দিন।");
       return;
     }
 
-    showMessage(loginMessage, "লগইন হচ্ছে...", true);
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.dataset.originalText ||= submitButton.textContent;
+      submitButton.textContent = "লগইন হচ্ছে...";
+    }
+    showMessage(loginMessage, "Firebase-এর সঙ্গে সংযোগ করে লগইন যাচাই করা হচ্ছে...", true);
 
     try {
+      await persistenceReady;
       await signInWithEmailAndPassword(auth, email, password);
+      showMessage(loginMessage, "লগইন সফল। Owner অনুমতি যাচাই হচ্ছে...", true);
     } catch (error) {
       console.error("Login error:", error);
-      showMessage(loginMessage, "লগইন হয়নি। ইমেইল ও পাসওয়ার্ড পরীক্ষা করুন।");
+      const messages = {
+        "auth/invalid-email": "ইমেইল ঠিকানাটি সঠিক নয়।",
+        "auth/user-not-found": "এই ইমেইলে কোনো Firebase অ্যাকাউন্ট পাওয়া যায়নি।",
+        "auth/wrong-password": "পাসওয়ার্ড সঠিক নয়।",
+        "auth/invalid-credential": "ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।",
+        "auth/user-disabled": "এই Owner অ্যাকাউন্টটি Firebase-এ বন্ধ করা আছে।",
+        "auth/too-many-requests": "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+        "auth/network-request-failed": "ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
+        "auth/operation-not-allowed": "Firebase Console-এ Email/Password sign-in চালু নেই।",
+        "auth/api-key-not-valid": "Firebase API Key বা প্রজেক্ট কনফিগারেশন সঠিক নয়।"
+      };
+      showMessage(loginMessage, messages[error.code] || ("লগইন ব্যর্থ: " + (error.code || error.message || "অজানা সমস্যা")));
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = submitButton.dataset.originalText || "লগইন করুন";
+      }
     }
   });
+} else {
+  console.error("Owner login form #loginForm was not found in index.html");
 }
 
 onAuthStateChanged(auth, async (user) => {
