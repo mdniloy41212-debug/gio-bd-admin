@@ -223,23 +223,32 @@
 <script type="module" src="admin-script.js"></script>
 <script>
 (() => {
-  // Keep OTP sending available even if an unrelated Firebase/Capacitor module import fails.
-  const button = document.getElementById("ownerSendOtpBtn");
-  const emailInput = document.getElementById("adminEmail");
-  const message = document.getElementById("loginMessage");
-  const otpSection = document.getElementById("ownerOtpVerifySection");
-  const otpInput = document.getElementById("ownerOtpCode");
-  if (!button) return;
-  window.__gioOtpSendHandlerAttached = true;
-  button.addEventListener("click", async () => {
+  // Capture the tap before any other page handler; always show immediate feedback.
+  document.addEventListener("click", async (event) => {
+    const button = event.target && event.target.closest ? event.target.closest("#ownerSendOtpBtn") : null;
+    if (!button || button.dataset.otpBusy === "1") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const emailInput = document.getElementById("adminEmail");
+    const message = document.getElementById("loginMessage");
+    const otpSection = document.getElementById("ownerOtpVerifySection");
+    const otpInput = document.getElementById("ownerOtpCode");
+    const show = (text, error = false) => {
+      if (!message) return;
+      message.hidden = false;
+      message.textContent = text;
+      message.setAttribute("role", "alert");
+      message.style.cssText = "display:block;visibility:visible;opacity:1;padding:12px;margin:12px 0;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;background:" + (error ? "#4a1720" : "#123d2b") + ";border:1px solid " + (error ? "#ff6578" : "#35c982") + ";color:#fff;font-weight:700;position:relative;z-index:20";
+    };
     const email = (emailInput?.value || "").trim().toLowerCase();
     if (!email) {
-      if (message) { message.textContent = "প্রথমে Owner Gmail লিখুন।"; message.hidden = false; }
+      show("প্রথমে অনুমোদিত Owner Gmail লিখুন।", true);
       emailInput?.focus();
       return;
     }
+    button.dataset.otpBusy = "1";
     button.disabled = true;
-    if (message) { message.textContent = "আপনার Gmail-এ OTP পাঠানো হচ্ছে..."; message.hidden = false; }
+    show("আপনার Gmail-এ OTP পাঠানোর অনুরোধ করা হচ্ছে...");
     try {
       const response = await fetch("https://gio-bd-owner-auth.onrender.com/api/owner/send-otp", {
         method: "POST",
@@ -249,15 +258,16 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.ok === false) throw new Error(result.message || result.error || ("সার্ভার ত্রুটি: " + response.status));
       if (otpSection) otpSection.hidden = false;
-      if (message) message.textContent = "OTP পাঠানো হয়েছে। Gmail Inbox ও Spam পরীক্ষা করুন।";
+      show("OTP পাঠানো হয়েছে। Gmail Inbox ও Spam পরীক্ষা করুন।");
       otpInput?.focus();
     } catch (error) {
       console.error("Owner OTP send failed:", error);
-      if (message) message.textContent = "OTP পাঠানো যায়নি: " + (error.message || "নেটওয়ার্ক সমস্যা");
+      show("OTP পাঠানো যায়নি: " + (error.message || "নেটওয়ার্ক বা সার্ভার সমস্যা"), true);
     } finally {
       button.disabled = false;
+      delete button.dataset.otpBusy;
     }
-  });
+  }, true);
 })();
 </script>
   <script type="module" src="appearance.js"></script>
