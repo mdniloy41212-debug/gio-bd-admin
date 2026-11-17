@@ -52,6 +52,7 @@ const authStatus = $("authStatus");
 const logoutBtn = $("logoutBtn");
 
 let isAdmin = false;
+let authStateRevision = 0;
 
 async function checkAdmin(user) {
   if (!user) return false;
@@ -167,6 +168,7 @@ if (loginForm) {
 }
 
 onAuthStateChanged(auth, async (user) => {
+  const revision = ++authStateRevision;
   isAdmin = false;
 
   if (!user) {
@@ -184,7 +186,10 @@ onAuthStateChanged(auth, async (user) => {
   let allowed = false;
   try {
     allowed = await checkAdmin(user);
+    // Ignore a slow result if Firebase has already reported a newer auth state.
+    if (revision !== authStateRevision) return;
   } catch (error) {
+    if (revision !== authStateRevision) return;
     console.error("Owner authorization check failed:", error);
     const detail = error?.message || error?.code || "অজানা সমস্যা";
     showMessage(loginMessage, "Owner অনুমতি যাচাই ব্যর্থ: " + detail + "\nFirestore Rules, users/admin UID ও role পরীক্ষা করুন।");
@@ -197,6 +202,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  if (revision !== authStateRevision) return;
   if (!allowed) {
     showMessage(loginMessage, "এই অ্যাকাউন্টের Owner অনুমতি নেই। Firebase Authentication UID ও users/admin UID মিলিয়ে দেখুন।");
     await signOut(auth);
