@@ -263,6 +263,7 @@ onAuthStateChanged(auth, async (user) => {
   await loadDashboardStats();
   await loadPaymentSettings();
   await loadAdminPackages();
+  await loadYellowDiamondPackages();
   await loadSupportContact();
 });
 
@@ -405,6 +406,7 @@ async function updateOrderStatus(orderId, status) {
         throw new Error("প্রথমে Transaction ID ও পেমেন্ট নিজে যাচাই করে ‘পেমেন্ট যাচাই করুন’ চাপুন।");
       }
       const paymentIsVerified = order.paymentVerified === true;
+      const isYellowDiamondOrder = String(order.packageType || "").toLowerCase() === "yellow";
       if (order.status === "Completed" && status !== "Completed") {
         throw new Error("Completed অর্ডারের স্ট্যাটাস পরিবর্তন করা যাবে না।");
       }
@@ -414,7 +416,7 @@ async function updateOrderStatus(orderId, status) {
       if (status === "Completed" && order.paymentVerified !== true) {
         throw new Error("Payment Verified না করে অর্ডার Completed করা যাবে না।");
       }
-      if (status === "Completed" && order.stockDeducted !== true) {
+      if (status === "Completed" && order.stockDeducted !== true && !isYellowDiamondOrder) {
         throw new Error("অর্ডার Approved হওয়ার সময় Diamond Stock কাটা হয়নি। আগে Stock ও Approval যাচাই করুন।");
       }
 
@@ -422,13 +424,15 @@ async function updateOrderStatus(orderId, status) {
       const shouldDeduct = status === "Approved"
         && paymentIsVerified
         && order.stockDeducted !== true
-        && order.status !== "Completed";
+        && order.status !== "Completed"
+        && !isYellowDiamondOrder;
 
       // If an approved, not-yet-completed order is cancelled/rejected, return its reserved stock.
       const shouldRestore = ["Cancelled", "Rejected"].includes(status)
         && order.status === "Approved"
         && order.stockDeducted === true
-        && order.stockRestored !== true;
+        && order.stockRestored !== true
+        && !isYellowDiamondOrder;
       const shouldDebitMoney = shouldDeduct && order.balanceDeducted !== true;
       const shouldRefundMoney = shouldRestore && order.balanceDeducted === true && order.balanceRefunded !== true;
 
@@ -801,6 +805,99 @@ async function loadAdminPackages() {
     console.error("Packages error:", error);
     container.textContent = "প্যাকেজ লোড করা যায়নি।";
   }
+}
+
+
+async function loadYellowDiamondPackages() {
+  const container = $("yellowDiamondAdminSlots");
+  if (!container || !isAdmin) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, "yellowDiamondPackages"));
+    const bySlot = new Map();
+    snapshot.forEach(item => {
+      const data = item.data();
+      const slot = Number(data.slot);
+      if (Number.isInteger(slot) && slot >= 1 && slot <= 5) bySlot.set(slot, data);
+    });
+
+    container.replaceChildren();
+    for (let slot = 1; slot <= 5; slot++) {
+      const data = bySlot.get(slot) || {};
+      const card = document.createElement("div");
+      card.className = "order-card";
+      const heading = document.createElement("strong");
+      heading.textContent = "Yellow Diamond প্যাকেজ " + slot;
+      const quantityLabel = document.createElement("label");
+      quantityLabel.htmlFor = "yellowPackageDiamond" + slot;
+      quantityLabel.textContent = "Diamond পরিমাণ";
+      const quantity = document.createElement("input");
+      quantity.id = "yellowPackageDiamond" + slot;
+      quantity.type = "number";
+      quantity.min = "1";
+      quantity.step = "1";
+      quantity.placeholder = "যেমন: 1000";
+      quantity.value = Number(data.diamondQuantity) > 0 ? String(data.diamondQuantity) : "";
+      const priceLabel = document.createElement("label");
+      priceLabel.htmlFor = "yellowPackagePrice" + slot;
+      priceLabel.textContent = "মূল্য (৳)";
+      const price = document.createElement("input");
+      price.id = "yellowPackagePrice" + slot;
+      price.type = "number";
+      price.min = "1";
+      price.step = "1";
+      price.placeholder = "যেমন: 100";
+      price.value = Number(data.price) > 0 ? String(data.price) : "";
+      const activeLabel = document.createElement("label");
+      const active = document.createElement("input");
+      active.id = "yellowPackageActive" + slot;
+      active.type = "checkbox";
+      active.checked = data.active === true;
+      activeLabel.append(active, document.createTextNode(" Agent App-এ চালু রাখুন"));
+      card.append(heading, quantityLabel, quantity, priceLabel, price, activeLabel);
+      container.appendChild(card);
+    }
+  } catch (error) {
+    console.error("Yellow Diamond packages load:", error);
+    showMessage($("yellowPackageMessage"), "Yellow Diamond প্যাকেজ লোড হয়নি। Firestore Rules পরীক্ষা করুন।");
+  }
+}
+
+const yellowPackageForm = $("yellowPackageForm");
+if (yellowPackageForm) {
+  yellowPackageForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!isAdmin) return;
+
+    const button = yellowPackageForm.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+    try {
+      for (let slot = 1; slot <= 5; slot++) {
+        const quantity = Number($("yellowPackageDiamond" + slot)?.value || 0);
+        const price = Number($("yellowPackagePrice" + slot)?.value || 0);
+        const active = Boolean($("yellowPackageActive" + slot)?.checked);
+        if (active && (!Number.isSafeInteger(quantity) || quantity <= 0 || !Number.isFinite(price) || price <= 0)) {
+          throw new Error("চালু করা প্রতিটি প্যাকেজে সঠিক Diamond পরিমাণ ও মূল্য দিন।");
+        }
+        await setDoc(doc(db, "yellowDiamondPackages", "yellow_package_slot_" + slot), {
+          slot,
+          active: active && quantity > 0 && price > 0,
+          diamondQuantity: quantity,
+          name: quantity > 0 ? quantity + " Yellow Diamond" : "Yellow Diamond",
+          price,
+          updatedAt: serverTimestamp(),
+          updatedBy: auth.currentUser?.uid || ""
+        }, { merge: true });
+      }
+      showMessage($("yellowPackageMessage"), "Yellow Diamond প্যাকেজগুলো সংরক্ষণ হয়েছে।", true);
+      await loadYellowDiamondPackages();
+    } catch (error) {
+      console.error("Yellow Diamond package save:", error);
+      showMessage($("yellowPackageMessage"), error.message || "Yellow Diamond প্যাকেজ সংরক্ষণ হয়নি।");
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
 }
 
 const packageForm = $("packageForm");
