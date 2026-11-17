@@ -497,66 +497,7 @@ $("trackForm").addEventListener("submit", async event => {
   }
 });
 
-// Admin Login
-$("loginForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  const button = event.target.querySelector(
-    'button[type="submit"]'
-  );
-
-  button.disabled = true;
-
-  message(
-    "loginMessage",
-    "Admin Login হচ্ছে..."
-  );
-
-  try {
-    const credential = await signInWithEmailAndPassword(
-      auth,
-      $("adminEmail").value.trim(),
-      $("adminPassword").value
-    );
-
-    const allowed = await checkAdmin(
-      credential.user
-    );
-
-    if (!allowed) {
-      await signOut(auth);
-
-      throw new Error(
-        "এই অ্যাকাউন্টটি Admin নয়।"
-      );
-    }
-
-    isAdmin = true;
-
-    message(
-      "loginMessage",
-      "Admin Login সফল হয়েছে।",
-      "success"
-    );
-
-    openPage("adminPage");
-    loadAdminOrders();
-    loadAdminPackages();
-
-  } catch (error) {
-    console.error(error);
-
-    message(
-      "loginMessage",
-      error.message === "Firebase: Error (auth/invalid-credential)."
-        ? "ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।"
-        : "Admin Login হয়নি: " + error.message,
-      "error"
-    );
-  } finally {
-    button.disabled = false;
-  }
-});
+// Legacy Owner email/password login disabled. Owner access is OTP-only.
 
 // Logout
 $("logoutBtn").addEventListener("click", async () => {
