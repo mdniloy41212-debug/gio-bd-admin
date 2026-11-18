@@ -585,24 +585,33 @@ async function loadDashboardStats() {
       number.textContent = String(value);
       card.append(title, number);
       if (label === "অবশিষ্ট Black Diamond Stock") {
-        const editButton = document.createElement("button");
-        editButton.type = "button";
-        editButton.className = "gio-stock-edit-button";
-        editButton.textContent = "✏️ Edit Diamond";
-        editButton.addEventListener("click", () => {
-          if (!isAdmin) return;
-          const input = $("diamondStockQuantity");
-          const current = input?.value || String(stock);
-          const next = window.prompt("নতুন Black Diamond Stock পরিমাণ লিখুন:", current);
-          if (next === null) return;
-          if (!/^\\d+$/.test(next.trim()) || !Number.isSafeInteger(Number(next))) {
-            alert("০ বা তার বেশি পূর্ণসংখ্যা Diamond দিন।");
-            return;
-          }
-          if (input) input.value = next.trim();
+        const controls = document.createElement("div");
+        controls.className = "gio-stock-controls";
+        const minus = document.createElement("button");
+        minus.type = "button"; minus.textContent = "−"; minus.setAttribute("aria-label","এক Diamond কমান");
+        const edit = document.createElement("input");
+        edit.type = "number"; edit.min = "0"; edit.step = "1"; edit.inputMode = "numeric";
+        edit.setAttribute("aria-label","Black Diamond Stock সংখ্যা");
+        edit.value = String(stock);
+        const plus = document.createElement("button");
+        plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label","এক Diamond বাড়ান");
+        const save = document.createElement("button");
+        save.type = "button"; save.className = "gio-stock-save"; save.textContent = "Save";
+        const updateEdit = delta => {
+          const next = Math.max(0, Number(edit.value || 0) + delta);
+          edit.value = String(next);
+        };
+        minus.addEventListener("click",()=>updateEdit(-1));
+        plus.addEventListener("click",()=>updateEdit(1));
+        save.addEventListener("click",()=>{
+          if(!isAdmin)return;
+          const target=$("diamondStockQuantity");
+          if(!target)return;
+          target.value=edit.value;
           $("diamondStockForm")?.requestSubmit();
         });
-        card.appendChild(editButton);
+        controls.append(minus,edit,plus,save);
+        card.appendChild(controls);
       }
       container.appendChild(card);
     });
