@@ -107,7 +107,7 @@ adminNavStyle.textContent += '.gio-owner-page-back{display:inline-flex;align-ite
 document.head.appendChild(adminNavStyle);
 const ownerProfileShortcut=document.getElementById("gioOwnerProfileShortcut");
 const ownerAdShortcut=document.getElementById("gioOwnerAdShortcut");
-ownerProfileShortcut?.addEventListener("click",()=>showAdminTab("profile"));
+ownerProfileShortcut?.addEventListener("click",()=>{showAdminTab("profile");const photo=document.getElementById("gioOwnerDetailPhoto");try{const saved=localStorage.getItem("gioOwnerProfilePhoto");if(saved&&photo){photo.src=saved;photo.hidden=false;}}catch(error){console.warn("Owner detail photo restore failed",error);}});
 ownerAdShortcut?.addEventListener("click",()=>showAdminTab("settings"));
 const ownerPhotoInput=document.getElementById("gioOwnerProfilePhotoInput");
 const ownerFramePhoto=document.getElementById("gioOwnerFramePhoto");
