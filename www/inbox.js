@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, query, orderBy, where,
-  onSnapshot, doc, getDoc, getDocs, serverTimestamp, updateDoc
+  onSnapshot, doc, getDoc, getDocs, serverTimestamp, updateDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const config = {
@@ -36,6 +36,17 @@ let stopOwnerContacts = null;
 let stopOwnerChat = null;
 let activeContactUid = null;
 function isContactOnline(data){const last=data.lastSeenAt?.toDate?.()?.getTime?.()||0;return data.isOnline===true&&last>0&&(Date.now()-last)<120000;}
+function attachOwnerMessageDelete(card,item) {
+ let holdTimer=null;
+ const cancelHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}};
+ card.addEventListener("pointerdown",()=>{cancelHold();holdTimer=setTimeout(()=>{
+  if(card.querySelector(".gio-owner-message-delete"))return;
+  const button=document.createElement("button");button.type="button";button.className="gio-owner-message-delete";button.textContent="Delete";
+  button.addEventListener("click",async event=>{event.stopPropagation();button.disabled=true;try{await deleteDoc(doc(db,"supportMessages",item.id));}catch(error){button.disabled=false;button.textContent="Delete failed";}});
+  card.appendChild(button);
+ },2000);});
+ ["pointerup","pointercancel","pointerleave"].forEach(name=>card.addEventListener(name,cancelHold));
+}
 function openOwnerUserChat(uid, profile) {
  activeContactUid = uid;
  const panel = document.getElementById("gioOwnerUserChat");
@@ -91,7 +102,7 @@ function openOwnerUserChat(uid, profile) {
     const receipt=document.createElement("small");receipt.className="gio-owner-chat-receipt"+(d.readAt?" is-seen":"");
     receipt.textContent=d.readAt?"Seen ✓✓":"Sent ✓";card.append(receipt);
    }
-   card.append(time);messages.appendChild(card);
+   card.append(time);attachOwnerMessageDelete(card,item);messages.appendChild(card);
   });
   if(!rows.length) messages.textContent="এখনো কোনো মেসেজ নেই।";
   messages.scrollTop=messages.scrollHeight;
@@ -180,7 +191,7 @@ ownerChatStyle.textContent=`
  .gio-owner-chat-time,.gio-owner-chat-receipt{font-size:9px;opacity:.85}
  .gio-owner-chat-receipt{color:#d6eaff}.gio-owner-chat-receipt.is-seen{color:#45dcff;font-weight:800}
  .gio-owner-chat-screen{position:fixed!important;inset:0!important;z-index:3000!important;margin:0!important;width:100%!important;max-width:none!important;max-height:100dvh!important;overflow:auto!important;border-radius:0!important;background:#08152c!important;padding:12px!important;box-sizing:border-box!important}
- .gio-owner-chat-header{display:flex;align-items:center;gap:10px;padding:8px 2px 12px;border-bottom:1px solid #ffffff22}.gio-owner-chat-avatar,.gio-owner-profile-large-avatar{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#1877a8,#51318d);font-weight:800}.gio-owner-chat-avatar img,.gio-owner-profile-large-avatar img{width:100%;height:100%;object-fit:cover}.gio-owner-chat-heading{display:flex;flex:1;min-width:0;flex-direction:column}.gio-owner-chat-heading small{font-size:10px;opacity:.7}.gio-owner-chat-header button{min-width:38px;padding:7px;font-size:18px}.gio-owner-customer-profile,.gio-owner-chat-settings{padding:12px;margin:8px 0;border-radius:12px;background:#fff;color:#14213b;text-align:center}.gio-owner-customer-profile{display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column}.gio-owner-chat-date-divider{align-self:center;margin:12px auto 6px;padding:4px 11px;border-radius:20px;background:#ffffff18;color:#c9d8ec;font-size:10px;font-weight:700}
+ .gio-owner-chat-header{display:flex;align-items:center;gap:10px;padding:8px 2px 12px;border-bottom:1px solid #ffffff22}.gio-owner-chat-avatar,.gio-owner-profile-large-avatar{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#1877a8,#51318d);font-weight:800}.gio-owner-chat-avatar img,.gio-owner-profile-large-avatar img{width:100%;height:100%;object-fit:cover}.gio-owner-chat-heading{display:flex;flex:1;min-width:0;flex-direction:column}.gio-owner-chat-heading small{font-size:10px;opacity:.7}.gio-owner-chat-header button{min-width:38px;padding:7px;font-size:18px}.gio-owner-customer-profile,.gio-owner-chat-settings{padding:12px;margin:8px 0;border-radius:12px;background:#fff;color:#14213b;text-align:center}.gio-owner-customer-profile{display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column}.gio-owner-message-delete{align-self:flex-end;margin-top:5px;padding:4px 10px;border:1px solid #ff8b9b;border-radius:8px;background:#6b1d32;color:#fff;font-size:11px}.gio-owner-chat-date-divider{align-self:center;margin:12px auto 6px;padding:4px 11px;border-radius:20px;background:#ffffff18;color:#c9d8ec;font-size:10px;font-weight:700}
  #gioOwnerChatSendStatus{font-size:11px;min-height:15px;margin:3px 0;color:#bdeaff}
 `;
 document.head.appendChild(ownerChatStyle);
