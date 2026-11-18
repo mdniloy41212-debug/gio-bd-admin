@@ -31,6 +31,8 @@ main?.appendChild(adminProfilePage);
 const adminNavStyle = document.createElement("style");
 adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
 adminNavStyle.textContent += '#adminOrderAlert{display:none!important}';
+adminNavStyle.textContent += '.gio-chat-list{display:flex;flex-direction:column;gap:12px;max-height:62vh;overflow-y:auto;padding:12px 8px;background:rgba(4,14,35,.38);border:1px solid #70dfff33;border-radius:18px;scroll-behavior:smooth}.gio-chat-row{display:flex;flex-direction:column;max-width:86%;min-width:0}.gio-chat-row-incoming{align-self:flex-start;align-items:flex-start}.gio-chat-row-outgoing{align-self:flex-end;align-items:flex-end}.gio-chat-sender{font-size:11px;color:#b9eaff;margin:0 8px 4px}.gio-chat-bubble{padding:10px 13px;border-radius:17px;max-width:100%;overflow-wrap:anywhere;box-shadow:0 5px 14px #0004}.gio-chat-row-incoming .gio-chat-bubble{background:linear-gradient(145deg,#243c61,#172943);border:1px solid #80caff55;border-top-left-radius:5px;color:#fff}.gio-chat-row-outgoing .gio-chat-bubble{background:linear-gradient(145deg,#075f91,#164e87);border:1px solid #77e8ff66;border-top-right-radius:5px;color:#fff}.gio-chat-text{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.gio-chat-time{font-size:10px;color:#9fb4d0;margin:4px 7px}.gio-chat-row textarea{display:block;width:min(76vw,320px);margin-top:8px}.gio-chat-row>button{margin-top:5px}.gio-chat-bubble audio{width:100%;max-width:260px}.gio-chat-bubble .voice-message-duration{display:block;font-size:11px;color:#d4f4ff}');
+
 
 .owner-monitor-limits{margin:22px 0 18px;padding:16px;border:1px solid rgba(255,190,90,.5);border-radius:16px;background:linear-gradient(145deg,rgba(75,43,24,.72),rgba(34,24,58,.9));box-shadow:0 10px 26px rgba(0,0,0,.22)}.owner-monitor-limits h3{color:#ffd27a;margin:0 0 9px}.owner-monitor-limits p{color:#eee1d2;margin:0 0 10px}.owner-monitor-limits ul{padding-left:22px;margin:8px 0 14px}.owner-monitor-limits li{padding:5px 0;color:#fff;overflow-wrap:anywhere}.owner-monitor-can{padding:11px;border-radius:10px;background:rgba(14,105,77,.28);border:1px solid rgba(89,220,165,.35);color:#c9ffe7;font-weight:600}
 document.head.appendChild(adminNavStyle);
@@ -270,9 +272,9 @@ function renderMessages() {
   if (!list || !button) return;
   const unread = currentMessages.filter(item => item.data().senderRole === "customer" && !readNotificationIds.has(item.id)).length + currentPendingOrders.length;
   button.innerHTML = "📥 Inbox" + (unread ? ' <span class="notification-count">' + unread + "</span>" : "");
-  const visible = currentMessages.filter(item => activeInboxTab === "customer"
-    ? item.data().senderRole === "customer"
-    : item.data().senderRole === "admin");
+  const visible = [...currentMessages].sort((a,b) =>
+    (a.data().createdAt?.toMillis?.() || 0) - (b.data().createdAt?.toMillis?.() || 0)
+  );
   list.replaceChildren();
   if (activeInboxTab === "customer" && currentPendingOrders.length) {
     const heading = document.createElement("h3");
@@ -300,19 +302,26 @@ function renderMessages() {
   visible.forEach(item => {
     const data = item.data();
     const card = document.createElement("article");
-    card.className = "order-card notification-card";
+    card.className = "gio-chat-row " + (data.senderRole === "admin" ? "gio-chat-row-outgoing" : "gio-chat-row-incoming");
     const heading = document.createElement("strong");
-    heading.textContent = data.senderName || data.senderEmail || data.userUid || "কাস্টমার";
+    heading.className = "gio-chat-sender";
+    heading.textContent = data.senderRole === "admin" ? "আপনি" : (data.senderName || data.senderEmail || "কাস্টমার");
     const status = document.createElement("span");
     status.className = "notification-status";
     status.textContent = data.senderRole === "customer" && !readNotificationIds.has(item.id) ? "নতুন" : "";
+    const bubble = document.createElement("div");
+    bubble.className = "gio-chat-bubble";
     const message = document.createElement("p");
+    message.className = "gio-chat-text";
     message.textContent = data.text || "";
     const time = document.createElement("small");
     const date = data.createdAt?.toDate?.();
     time.textContent = date ? date.toLocaleString("bn-BD") : "সময়: সদ্য";
-    card.append(heading, status, message, time);
-    appendVoicePlayer(card, data);
+    card.append(heading, status, bubble);
+    bubble.append(message);
+    appendVoicePlayer(bubble, data);
+    time.className = "gio-chat-time";
+    card.append(time);
     if (data.senderRole === "customer") {
       const reply = document.createElement("textarea");
       reply.placeholder = "কাস্টমারকে উত্তর লিখুন";
@@ -363,11 +372,9 @@ if (main && !document.getElementById("adminInboxPage")) {
   section.id = "adminInboxPage";
   section.className = "page";
   section.hidden = true;
-  section.innerHTML = '<h2>Inbox</h2><p class="muted">কাস্টমারের মেসেজ ও আপনার পাঠানো মেসেজ আলাদা ট্যাবে থাকবে।</p><div class="inbox-tabs"><button type="button" id="customerMessagesTab">Customer Messages</button><button type="button" id="myMessagesTab">My Messages</button></div><div id="adminInboxList">মেসেজ লোড হচ্ছে...</div><button id="adminInboxBack" type="button">ড্যাশবোর্ডে ফিরুন</button>';
+  section.innerHTML = '<h2>💬 Inbox Chat</h2><p class="muted">কাস্টমারের মেসেজ বাঁ পাশে, আপনার পাঠানো মেসেজ ডান পাশে।</p><div id="adminInboxList" class="gio-chat-list">মেসেজ লোড হচ্ছে...</div><button id="adminInboxBack" type="button">ড্যাশবোর্ডে ফিরুন</button>';
   main.appendChild(section);
 
-  document.getElementById("customerMessagesTab").addEventListener("click", () => { activeInboxTab = "customer"; renderMessages(); });
-  document.getElementById("myMessagesTab").addEventListener("click", () => { activeInboxTab = "admin"; renderMessages(); });
   button.addEventListener("click", () => {
     adminPage.classList.remove("active");
     adminPage.hidden = true;
