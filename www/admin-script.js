@@ -623,42 +623,20 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const [ordersSnapshot, salesLedgerSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
+    const [ordersSnapshot, salesLedgerSnapshot, stockSnapshot] = await Promise.all([
       getDocs(collection(db, "orders")),
       getDocs(collection(db, "salesLedger")),
-      getDoc(doc(db, "settings", "diamondStock")),
-      getDoc(doc(db, "settings", "mainBalance"))
+      getDoc(doc(db, "settings", "diamondStock"))
     ]);
     let salesMoney = 0;
-    let salesDiamonds = 0;
     ordersSnapshot.forEach(item => {
       const data = item.data();
-      if (data.status === "Completed" && data.isArchived !== true) {
-        salesMoney += Number(data.price) || 0;
-        const explicitQty = Number(data.diamondQuantity);
-        if (Number.isSafeInteger(explicitQty) && explicitQty > 0) salesDiamonds += explicitQty;
-        else {
-          const match = String(data.packageName || "").replace(/,/g, "").match(/(\d+(?:\.\d+)?)\s*(?:k)?\s*(?:diamond|ডায়মন্ড|ডায়মন্ড)/i);
-          if (match) salesDiamonds += Math.round(Number(match[1]) * (/k/i.test(match[0]) ? 1000 : 1));
-        }
-      }
+      if (data.status === "Completed" && data.isArchived !== true) salesMoney += Number(data.price) || 0;
     });
     salesLedgerSnapshot.forEach(item => { salesMoney += Number(item.data().amount) || 0; });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
-    const balance = Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0);
     container.replaceChildren();
-    const editButton = document.createElement("button");
-    editButton.type = "button";
-    editButton.className = "owner-stock-edit-button";
-    editButton.textContent = "✏️ ডায়মন্ড এডিট করুন";
-    editButton.addEventListener("click", () => {
-      const form = $("diamondStockForm");
-      if (!form) return;
-      form.hidden = !form.hidden;
-      if (!form.hidden) $("diamondStockQuantity")?.focus();
-    });
-    container.appendChild(editButton);
-    [["বর্তমান ডায়মন্ড", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"], ["সেলস ডায়মন্ড", salesDiamonds.toLocaleString("en-BD") + " 💎", "sales-diamonds"], ["Owner Balance", "৳" + balance.toLocaleString("en-BD"), "owner-balance"], ["মোট বিক্রয়", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]].forEach(([label,value,kind]) => {
+    [["BLACK DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"], ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]].forEach(([label,value,kind]) => {
       const card = document.createElement("div");
       card.className = "order-card dashboard-stat-card owner-diamond-card " + kind;
       const title = document.createElement("strong");
@@ -669,7 +647,8 @@ async function loadDashboardStats() {
       container.appendChild(card);
     });
     const balanceInput = $("mainBalanceAmount");
-    if (balanceInput && document.activeElement !== balanceInput) balanceInput.value = String(balance);
+    const balanceSnapshot = await getDoc(doc(db, "settings", "mainBalance"));
+    if (balanceInput && document.activeElement !== balanceInput) balanceInput.value = String(Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0));
     const stockInput = $("diamondStockQuantity");
     if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
   } catch(error) {
