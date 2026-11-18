@@ -46,6 +46,7 @@ adminHelp.addEventListener("click",()=>{adminHelpPanel.hidden=!adminHelpPanel.hi
 async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
 refreshOwnerWhatsApp();
 function showAdminTab(tab){
+ if(!auth.currentUser)return;
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), offers=document.getElementById("adminOffersPage"), inbox=document.getElementById("adminInboxPage");
  [login,dash,settings,offers,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
