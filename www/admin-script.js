@@ -21,7 +21,7 @@ import {
   deleteDoc,
   serverTimestamp,
   runTransaction,
-  query, where
+  query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -50,6 +50,24 @@ const logoutBtn = $("logoutBtn");
 
 let isAdmin = false;
 let authStateRevision = 0;
+let ownerLiveUnsubscribers = [];
+function stopOwnerLiveSync() { ownerLiveUnsubscribers.forEach(unsubscribe => { try { unsubscribe(); } catch (_) {} }); ownerLiveUnsubscribers = []; }
+function startOwnerLiveSync() {
+  if (!isAdmin) return;
+  stopOwnerLiveSync();
+  ownerLiveUnsubscribers.push(onSnapshot(collection(db, "orders"), () => { if (isAdmin) { loadAdminOrders(); loadDashboardStats(); } }, error => console.error("Live order sync failed:", error)));
+  ownerLiveUnsubscribers.push(onSnapshot(doc(db, "settings", "diamondStock"), () => { if (isAdmin) loadDashboardStats(); }, error => console.error("Live Black Diamond stock sync failed:", error)));
+  ownerLiveUnsubscribers.push(onSnapshot(doc(db, "settings", "paymentMethods"), snapshot => {
+    if (!isAdmin || !snapshot.exists()) return;
+    const data = snapshot.data();
+    ["bkash", "nagad", "rocket"].forEach(method => {
+      const number = $(method + "Number"), enabled = $(method + "Enabled");
+      if (number && document.activeElement !== number) number.value = data[method]?.number || "";
+      if (enabled && document.activeElement !== enabled) enabled.checked = data[method]?.enabled !== false;
+    });
+  }, error => console.error("Live payment settings sync failed:", error)));
+}
+window.addEventListener("online", () => { if (isAdmin) { loadAdminOrders(); loadCustomerManagement(); loadDashboardStats(); loadPaymentSettings(); loadAdminPackages(); loadYellowDiamondPackages(); loadSupportContact(); } });
 
 async function checkAdmin(user) {
   if (!user) return false;
@@ -241,6 +259,7 @@ onAuthStateChanged(auth, async (user) => {
   isAdmin = false;
 
   if (!user) {
+    stopOwnerLiveSync();
     document.querySelector(".gio-admin-bottom-nav")?.setAttribute("hidden", "");
     if ($("adminHomeNav")) $("adminHomeNav").hidden = true;
     document.querySelector(".gio-admin-help")?.setAttribute("hidden", "");
@@ -298,6 +317,7 @@ onAuthStateChanged(auth, async (user) => {
   await loadAdminPackages();
   await loadYellowDiamondPackages();
   await loadSupportContact();
+  startOwnerLiveSync();
 }, (error) => {
   console.error("Firebase Auth state listener failed:", error);
   showMessage(loginMessage, "Firebase লগইন অবস্থা যাচাই করা যায়নি: " + (error?.code || error?.message || "অজানা সমস্যা"));
@@ -429,9 +449,10 @@ async function updateOrderStatus(orderId, status) {
       const orderSnap = await transaction.get(orderRef);
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
       const order = orderSnap.data();
-      const shouldDeduct = ["Approved", "Completed"].includes(status)
-        && ["Pending", "Processing"].includes(order.status || "Pending")
-        && order.stockDeducted !== true;
+      const isYellowDiamond = String(order.diamondType || order.packageType || "").toLowerCase().includes("yellow") || order.isYellowDiamond === true;
+      if (status === "Approved" && order.status === "Approved") throw new Error("এই অর্ডারটি ইতিমধ্যে Owner Approve করেছেন। দ্বিতীয়বার Approve করা যাবে না।");
+      const shouldDeduct = status === "Approved" && !isYellowDiamond
+        && ["Pending", "Processing"].includes(order.status || "Pending") && order.stockDeducted !== true;
       if (shouldDeduct) {
         const quantity = Number(order.diamondQuantity)
           || Number(String(order.packageName || "").match(/[0-9]+/)?.[0]) || 0;
@@ -444,14 +465,15 @@ async function updateOrderStatus(orderId, status) {
         if (currentStock < quantity) throw new Error("পর্যাপ্ত Diamond Stock নেই। বর্তমান স্টক: " + currentStock);
         transaction.set(stockRef, {
           quantity: currentStock - quantity,
+          stockType: "black",
           updatedAt: serverTimestamp()
         }, { merge: true });
         transaction.update(orderRef, {
-          status, stockDeducted: true, stockDeductedQuantity: quantity,
+          status, diamondType: "black", stockDeducted: true, stockDeductedQuantity: quantity,
           stockDeductedAt: serverTimestamp(), isArchived: false, updatedAt: serverTimestamp()
         });
       } else {
-        transaction.update(orderRef, { status, isArchived: false, updatedAt: serverTimestamp() });
+        transaction.update(orderRef, { status, ...(isYellowDiamond ? { diamondType: "yellow", stockDeducted: false } : {}), isArchived: false, updatedAt: serverTimestamp() });
       }
     });
     await loadAdminOrders(); await loadDashboardStats();
