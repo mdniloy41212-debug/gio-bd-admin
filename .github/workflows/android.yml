@@ -99,6 +99,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish APK to GitHub Releases
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: owner-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}-${{ github.run_number }}
@@ -111,6 +112,7 @@ jobs:
           make_latest: true
 
       - name: Prepare update manifest
+        if: github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
           cat > www/updates/admin-version.json <<EOF
@@ -126,6 +128,7 @@ jobs:
           cat www/updates/admin-version.json
 
       - name: Deploy update information to Firebase
+        if: github.ref == 'refs/heads/main'
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIO_BD }}
         run: |
