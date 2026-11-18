@@ -797,3 +797,40 @@ button{border-radius:13px}
 .gio-admin-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
 .gio-admin-bottom-nav button.active{outline:2px solid #83edff;box-shadow:0 0 15px #20dfff77}
 @media(max-width:380px){.owner-dashboard-hero{min-height:195px;padding:20px 14px}.owner-dashboard-orbit{right:14px;width:94px;height:94px}.owner-dashboard-orbit span{font-size:52px}.owner-dashboard-hero h2{font-size:23px}}
+
+/* GIO BD Owner Dashboard — reference-matched neon layout */
+body{background:radial-gradient(ellipse at 50% 75%,#092d69 0%,#061633 48%,#02091d 100%)!important;color:#f4fbff}
+body>.header{display:none!important}
+.gio-owner-action-bar{position:sticky!important;top:0!important;z-index:1080!important;border-radius:0 0 18px 18px!important;background:linear-gradient(100deg,#061638f5,#0b2b69f5,#061638f5)!important;border:1px solid #168cff!important;box-shadow:0 0 22px #087dff66!important}
+.gio-owner-action-bar strong{font-size:24px!important;font-weight:1000;letter-spacing:2px;text-shadow:0 0 15px #31cfff}
+.owner-home-top{display:grid!important;grid-template-columns:minmax(104px,.62fr) minmax(0,2fr)!important;gap:10px!important;align-items:stretch!important;margin:10px 0 14px!important;padding:0!important}
+.owner-profile-button{min-width:0!important;min-height:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;padding:8px 5px!important;border:1px solid #148fff!important;border-radius:17px!important;background:linear-gradient(145deg,#092c65,#071633)!important;box-shadow:0 0 15px #087dff55!important;color:#fff!important}
+.owner-profile-button .gio-owner-avatar{width:62px!important;height:62px!important;font-size:21px!important;overflow:visible}
+.gio-owner-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.gio-owner-avatar img[hidden]{display:none}
+.owner-profile-button strong{font-size:13px;letter-spacing:1px}
+.gio-owner-v-badge{right:-4px!important;bottom:1px!important;width:22px!important;height:22px!important;border:2px solid #fff!important;background:linear-gradient(145deg,#29a8ff,#0755d9)!important;box-shadow:0 0 12px #168dff!important}
+.owner-ad-banner{min-width:0!important;min-height:145px!important;margin:0!important;padding:10px!important;display:grid!important;grid-template-columns:.85fr 1.15fr!important;align-items:center!important;gap:8px!important;border:1px solid #27caff!important;border-radius:18px!important;background:radial-gradient(circle at 15% 50%,#164eb0,#07133b 70%,#2c0d66)!important;box-shadow:0 0 22px #168cff66,inset 0 0 20px #3c7bff33!important}
+.owner-ad-banner[hidden]{display:none!important}
+.owner-ad-robot{position:relative;display:grid;place-items:center;min-height:112px;font-size:76px;filter:drop-shadow(0 0 15px #20caff)}
+.owner-ad-robot small{position:absolute;right:3px;bottom:6px;font-size:28px}
+.owner-ad-copy{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.owner-ad-copy strong{font-size:clamp(19px,5vw,29px)!important;font-weight:1000!important;color:#fff!important;text-shadow:0 0 15px #28dfff}
+.owner-ad-copy small{font-size:11px!important;color:#bceeff!important}
+.owner-ad-copy select{width:auto;max-width:100%;padding:5px 8px;background:#071a46;color:#fff;border:1px solid #42d8ff;border-radius:8px}
+.owner-ad-copy button{padding:8px 12px!important;min-height:34px!important;border-radius:12px!important;background:linear-gradient(100deg,#00bfff,#174cff)!important;border:1px solid #8af5ff!important;box-shadow:0 0 14px #00bfff88!important;font-weight:900}
+.owner-ad-banner.ad-running{animation:ownerAdPulse .6s ease-in-out infinite alternate}
+@keyframes ownerAdPulse{to{filter:brightness(1.3);box-shadow:0 0 32px #00d9ff}}
+#dashboardStats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;margin:0 0 18px!important}
+#dashboardStats .owner-diamond-card{min-width:0!important;min-height:126px!important;padding:12px 6px!important;border:1px solid #168fff!important;border-radius:17px!important;background:linear-gradient(145deg,#092e69,#07142f 72%,#160d4b)!important;box-shadow:0 0 18px #087dff44,inset 0 0 16px #39cfff22!important;text-align:center}
+#dashboardStats .owner-diamond-card strong{font-size:clamp(9px,2.6vw,12px)!important;color:#c7f4ff!important;letter-spacing:.2px!important}
+#dashboardStats .owner-diamond-card p{font-size:clamp(15px,4.2vw,22px)!important;margin:9px 0 0!important;color:#fff!important;overflow-wrap:anywhere}
+#dashboardStats .owner-stock-edit-button{display:block!important;margin:0 auto 5px!important;padding:4px 9px!important;min-height:26px!important;font-size:11px!important;background:linear-gradient(120deg,#078cff,#3825d8)!important;border:1px solid #8aeaff!important;border-radius:8px!important;color:white!important}
+#adminPage .owner-dashboard-hero{display:none!important}
+.gio-owner-footer{margin:0!important;padding:16px 8px 22px!important;background:transparent!important;color:#fff!important;text-align:center!important;font-size:20px!important;font-weight:900!important;text-shadow:0 0 14px #25cfff}
+.gio-owner-footer strong{color:#ffe04c}
+.owner-profile-detail{background:linear-gradient(145deg,#071d48,#111044)!important;border:1px solid #28caff!important;box-shadow:0 0 24px #168cff55!important}
+#ownerProfileEditForm{display:grid;gap:8px;text-align:left;margin-top:18px}
+#ownerProfileEditForm input{width:100%;box-sizing:border-box;padding:11px;border-radius:10px;background:#07152f;color:#fff;border:1px solid #3b9de8}
+#ownerProfileEditForm label{color:#c9f2ff;font-weight:700}
+@media(max-width:390px){.owner-home-top{grid-template-columns:minmax(94px,.58fr) minmax(0,2fr)!important}.owner-ad-banner{min-height:130px!important;padding:7px!important}.owner-ad-robot{font-size:62px}.owner-profile-button .gio-owner-avatar{width:54px!important;height:54px!important}#dashboardStats .owner-diamond-card{min-height:116px!important}}
