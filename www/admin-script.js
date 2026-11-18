@@ -425,8 +425,8 @@ async function loadAdminOrders() {
           card.appendChild(link);
         }
         if (canChange) {
-          card.appendChild(makeButton("Approve", () => updateOrderStatus(id, "Approved")));
-          card.appendChild(makeButton("Reject", () => updateOrderStatus(id, "Rejected")));
+          card.appendChild(makeButton("Approve", () => updateOrderStatus(id, "Completed")));
+          card.appendChild(makeButton("Reject", () => updateOrderStatus(id, "Cancelled")));
         }
         if (canArchive) card.appendChild(makeButton("Delete / Archive", () => archiveOrder(id)));
         if (box === archivedBox) card.appendChild(makeButton("Restore", () => restoreOrder(id)));
@@ -452,8 +452,8 @@ async function updateOrderStatus(orderId, status) {
       if (!orderSnap.exists()) throw new Error("অর্ডারটি পাওয়া যায়নি।");
       const order = orderSnap.data();
       const isYellowDiamond = String(order.diamondType || order.packageType || "").toLowerCase().includes("yellow") || order.isYellowDiamond === true;
-      if (status === "Approved" && order.status === "Approved") throw new Error("এই অর্ডারটি ইতিমধ্যে Owner Approve করেছেন। দ্বিতীয়বার Approve করা যাবে না।");
-      const shouldDeduct = status === "Approved" && !isYellowDiamond
+      if (status === "Completed" && order.stockDeducted === true) throw new Error("এই অর্ডারটি ইতিমধ্যে সম্পন্ন হয়েছে। দ্বিতীয়বার Approve করা যাবে না।");
+      const shouldDeduct = status === "Completed" && !isYellowDiamond
         && ["Pending", "Processing"].includes(order.status || "Pending") && order.stockDeducted !== true;
       if (shouldDeduct) {
         const quantity = Number(order.diamondQuantity)
@@ -471,7 +471,7 @@ async function updateOrderStatus(orderId, status) {
           updatedAt: serverTimestamp()
         }, { merge: true });
         transaction.update(orderRef, {
-          status, diamondType: "black", stockDeducted: true, stockDeductedQuantity: quantity,
+          status: "Completed", diamondType: "black", stockDeducted: true, stockDeductedQuantity: quantity,
           stockDeductedAt: serverTimestamp(), isArchived: false, updatedAt: serverTimestamp()
         });
       } else {
