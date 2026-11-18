@@ -31,7 +31,18 @@ ownerActionBar.hidden=true;
 document.body.insertBefore(ownerActionBar, main);
 let ownerTabHistory=[];
 let currentOwnerTab="home";
-document.getElementById("gioOwnerRefreshButton").addEventListener("click",()=>window.location.reload());
+function refreshOwnerPage(){
+ try{sessionStorage.setItem("gioOwnerLastTab",currentOwnerTab);}catch(e){}
+ window.location.reload();
+}
+document.getElementById("gioOwnerRefreshButton").addEventListener("click",refreshOwnerPage);
+let ownerPullStartY=0;
+document.addEventListener("touchstart",event=>{if(window.scrollY===0)ownerPullStartY=event.touches?.[0]?.clientY||0;},{passive:true});
+document.addEventListener("touchend",event=>{
+ const endY=event.changedTouches?.[0]?.clientY||0;
+ if(ownerPullStartY>0&&endY-ownerPullStartY>85&&window.scrollY===0&&auth.currentUser)refreshOwnerPage();
+ ownerPullStartY=0;
+},{passive:true});
 document.getElementById("gioOwnerBackButton").addEventListener("click",()=>{
  const previous=ownerTabHistory.pop()||"home";
  showAdminTab(previous,false);
@@ -492,7 +503,9 @@ onAuthStateChanged(auth, async user => {
     currentAdminUid = user.uid;
     adminBottomNav.hidden = false;
     ownerActionBar.hidden = false;
-    ownerTabHistory=[];currentOwnerTab="home";
+    ownerTabHistory=[];
+    let restoredTab="home";try{const saved=sessionStorage.getItem("gioOwnerLastTab");if(["home","offers","inbox","settings","profile"].includes(saved))restoredTab=saved;sessionStorage.removeItem("gioOwnerLastTab");}catch(e){}
+    currentOwnerTab="home";
     const pageTitle=document.getElementById("gioOwnerCurrentPage");if(pageTitle)pageTitle.textContent="GIO BD";
     loadOwnerProfile();
     const backButton=document.getElementById("gioOwnerBackButton");if(backButton)backButton.disabled=true;
@@ -500,6 +513,7 @@ onAuthStateChanged(auth, async user => {
     await refreshOwnerWhatsApp();
     readNotificationIds = readStorage(user.uid);
     if (button) button.hidden = false;
+    if(restoredTab!=="home")showAdminTab(restoredTab,false);
     const list = document.getElementById("adminInboxList");
     if (!list) return;
 
