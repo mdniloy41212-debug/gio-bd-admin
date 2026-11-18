@@ -113,6 +113,8 @@ if(ownerHomeAdSlot&&loginAdTemplate){
  const homeAd=loginAdTemplate.cloneNode(true);
  homeAd.classList.add("gio-home-ad");
  homeAd.setAttribute("aria-label","GIO BD animated advertisement, shown for five seconds with a two-second pause");
+ const adCount=homeAd.querySelector(".gio-ad-count");
+ if(adCount)adCount.textContent="5 SEC • GIO BD";
  ownerHomeAdSlot.replaceChildren(homeAd);
 }
 
