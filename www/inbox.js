@@ -52,7 +52,7 @@ function openOwnerUserChat(uid, profile) {
  activeContactUid = uid;
   activeContactProfile = profile || {};
  const panel = document.getElementById("gioOwnerUserChat");
-  panel?.querySelector("#gioOwnerChatRefresh")?.addEventListener("click",()=>{if(activeContactUid)openOwnerUserChat(activeContactUid,activeContactProfile);},{once:true});
+  const refreshButton=panel?.querySelector("#gioOwnerChatRefresh"); if(refreshButton)refreshButton.onclick=()=>{if(activeContactUid)openOwnerUserChat(activeContactUid,activeContactProfile);};
  const voiceStatus=document.getElementById("gioOwnerChatVoiceStatus");
  const oldVoice=document.getElementById("gioOwnerChatVoiceButton");oldVoice?.remove();
  const voice=createOwnerContactVoice(uid,voiceStatus);voice.id="gioOwnerChatVoiceButton";voiceStatus?.insertAdjacentElement("afterend",voice);
@@ -62,7 +62,7 @@ function openOwnerUserChat(uid, profile) {
  document.getElementById("gioOwnerChatTitle").textContent=customerName;
  const avatar=document.getElementById("gioOwnerChatAvatar");
  avatar.textContent=String(customerName).trim().charAt(0).toUpperCase()||"U";
- if(profile.photoURL){const image=document.createElement("img");image.src=profile.photoURL;image.alt="";avatar.replaceChildren(image);}
+ if(profile.photoURL||profile.avatar){const image=document.createElement("img");image.src=profile.photoURL||profile.avatar;image.alt="";avatar.replaceChildren(image);}
  const profilePanel=document.getElementById("gioOwnerCustomerProfilePanel");
  const moreButton=document.getElementById("gioOwnerCustomerMore");
  const settingsButton=document.getElementById("gioOwnerChatSettings");
@@ -71,7 +71,7 @@ function openOwnerUserChat(uid, profile) {
  settingsButton.onclick=()=>{settingsPanel.hidden=!settingsPanel.hidden;profilePanel.hidden=true;};
  profilePanel.replaceChildren();
  const profilePhoto=document.createElement("div");profilePhoto.className="gio-owner-profile-large-avatar";
- if(profile.photoURL){const image=document.createElement("img");image.src=profile.photoURL;image.alt="";profilePhoto.appendChild(image);}else profilePhoto.textContent=String(customerName).charAt(0).toUpperCase();
+ if(profile.photoURL||profile.avatar){const image=document.createElement("img");image.src=profile.photoURL||profile.avatar;image.alt="";profilePhoto.appendChild(image);}else profilePhoto.textContent=String(customerName).charAt(0).toUpperCase();
  const profileName=document.createElement("strong");profileName.textContent=customerName;
  const numericId=(String(profile.profileId||"").match(/[0-9]+/g)||[]).join("");
  const profileId=document.createElement("small");profileId.textContent=numericId||"Numeric ID এখনো তৈরি হয়নি";
