@@ -685,7 +685,7 @@ body:has(#adminPage.active) main {max-width:none;width:100%;padding:12px 12px 10
 #adminPage .current-diamonds{background:linear-gradient(145deg,#075b77,#17418a)}
 #adminPage .sales-diamonds{background:linear-gradient(145deg,#5a267e,#25205d)}
 #adminPage .owner-balance,#adminPage .sales-money{background:linear-gradient(145deg,#244b50,#172d4a)}
-.gio-admin-bottom-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.gio-admin-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 @media(max-width:420px){#adminPage .owner-dashboard-profile strong{font-size:20px}#adminPage .owner-diamond-card p{font-size:22px}}
 
 
