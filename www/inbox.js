@@ -422,6 +422,7 @@ onAuthStateChanged(auth, async user => {
   readNotificationIds = new Set();
   if (!user) {
     if (button) button.hidden = true;
+    [document.getElementById("adminInboxPage"),document.getElementById("adminOffersPage"),adminProfilePage].filter(Boolean).forEach(page=>{page.hidden=true;page.classList.remove("active");});
     return;
   }
 
