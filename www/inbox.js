@@ -30,7 +30,7 @@ adminProfilePage.innerHTML = '<h2>👤 Owner Profile</h2><section class="gio-own
 main?.appendChild(adminProfilePage);
 const adminContactPage = document.createElement("section");
 adminContactPage.id = "adminContactPage"; adminContactPage.className = "page"; adminContactPage.hidden = true;
-adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card" hidden><h3 id="gioOwnerChatTitle">Chat</h3><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="মেসেজ লিখুন"></textarea><button type="button" id="gioOwnerChatSend">মেসেজ পাঠান</button><p id="gioOwnerChatSendStatus" aria-live="polite"></p><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
+adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card gio-owner-chat-screen" hidden><header class="gio-owner-chat-header"><div id="gioOwnerChatAvatar" class="gio-owner-chat-avatar">U</div><div class="gio-owner-chat-heading"><strong id="gioOwnerChatTitle">Customer</strong><small>Customer Chat</small></div><button type="button" id="gioOwnerCustomerMore" aria-label="Customer profile">⋮</button><button type="button" id="gioOwnerChatSettings" aria-label="Owner settings">⚙</button></header><div id="gioOwnerCustomerProfilePanel" class="gio-owner-customer-profile" hidden></div><div id="gioOwnerChatSettingsPanel" class="gio-owner-chat-settings" hidden>GIO BD Agent Official</div><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="Type"></textarea><button type="button" id="gioOwnerChatSend">Send</button><p id="gioOwnerChatSendStatus" aria-live="polite"></p><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
 main?.appendChild(adminContactPage);
 let stopOwnerContacts = null;
 let stopOwnerChat = null;
@@ -44,7 +44,24 @@ function openOwnerUserChat(uid, profile) {
  const voice=createOwnerContactVoice(uid,voiceStatus);voice.id="gioOwnerChatVoiceButton";voiceStatus?.insertAdjacentElement("afterend",voice);
  if (!panel) return;
  panel.hidden = false;
- document.getElementById("gioOwnerChatTitle").textContent = (profile.displayName || profile.name || profile.email || "কাস্টমার") + " — Chat";
+ const customerName=profile.displayName||profile.name||profile.email||"কাস্টমার";
+ document.getElementById("gioOwnerChatTitle").textContent=customerName;
+ const avatar=document.getElementById("gioOwnerChatAvatar");
+ avatar.textContent=String(customerName).trim().charAt(0).toUpperCase()||"U";
+ if(profile.photoURL){const image=document.createElement("img");image.src=profile.photoURL;image.alt="";avatar.replaceChildren(image);}
+ const profilePanel=document.getElementById("gioOwnerCustomerProfilePanel");
+ const moreButton=document.getElementById("gioOwnerCustomerMore");
+ const settingsButton=document.getElementById("gioOwnerChatSettings");
+ const settingsPanel=document.getElementById("gioOwnerChatSettingsPanel");
+ moreButton.onclick=()=>{profilePanel.hidden=!profilePanel.hidden;settingsPanel.hidden=true;};
+ settingsButton.onclick=()=>{settingsPanel.hidden=!settingsPanel.hidden;profilePanel.hidden=true;};
+ profilePanel.replaceChildren();
+ const profilePhoto=document.createElement("div");profilePhoto.className="gio-owner-profile-large-avatar";
+ if(profile.photoURL){const image=document.createElement("img");image.src=profile.photoURL;image.alt="";profilePhoto.appendChild(image);}else profilePhoto.textContent=String(customerName).charAt(0).toUpperCase();
+ const profileName=document.createElement("strong");profileName.textContent=customerName;
+ const numericId=String(profile.profileId||"").replace(/\\D/g,"");
+ const profileId=document.createElement("small");profileId.textContent=numericId||"Numeric ID এখনো তৈরি হয়নি";
+ profilePanel.append(profilePhoto,profileName,profileId);
  const messages = document.getElementById("gioOwnerUserChatMessages");
  messages.textContent = "চ্যাট লোড হচ্ছে…";
  if (stopOwnerChat) stopOwnerChat();
@@ -52,8 +69,12 @@ function openOwnerUserChat(uid, profile) {
  stopOwnerChat = onSnapshot(q,snap=>{
   messages.replaceChildren();
   const rows=snap.docs.slice().sort((a,b)=>(a.data().createdAt?.toMillis?.()||0)-(b.data().createdAt?.toMillis?.()||0));
+  let previousDay="";
   rows.forEach(item=>{
    const d=item.data();
+   const messageDate=d.createdAt?.toDate?.();
+   const dayKey=messageDate?[messageDate.getFullYear(),messageDate.getMonth(),messageDate.getDate()].join("-"):"";
+   if(dayKey&&dayKey!==previousDay){const divider=document.createElement("div");divider.className="gio-owner-chat-date-divider";divider.textContent=messageDate.toLocaleDateString("bn-BD",{day:"numeric",month:"long",year:"numeric"});messages.appendChild(divider);previousDay=dayKey;}
    if(d.senderRole!=="admin"&&!d.readAt){
     updateDoc(doc(db,"supportMessages",item.id),{readAt:serverTimestamp()})
       .catch(error=>console.warn("Owner chat read receipt could not be saved:",error));
@@ -64,7 +85,7 @@ function openOwnerUserChat(uid, profile) {
    who.className="gio-owner-chat-sender";
    who.textContent=d.senderRole==="admin"?"GIO BD Owner":"Agent";
    const body=document.createElement("p");body.className="gio-owner-chat-text";body.textContent=d.text||"";
-   const time=document.createElement("small");time.className="gio-owner-chat-time";time.textContent=d.createdAt?.toDate?.().toLocaleString("bn-BD")||"";
+   const time=document.createElement("small");time.className="gio-owner-chat-time";time.textContent=d.createdAt?.toDate?.().toLocaleTimeString("bn-BD",{hour:"numeric",minute:"2-digit"})||"";
    card.append(who,body);appendVoicePlayer(card,d);
    if(d.senderRole==="admin"){
     const receipt=document.createElement("small");receipt.className="gio-owner-chat-receipt"+(d.readAt?" is-seen":"");
@@ -158,6 +179,8 @@ ownerChatStyle.textContent=`
  .gio-owner-chat-text{white-space:pre-wrap;margin:3px 0;font-size:14px}
  .gio-owner-chat-time,.gio-owner-chat-receipt{font-size:9px;opacity:.85}
  .gio-owner-chat-receipt{color:#d6eaff}.gio-owner-chat-receipt.is-seen{color:#45dcff;font-weight:800}
+ .gio-owner-chat-screen{position:fixed!important;inset:0!important;z-index:3000!important;margin:0!important;width:100%!important;max-width:none!important;max-height:100dvh!important;overflow:auto!important;border-radius:0!important;background:#08152c!important;padding:12px!important;box-sizing:border-box!important}
+ .gio-owner-chat-header{display:flex;align-items:center;gap:10px;padding:8px 2px 12px;border-bottom:1px solid #ffffff22}.gio-owner-chat-avatar,.gio-owner-profile-large-avatar{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#1877a8,#51318d);font-weight:800}.gio-owner-chat-avatar img,.gio-owner-profile-large-avatar img{width:100%;height:100%;object-fit:cover}.gio-owner-chat-heading{display:flex;flex:1;min-width:0;flex-direction:column}.gio-owner-chat-heading small{font-size:10px;opacity:.7}.gio-owner-chat-header button{min-width:38px;padding:7px;font-size:18px}.gio-owner-customer-profile,.gio-owner-chat-settings{padding:12px;margin:8px 0;border-radius:12px;background:#fff;color:#14213b;text-align:center}.gio-owner-customer-profile{display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column}.gio-owner-chat-date-divider{align-self:center;margin:12px auto 6px;padding:4px 11px;border-radius:20px;background:#ffffff18;color:#c9d8ec;font-size:10px;font-weight:700}
  #gioOwnerChatSendStatus{font-size:11px;min-height:15px;margin:3px 0;color:#bdeaff}
 `;
 document.head.appendChild(ownerChatStyle);
