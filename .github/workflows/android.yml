@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - fix/owner-customer-live-chat
 
 permissions:
   contents: write
