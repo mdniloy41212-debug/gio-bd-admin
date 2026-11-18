@@ -544,7 +544,7 @@ async function loadAdminOrders() {
       const details = document.createElement("p");
       const rechargeValue = data.rechargeTargetValue || data.imoId || data.customerPhone || "";
       const rechargeLabel = data.rechargeTargetType === "phone" || (!data.rechargeTargetType && !data.imoId)
-        ? "রিচার্জ ফোন নম্বর" : "রিচার্জ IMO ID";
+        ? "ফোন নম্বর" : "আইডি নম্বর";
 
       details.textContent =
         "Order ID: " + item.id +
