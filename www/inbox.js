@@ -92,8 +92,9 @@ async function loadOwnerContacts(){
     const info=document.createElement("div");info.className="gio-contact-user-info";
     const name=document.createElement("strong");name.textContent=data.displayName||data.name||data.email||"GIO BD User";
     const email=document.createElement("small");email.textContent=data.email||"ইমেইল পাওয়া যায়নি";
+    const profileId=document.createElement("small");profileId.textContent="Agent Profile ID: "+(data.profileId||"এখনো তৈরি হয়নি");
     const state=document.createElement("small");state.textContent=isContactOnline(data)?"Online":"Offline";
-    info.append(name,email,state);
+    info.append(name,email,profileId,state);
     const chat=document.createElement("button");chat.type="button";chat.textContent="Chat";chat.addEventListener("click",()=>openOwnerUserChat(id,data));
     card.append(avatar,info,chat);list.appendChild(card);
    });
