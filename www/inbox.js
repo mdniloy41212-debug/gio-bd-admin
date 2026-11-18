@@ -50,7 +50,7 @@ document.getElementById("gioOwnerDisableSeen")?.addEventListener("change",e=>loc
 
 const adminContactPage = document.createElement("section");
 adminContactPage.id = "adminContactPage"; adminContactPage.className = "page"; adminContactPage.hidden = true;
-adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card gio-owner-chat-screen" hidden><header class="gio-owner-chat-header"><div id="gioOwnerChatAvatar" class="gio-owner-chat-avatar">U</div><div class="gio-owner-chat-heading"><strong id="gioOwnerChatTitle">Customer</strong><small>Customer Chat</small></div><button type="button" id="gioOwnerChatRefresh" aria-label="Refresh chat">↻</button><button type="button" id="gioOwnerCustomerMore" aria-label="Customer profile">⋮</button><button type="button" id="gioOwnerChatSettings" aria-label="Owner settings">⚙</button></header><div id="gioOwnerCustomerProfilePanel" class="gio-owner-customer-profile" hidden></div><div id="gioOwnerChatSettingsPanel" class="gio-owner-chat-settings" hidden>GIO BD Agent Official</div><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="Type"></textarea><button type="button" id="gioOwnerChatSend">Send</button><p id="gioOwnerChatSendStatus" aria-live="polite"></p><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
+adminContactPage.innerHTML = '<h2>👥 Agent Contact</h2><div class="order-card"><strong>মোট এজেন্ট</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>🟢 অনলাইন এজেন্ট</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><input id="gioOwnerContactSearch" type="search" placeholder="Agent ID, নাম বা Gmail দিয়ে খুঁজুন"><div id="gioOwnerContactList">এজেন্ট তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card gio-owner-chat-screen" hidden><header class="gio-owner-chat-header"><div id="gioOwnerChatAvatar" class="gio-owner-chat-avatar">U</div><div class="gio-owner-chat-heading"><strong id="gioOwnerChatTitle">Customer</strong><small>Customer Chat</small></div><button type="button" id="gioOwnerChatRefresh" aria-label="Refresh chat">↻</button><button type="button" id="gioOwnerCustomerMore" aria-label="Customer profile">⋮</button><button type="button" id="gioOwnerChatSettings" aria-label="Owner settings">⚙</button></header><div id="gioOwnerCustomerProfilePanel" class="gio-owner-customer-profile" hidden></div><div id="gioOwnerChatSettingsPanel" class="gio-owner-chat-settings" hidden>GIO BD Agent Official</div><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="Type"></textarea><button type="button" id="gioOwnerChatSend">Send</button><p id="gioOwnerChatSendStatus" aria-live="polite"></p><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
 main?.appendChild(adminContactPage);
 let stopOwnerContacts = null;
 let stopOwnerChat = null;
@@ -153,8 +153,9 @@ async function loadOwnerContacts(){
    if(online)online.textContent=String(onlineCount);
    list.replaceChildren();
    if(!users.length){list.textContent="এখনো কোনো কাস্টমার প্রোফাইল নেই।";return;}
+   const term=String(document.getElementById("gioOwnerContactSearch")?.value||"").trim().toLowerCase();
    users.sort((a,b)=>String(a.data.displayName||a.data.email||"").localeCompare(String(b.data.displayName||b.data.email||"")));
-   users.forEach(({id,data})=>{
+   users.filter(({id,data})=>!term||[id,data.profileId,data.displayName,data.email].some(value=>String(value||"").toLowerCase().includes(term))).forEach(({id,data})=>{
     const card=document.createElement("article");card.className="gio-contact-user-card";
     const avatar=document.createElement("div");avatar.className="gio-contact-avatar";
     const contactPhoto=data.hideProfilePhoto===true?"":(data.avatar||data.photoURL||"");
@@ -307,6 +308,9 @@ function showAdminTab(tab, options = {}){
    try { history.pushState({ gioOwnerTab: tab }, "", "#owner-" + tab); } catch {}
  }
  activeOwnerTab = tab;
+ const orderOnly=[dash?.querySelector(".order-filters"),dash?.querySelector("#adminOrders"),...(dash?[...dash.querySelectorAll("h2,h3")].filter(el=>/ড্যাশবোর্ড|Pending \/ Processing Orders/.test(el.textContent||"")):[])].filter(Boolean);
+ orderOnly.forEach(el=>{el.hidden=tab!=="orders";});
+ if(orderAlertButton)orderAlertButton.hidden=tab!=="orders";
  const visiblePage = [dash, settings, inbox, adminProfilePage, contacts].find(page => page && !page.hidden && page.classList.contains("active"));
  if (visiblePage && visiblePage.id !== "adminPage" && !visiblePage.querySelector(".gio-owner-page-back")) {
    const back = document.createElement("button");
