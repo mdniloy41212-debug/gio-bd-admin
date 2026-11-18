@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, query, orderBy,
-  onSnapshot, doc, getDoc, serverTimestamp
+  onSnapshot, doc, getDoc, setDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const config = {
@@ -21,14 +21,14 @@ const db = getFirestore(app);
 const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
-adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="offers">🎁<span>Offers</span></button><button type="button" data-admin-tab="inbox">📥<span>Inbox</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button>';
+adminBottomNav.innerHTML = '<button type="button" data-admin-tab="inbox">💬<span>Inbox</span></button><button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="offers">💎<span>Package</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button>';
 adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const ownerActionBar=document.createElement("div");
 ownerActionBar.className="gio-owner-action-bar";
-ownerActionBar.innerHTML='<button type="button" id="gioOwnerBackButton" aria-label="Back">← <span>Back</span></button><strong id="gioOwnerCurrentPage">GIO BD OWNER</strong><button type="button" id="gioOwnerRefreshButton" aria-label="Refresh">↻ <span>Refresh</span></button>';
+ownerActionBar.innerHTML='<button type="button" id="gioOwnerBackButton" aria-label="Back">← <span>Back</span></button><strong id="gioOwnerCurrentPage">GIO BD</strong><button type="button" id="gioOwnerRefreshButton" aria-label="Refresh">↻ <span>Refresh</span></button>';
 ownerActionBar.hidden=true;
-document.body.appendChild(ownerActionBar);
+document.body.insertBefore(ownerActionBar, main);
 let ownerTabHistory=[];
 let currentOwnerTab="home";
 document.getElementById("gioOwnerRefreshButton").addEventListener("click",()=>window.location.reload());
@@ -38,7 +38,7 @@ document.getElementById("gioOwnerBackButton").addEventListener("click",()=>{
 });
 const adminProfilePage = document.createElement("section");
 adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
-adminProfilePage.innerHTML = '<div class="owner-profile-detail"><div class="admin-profile-avatar gio-owner-avatar"><span>GIO</span><b class="gio-owner-v-badge">✓</b></div><h2>GIO BD OWNER</h2><div class="owner-official-verified">🔵 OFFICIAL VERIFIED</div><p id="gioOwnerProfileEmail">Admin account</p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><button id="ownerProfileBack" type="button">← Home</button><button id="ownerProfileLogout" class="owner-profile-logout" type="button">Logout</button><p id="ownerProfileLogoutMessage" role="status"></p></div>';
+adminProfilePage.innerHTML = '<div class="owner-profile-detail"><div class="admin-profile-avatar gio-owner-avatar"><img id="ownerProfileAvatar" alt="Profile"><span id="ownerProfileInitial">G</span><b class="gio-owner-v-badge">✓</b></div><h2 id="ownerProfileDisplayName">GIO BD</h2><div class="owner-official-verified">🔵 OFFICIAL VERIFIED</div><p id="gioOwnerProfileEmail">Admin account</p><form id="ownerProfileEditForm"><label for="ownerProfileNameInput">নাম পরিবর্তন</label><input id="ownerProfileNameInput" type="text" maxlength="40" placeholder="আপনার নাম"><label for="ownerProfilePhotoInput">প্রোফাইল ছবি পরিবর্তন</label><input id="ownerProfilePhotoInput" type="file" accept="image/*"><button type="submit">প্রোফাইল সংরক্ষণ করুন</button><p id="ownerProfileSaveMessage" role="status"></p></form><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><button id="ownerProfileBack" type="button">← Home</button><button id="ownerProfileLogout" class="owner-profile-logout" type="button">Logout</button><p id="ownerProfileLogoutMessage" role="status"></p></div>';
 main?.appendChild(adminProfilePage);
 const adminNavStyle = document.createElement("style");
 adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
@@ -62,7 +62,7 @@ function showAdminTab(tab,remember=true){
  if(!auth.currentUser)return;
  if(remember&&tab!==currentOwnerTab)ownerTabHistory.push(currentOwnerTab);
  currentOwnerTab=tab;
- const pageNames={home:"Home",offers:"Offers & Packages",inbox:"Inbox",settings:"Settings",profile:"Profile"};
+ const pageNames={home:"GIO BD",offers:"Package",inbox:"Inbox",settings:"Settings",profile:"Profile"};
  const pageTitle=document.getElementById("gioOwnerCurrentPage");if(pageTitle)pageTitle.textContent=pageNames[tab]||"GIO BD OWNER";
  const backButton=document.getElementById("gioOwnerBackButton");if(backButton)backButton.disabled=ownerTabHistory.length===0;
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), offers=document.getElementById("adminOffersPage"), inbox=document.getElementById("adminInboxPage");
@@ -70,7 +70,7 @@ function showAdminTab(tab,remember=true){
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
  if((tab==="settings"||tab==="manage")&&settings){settings.hidden=false;settings.classList.add("active");}
  if(tab==="offers"&&offers){offers.hidden=false;offers.classList.add("active");}
- if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";}
+ if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";loadOwnerProfile();}
  if(tab==="inbox"&&inbox){inbox.hidden=false;inbox.classList.add("active");markIncomingAsRead();}
  adminBottomNav.querySelectorAll("[data-admin-tab]").forEach(button=>button.classList.toggle("active",button.dataset.adminTab===tab));
 }
@@ -78,13 +78,41 @@ adminBottomNav.addEventListener("click",event=>{const button=event.target.closes
 const ownerProfileButton=document.getElementById("ownerProfileButton");
 if(ownerProfileButton){ownerProfileButton.type="button";ownerProfileButton.style.position="relative";ownerProfileButton.style.zIndex="5";ownerProfileButton.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();showAdminTab("profile");});}
 document.getElementById("ownerProfileBack")?.addEventListener("click",()=>showAdminTab("home"));
+let ownerProfileData={displayName:"GIO BD",photoData:""};
+async function loadOwnerProfile(){
+ try{const snap=await getDoc(doc(db,"settings","ownerProfile"));if(snap.exists())ownerProfileData={...ownerProfileData,...snap.data()};}catch(e){console.warn("Profile settings unavailable",e);}
+ const name=ownerProfileData.displayName||"GIO BD",photo=ownerProfileData.photoData||"";
+ ["ownerHomeName","ownerProfileDisplayName"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
+ ["ownerHomeInitial","ownerProfileInitial"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=(name.trim()[0]||"G").toUpperCase();});
+ ["ownerHomeAvatar","ownerProfileAvatar"].forEach(id=>{const el=document.getElementById(id);if(el){el.src=photo;el.hidden=!photo;}});
+ const nameInput=document.getElementById("ownerProfileNameInput");if(nameInput&&document.activeElement!==nameInput)nameInput.value=name;
+}
+document.getElementById("ownerProfileEditForm")?.addEventListener("submit",async event=>{
+ event.preventDefault();if(!auth.currentUser)return;
+ const message=document.getElementById("ownerProfileSaveMessage"),name=(document.getElementById("ownerProfileNameInput")?.value||"").trim();
+ if(!name){if(message)message.textContent="নাম লিখুন।";return;}
+ const file=document.getElementById("ownerProfilePhotoInput")?.files?.[0];
+ try{
+  let photoData=ownerProfileData.photoData||"";
+  if(file){if(!file.type.startsWith("image/"))throw new Error("শুধু ছবি নির্বাচন করুন।");
+   photoData=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error("ছবি পড়া যায়নি"));reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement("canvas"),scale=Math.min(1,320/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL("image/jpeg",.78));};img.onerror=()=>reject(new Error("ছবি খোলা যায়নি"));img.src=reader.result;};reader.readAsDataURL(file);});
+  }
+  await setDoc(doc(db,"settings","ownerProfile"),{displayName:name,photoData,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});
+  ownerProfileData={displayName:name,photoData};await loadOwnerProfile();if(message)message.textContent="প্রোফাইল সংরক্ষণ হয়েছে।";
+ }catch(error){if(message)message.textContent="সংরক্ষণ হয়নি: "+(error.message||"আবার চেষ্টা করুন");}
+});
+document.getElementById("ownerRunAdButton")?.addEventListener("click",()=>{
+ const banner=document.getElementById("ownerAdBanner"),duration=Number(document.getElementById("ownerAdDuration")?.value||10);
+ if(!banner)return;banner.classList.add("ad-running");const button=document.getElementById("ownerRunAdButton");if(button)button.textContent="▶ AD RUNNING";
+ window.clearTimeout(window.__gioAdTimer);window.__gioAdTimer=window.setTimeout(()=>{banner.classList.remove("ad-running");if(button)button.textContent="▶ Run Ad";},duration*1000);
+});
 document.getElementById("ownerProfileLogout")?.addEventListener("click",async()=>{
  const button=document.getElementById("ownerProfileLogout"),status=document.getElementById("ownerProfileLogoutMessage");
  if(button)button.disabled=true;
  try{await signOut(auth);}
  catch(error){if(status)status.textContent="Logout করা যায়নি: "+(error.message||"আবার চেষ্টা করুন।");if(button)button.disabled=false;}
 });
-(function runOwnerAdBanner(){const banner=document.getElementById("ownerAdBanner");if(!banner)return;const cycle=()=>{banner.hidden=false;setTimeout(()=>{banner.hidden=true;setTimeout(cycle,2000);},10000);};cycle();})();
+// Advertisement runs only when Owner taps Run Ad; duration is selectable (5 or 10 seconds).
 let stopListening;
 let stopOrdersListening;
 let currentPendingOrders = [];
@@ -465,7 +493,8 @@ onAuthStateChanged(auth, async user => {
     adminBottomNav.hidden = false;
     ownerActionBar.hidden = false;
     ownerTabHistory=[];currentOwnerTab="home";
-    const pageTitle=document.getElementById("gioOwnerCurrentPage");if(pageTitle)pageTitle.textContent="Home";
+    const pageTitle=document.getElementById("gioOwnerCurrentPage");if(pageTitle)pageTitle.textContent="GIO BD";
+    loadOwnerProfile();
     const backButton=document.getElementById("gioOwnerBackButton");if(backButton)backButton.disabled=true;
     adminHelp.hidden = false;
     await refreshOwnerWhatsApp();
