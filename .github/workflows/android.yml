@@ -2,6 +2,9 @@ name: Build GIO BD Owner APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - fix/owner-customer-live-chat
 
 permissions:
   contents: write
