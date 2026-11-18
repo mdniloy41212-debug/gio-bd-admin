@@ -148,7 +148,7 @@ async function loadOwnerContacts(){
   stopOwnerContacts=onSnapshot(collection(db,"customerProfiles"),snap=>{
    const users=snap.docs.map(item=>({id:item.id,data:item.data()}));
    if(total)total.textContent=String(users.length);
-   const onlineCount=users.filter(u=>isContactOnline(u.data)).length;
+   const onlineCount=users.filter(u=>u.data.hideOnlineStatus!==true&&isContactOnline(u.data)).length;
    if(online)online.textContent=String(onlineCount);
    list.replaceChildren();
    if(!users.length){list.textContent="এখনো কোনো কাস্টমার প্রোফাইল নেই।";return;}
@@ -156,14 +156,16 @@ async function loadOwnerContacts(){
    users.forEach(({id,data})=>{
     const card=document.createElement("article");card.className="gio-contact-user-card";
     const avatar=document.createElement("div");avatar.className="gio-contact-avatar";
-    if(data.photoURL){const img=document.createElement("img");img.src=data.photoURL;img.alt="";avatar.appendChild(img);}
+    const contactPhoto=data.hideProfilePhoto===true?"":(data.avatar||data.photoURL||"");
+    if(contactPhoto){const img=document.createElement("img");img.src=contactPhoto;img.alt="";avatar.appendChild(img);}
     else avatar.textContent=String(data.displayName||data.name||data.email||"U").charAt(0).toUpperCase();
-    if(isContactOnline(data)){const dot=document.createElement("i");dot.className="gio-contact-online-dot";dot.title="Online";avatar.appendChild(dot);}
+    const contactOnline=data.hideOnlineStatus!==true&&isContactOnline(data);
+    if(contactOnline){const dot=document.createElement("i");dot.className="gio-contact-online-dot";dot.title="Online";avatar.appendChild(dot);}
     const info=document.createElement("div");info.className="gio-contact-user-info";
     const name=document.createElement("strong");name.textContent=data.displayName||data.name||data.email||"GIO BD User";
     const email=document.createElement("small");email.textContent=data.email||"ইমেইল পাওয়া যায়নি";
     const profileId=document.createElement("small");profileId.textContent="Agent Profile ID: "+(data.profileId||"এখনো তৈরি হয়নি");
-    const state=document.createElement("small");state.textContent=isContactOnline(data)?"Online":"Offline";
+    const state=document.createElement("small");state.textContent=data.hideOnlineStatus===true?"Online Status Hidden":(contactOnline?"Online":"Offline");
     info.append(name,email,profileId,state);
     const chat=document.createElement("button");chat.type="button";chat.textContent="Chat";chat.addEventListener("click",()=>openOwnerUserChat(id,data));
     card.append(avatar,info,chat);list.appendChild(card);
