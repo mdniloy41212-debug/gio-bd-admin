@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, query, orderBy, where,
-  onSnapshot, doc, getDoc, getDocs, serverTimestamp
+  onSnapshot, doc, getDoc, getDocs, serverTimestamp, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const config = {
@@ -30,7 +30,7 @@ adminProfilePage.innerHTML = '<h2>👤 Owner Profile</h2><section class="gio-own
 main?.appendChild(adminProfilePage);
 const adminContactPage = document.createElement("section");
 adminContactPage.id = "adminContactPage"; adminContactPage.className = "page"; adminContactPage.hidden = true;
-adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card" hidden><h3 id="gioOwnerChatTitle">Chat</h3><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="মেসেজ লিখুন"></textarea><button type="button" id="gioOwnerChatSend">মেসেজ পাঠান</button><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
+adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card" hidden><h3 id="gioOwnerChatTitle">Chat</h3><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="মেসেজ লিখুন"></textarea><button type="button" id="gioOwnerChatSend">মেসেজ পাঠান</button><p id="gioOwnerChatSendStatus" aria-live="polite"></p><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
 main?.appendChild(adminContactPage);
 let stopOwnerContacts = null;
 let stopOwnerChat = null;
@@ -51,16 +51,30 @@ function openOwnerUserChat(uid, profile) {
  const q = query(collection(db,"supportMessages"),where("userUid","==",uid));
  stopOwnerChat = onSnapshot(q,snap=>{
   messages.replaceChildren();
-  snap.docs.slice().sort((a,b)=>(a.data().createdAt?.toMillis?.()||0)-(b.data().createdAt?.toMillis?.()||0)).forEach(item=>{
-   const d=item.data(); const card=document.createElement("article"); card.className="order-card";
-   const who=document.createElement("strong"); who.textContent=d.senderRole==="admin"?"আপনি":"কাস্টমার";
-   const body=document.createElement("p"); body.textContent=d.text||"";
-   const time=document.createElement("small"); time.textContent=d.createdAt?.toDate?.().toLocaleString("bn-BD")||"";
-   card.append(who,body,time); appendVoicePlayer(card,d); messages.appendChild(card);
+  const rows=snap.docs.slice().sort((a,b)=>(a.data().createdAt?.toMillis?.()||0)-(b.data().createdAt?.toMillis?.()||0));
+  rows.forEach(item=>{
+   const d=item.data();
+   if(d.senderRole!=="admin"&&!d.readAt){
+    updateDoc(doc(db,"supportMessages",item.id),{readAt:serverTimestamp()})
+      .catch(error=>console.warn("Owner chat read receipt could not be saved:",error));
+   }
+   const card=document.createElement("article");
+   card.className="gio-owner-chat-message "+(d.senderRole==="admin"?"gio-owner-chat-outgoing":"gio-owner-chat-incoming");
+   const who=document.createElement("strong");
+   who.className="gio-owner-chat-sender";
+   who.textContent=d.senderRole==="admin"?"GIO BD Owner":"Agent";
+   const body=document.createElement("p");body.className="gio-owner-chat-text";body.textContent=d.text||"";
+   const time=document.createElement("small");time.className="gio-owner-chat-time";time.textContent=d.createdAt?.toDate?.().toLocaleString("bn-BD")||"";
+   card.append(who,body);appendVoicePlayer(card,d);
+   if(d.senderRole==="admin"){
+    const receipt=document.createElement("small");receipt.className="gio-owner-chat-receipt"+(d.readAt?" is-seen":"");
+    receipt.textContent=d.readAt?"Seen ✓✓":"Sent ✓";card.append(receipt);
+   }
+   card.append(time);messages.appendChild(card);
   });
-  if(!snap.size) messages.textContent="এখনো কোনো মেসেজ নেই।";
+  if(!rows.length) messages.textContent="এখনো কোনো মেসেজ নেই।";
+  messages.scrollTop=messages.scrollHeight;
  },err=>messages.textContent="চ্যাট লোড হয়নি: "+err.message);
- panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function createOwnerContactVoice(uid,status){
  return createVoiceRecorder(async(audioData,audioMimeType)=>{
@@ -133,6 +147,21 @@ ownerPhotoInput?.addEventListener("change",()=>{
 });
 
 const contactStyle=document.createElement("style");contactStyle.textContent=".gio-contact-user-card{display:flex;align-items:center;gap:11px;padding:12px;margin:9px 0;border:1px solid #71dfff44;border-radius:15px;background:#101a3dcc}.gio-contact-avatar{position:relative;flex:0 0 48px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#1b80a7,#51318d);font-size:20px;font-weight:800}.gio-contact-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}.gio-contact-online-dot{position:absolute;width:13px;height:13px;right:-1px;bottom:0;border:2px solid #101a3d;border-radius:50%;background:#21df70;box-shadow:0 0 9px #21df70}.gio-contact-user-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}.gio-contact-user-info small{font-size:11px;overflow-wrap:anywhere;color:#b9d8f5}.gio-contact-user-card button{padding:9px 12px}.gio-owner-page-back{position:relative}";document.head.appendChild(contactStyle);
+ 
+const ownerChatStyle=document.createElement("style");
+ownerChatStyle.textContent=`
+ #gioOwnerUserChatMessages{display:flex;flex-direction:column;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;padding:8px;margin:8px 0;border:1px solid #78dfff33;border-radius:13px;background:#07152c}
+ .gio-owner-chat-message{display:flex;flex-direction:column;width:max-content;max-width:84%;padding:8px 11px;border-radius:13px;box-sizing:border-box;overflow-wrap:anywhere}
+ .gio-owner-chat-outgoing{align-self:flex-end;text-align:right;background:#123f70;border:1px solid #3bb8ff88}
+ .gio-owner-chat-incoming{align-self:flex-start;text-align:left;background:#25234c;border:1px solid #a58cff66}
+ .gio-owner-chat-sender{font-size:11px;color:#d5eaff}
+ .gio-owner-chat-text{white-space:pre-wrap;margin:3px 0;font-size:14px}
+ .gio-owner-chat-time,.gio-owner-chat-receipt{font-size:9px;opacity:.85}
+ .gio-owner-chat-receipt{color:#d6eaff}.gio-owner-chat-receipt.is-seen{color:#45dcff;font-weight:800}
+ #gioOwnerChatSendStatus{font-size:11px;min-height:15px;margin:3px 0;color:#bdeaff}
+`;
+document.head.appendChild(ownerChatStyle);
+
 const adminHelp = document.createElement("button"); adminHelp.type="button"; adminHelp.className="gio-admin-help"; adminHelp.textContent="☎ Help";
 const adminHelpPanel = document.createElement("div"); adminHelpPanel.className="gio-admin-help-panel"; adminHelpPanel.hidden=true;
 adminHelpPanel.innerHTML='<strong>GIO BD Owner Support</strong><a id="gioOwnerWhatsApp" href="#" target="_blank" rel="noopener">WhatsApp</a><a href="https://www.facebook.com/profile.php?id=61582121766890" target="_blank" rel="noopener">Facebook Page</a><a href="mailto:mdniloy41212@gmail.com">Gmail</a>';
@@ -195,8 +224,17 @@ function showAdminTab(tab, options = {}){
  }
 }
 document.getElementById("gioOwnerChatSend")?.addEventListener("click",async()=>{
- const input=document.getElementById("gioOwnerChatText"); if(!activeContactUid||!input?.value.trim())return;
- try{await addDoc(collection(db,"supportMessages"),{userUid:activeContactUid,senderRole:"admin",senderName:"GIO BD Owner",text:input.value.trim(),createdAt:serverTimestamp()});input.value="";}catch(e){alert("মেসেজ পাঠানো যায়নি: "+e.message);}
+ const input=document.getElementById("gioOwnerChatText"),button=document.getElementById("gioOwnerChatSend"),status=document.getElementById("gioOwnerChatSendStatus");
+ if(!activeContactUid||!input?.value.trim())return;
+ const textValue=input.value.trim();button.disabled=true;if(status)status.textContent="মেসেজ পাঠানো হচ্ছে…";
+ try{
+  await addDoc(collection(db,"supportMessages"),{userUid:activeContactUid,senderRole:"admin",senderName:"GIO BD Owner",text:textValue,createdAt:serverTimestamp()});
+  input.value="";if(status)status.textContent="মেসেজ পাঠানো হয়েছে ✓";
+ }catch(e){console.error("Owner chat send failed:",e);if(status)status.textContent="মেসেজ পাঠানো যায়নি: "+(e.code||e.message);}
+ finally{button.disabled=false;}
+});
+document.getElementById("gioOwnerChatText")?.addEventListener("keydown",event=>{
+ if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();document.getElementById("gioOwnerChatSend")?.click();}
 });
 
 document.getElementById("gioOwnerChatClose")?.addEventListener("click",()=>{document.getElementById("gioOwnerUserChat").hidden=true;if(stopOwnerChat)stopOwnerChat();activeContactUid=null;});
