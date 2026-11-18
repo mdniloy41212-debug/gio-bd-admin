@@ -109,8 +109,8 @@ function openOwnerUserChat(uid, profile) {
  },err=>messages.textContent="চ্যাট লোড হয়নি: "+err.message);
 }
 function createOwnerContactVoice(uid,status){
- return createVoiceRecorder(async(audioData,audioMimeType)=>{
-  await addDoc(collection(db,"supportMessages"),{userUid:uid,senderRole:"admin",senderName:"GIO BD Owner",text:"🎤 ভয়েস মেসেজ",audioData,audioMimeType,audioDurationLimit:15,createdAt:serverTimestamp()});
+ return createVoiceRecorder(async(audioData,audioMimeType,audioDuration)=>{
+  await addDoc(collection(db,"supportMessages"),{userUid:uid,senderRole:"admin",senderName:"GIO BD Owner",text:"🎤 ভয়েস মেসেজ",audioData,audioMimeType,audioDuration,audioDurationLimit:15,createdAt:serverTimestamp()});
  },status);
 }
 async function loadOwnerContacts(){
@@ -339,6 +339,7 @@ function createVoiceRecorder(onReady, statusElement) {
   let stream = null;
   let chunks = [];
   let timer = null;
+  let startedAt = 0;
   let busy = false;
 
   button.addEventListener("click", async () => {
@@ -379,7 +380,8 @@ function createVoiceRecorder(onReady, statusElement) {
             reader.readAsDataURL(blob);
           });
           if (dataUrl.length > 180000) throw new Error("অডিও ফাইলটি বড় হয়েছে। আবার ছোট করে রেকর্ড করুন।");
-          await onReady(dataUrl, blob.type || recorder.mimeType || "audio/webm");
+          const duration = Math.min(15, Math.max(1, Math.round((Date.now() - startedAt) / 1000)));
+          await onReady(dataUrl, blob.type || recorder.mimeType || "audio/webm", duration);
           statusElement.textContent = "ভয়েস মেসেজ পাঠানো হয়েছে।";
         } catch (error) {
           statusElement.textContent = "ভয়েস মেসেজ পাঠানো যায়নি: " + error.message;
@@ -391,6 +393,7 @@ function createVoiceRecorder(onReady, statusElement) {
           chunks = [];
         }
       };
+      startedAt = Date.now();
       recorder.start();
       button.textContent = "⏹️ রেকর্ড বন্ধ করুন";
       statusElement.textContent = "রেকর্ড হচ্ছে... সর্বোচ্চ ১৫ সেকেন্ড।";
@@ -487,6 +490,7 @@ function appendVoicePlayer(card, data) {
   canvas.className = "voice-message-waveform";
   canvas.width = 280;
   canvas.height = 34;
+  canvas.style.cssText = "display:block;width:100%;max-width:280px;height:34px";
   canvas.setAttribute("aria-label", "শব্দ অনুযায়ী ভয়েস ওয়েভফর্ম");
   const player = document.createElement("audio");
   player.controls = true;
@@ -581,11 +585,11 @@ function renderMessages() {
       });
       const voiceStatus = document.createElement("p");
       voiceStatus.className = "voice-status";
-      const voiceButton = createVoiceRecorder(async (audioData, audioMimeType) => {
+      const voiceButton = createVoiceRecorder(async (audioData, audioMimeType, audioDuration) => {
         if (!data.userUid) throw new Error("কাস্টমার UID পাওয়া যায়নি।");
         await addDoc(collection(db, "supportMessages"), {
           userUid: data.userUid, senderRole: "admin", senderName: "GIO BD Admin",
-          text: "🎤 ভয়েস মেসেজ", audioData, audioMimeType, audioDurationLimit: 15,
+          text: "🎤 ভয়েস মেসেজ", audioData, audioMimeType, audioDuration, audioDurationLimit: 15,
           createdAt: serverTimestamp()
         });
         activeInboxTab = "admin";
