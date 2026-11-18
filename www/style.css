@@ -1049,3 +1049,15 @@ body:has(#loginPage.active) main { padding-top:12px; }
 .gio-stock-controls input{width:90px;min-width:70px;padding:7px 5px;border:1px solid #7ddcff;border-radius:8px;background:#0b1c37;color:#fff;text-align:center;font-weight:800}
 .gio-stock-controls .gio-stock-save{font-size:12px;min-width:auto}
 @media(max-width:380px){.gio-home-ad-slot,.gio-home-ad-slot .gio-five-second-ad{min-height:190px}}
+
+
+/* GIO BD: Owner chat is a true full-screen screen; only messages scroll */
+#gioOwnerUserChat.gio-owner-chat-screen{position:fixed!important;inset:0!important;z-index:4000!important;display:flex!important;flex-direction:column!important;gap:0!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;margin:0!important;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom)!important;box-sizing:border-box!important;border:0!important;border-radius:0!important;background:#08152c!important}
+#gioOwnerUserChat[hidden]{display:none!important}
+#gioOwnerUserChat .gio-owner-chat-header{flex:0 0 auto;min-height:56px;padding:8px 0}
+#gioOwnerUserChatMessages{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin}
+#gioOwnerChatText{flex:0 0 auto;width:100%;max-height:110px;resize:none;box-sizing:border-box;margin:6px 0}
+#gioOwnerChatSend{flex:0 0 auto;align-self:flex-end;min-width:76px}
+#gioOwnerChatSendStatus,#gioOwnerChatVoiceStatus{flex:0 0 auto;margin:2px 0!important}
+#gioOwnerChatClose{position:fixed!important;top:calc(env(safe-area-inset-top) + 7px);left:8px;z-index:4010;padding:5px 8px!important;font-size:11px!important}
+#gioOwnerCustomerProfilePanel,#gioOwnerChatSettingsPanel{flex:0 0 auto;max-height:22vh;overflow:auto}
