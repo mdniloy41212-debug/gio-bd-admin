@@ -37,22 +37,24 @@
           <path d="M34 7 44 26 60 7 76 26 86 7M17 26h86M44 26l16 66 16-66" fill="none" stroke="#efffff" stroke-width="2" opacity=".9"/>
         </svg>
       </div>
-      <div class="gio-welcome-title">WELCOME</div><div class="gio-welcome-owner">GIO BD OWNER</div><div class="gio-brand-name">💎 GIO BD <span>OWNER</span></div>
+      <div class="gio-welcome-title">GIO BD</div><div class="gio-welcome-owner">OWNER</div><div class="gio-brand-name">💎 GIO BD <span>OWNER</span></div>
       <div class="gio-brand-subtitle">DIAMOND RECHARGE</div>
-      <div class="gio-brand-glow">✦  Secure • Smart • Simple  ✦</div>
+      <div class="gio-brand-glow">✦  DIAMOND RECHARGE  ✦</div>
     </div>
-    <h2 class="owner-login-heading">Owner Login</h2>
-    <p class="owner-login-description">শুধুমাত্র অনুমোদিত Owner প্রবেশ করতে পারবেন।</p>
-    <div id="ownerPasswordLogin">
-      <h3>Gmail ও Password দিয়ে লগইন</h3>
+    <div class="owner-login-shield" aria-hidden="true">♛<small>OWNER</small></div>
+    <h2 class="owner-login-heading">OWNER LOGIN</h2>
+    <p class="owner-login-description">Manage Your Business Better</p>
+    <div class="owner-login-methods" role="tablist" aria-label="Login method"><button type="button" class="active" data-owner-login-method="password" role="tab" aria-selected="true">EMAIL &amp; PASSWORD</button><button type="button" data-owner-login-method="otp" role="tab" aria-selected="false">EMAIL OTP</button></div>
+    <div id="ownerPasswordLogin" class="owner-login-panel">
+      <h3>OWNER EMAIL</h3>
       <label for="adminEmail">Owner Gmail</label>
       <input id="adminEmail" type="email" placeholder="Owner Gmail লিখুন" autocomplete="username" required>
       <label for="ownerPassword">Password</label>
       <input id="ownerPassword" type="password" placeholder="আপনার Password লিখুন" autocomplete="current-password" required>
       <button id="ownerPasswordLoginBtn" type="button">Gmail ও Password দিয়ে লগইন সাবমিট</button>
     </div>
-    <div id="ownerOtpLogin" class="owner-otp-login" aria-label="Gmail OTP Login">
-      <h3>Gmail OTP দিয়ে লগইন</h3>
+    <div id="ownerOtpLogin" class="owner-otp-login owner-login-panel" aria-label="Gmail OTP Login" hidden>
+      <h3>EMAIL OTP LOGIN</h3>
       <p>আপনার Owner Gmail-এ ৬ সংখ্যার OTP পাঠানো হবে।</p>
       <fieldset>
         <label for="ownerOtpEmail">Owner Gmail</label>
