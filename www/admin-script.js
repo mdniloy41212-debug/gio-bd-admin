@@ -655,19 +655,66 @@ async function loadDashboardStats() {
       const number = document.createElement("p");
       number.textContent = String(value);
       if (kind === "current-diamonds") {
+        const controls = document.createElement("div");
+        controls.className = "owner-stock-inline-controls";
         const edit = document.createElement("button");
         edit.type = "button";
         edit.className = "owner-stock-edit-button";
         edit.textContent = "✎ Edit";
+        const editor = document.createElement("div");
+        editor.className = "owner-stock-inline-editor";
+        editor.hidden = true;
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        input.inputMode = "numeric";
+        input.setAttribute("aria-label", "New Diamond Stock");
+        input.value = String(stock);
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "owner-stock-save-button";
+        save.textContent = "Save";
+        const cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.className = "owner-stock-cancel-button";
+        cancel.textContent = "Cancel";
+        const message = document.createElement("small");
+        message.className = "owner-stock-inline-message";
         edit.addEventListener("click", () => {
-          document.querySelector('[data-admin-tab="settings"]')?.click();
-          setTimeout(() => {
-            const form = $("diamondStockForm");
-            form?.scrollIntoView({behavior:"smooth",block:"center"});
-            $("diamondStockQuantity")?.focus();
-          }, 120);
+          editor.hidden = false;
+          edit.hidden = true;
+          input.value = String(stock);
+          input.focus();
         });
-        card.appendChild(edit);
+        cancel.addEventListener("click", () => {
+          editor.hidden = true;
+          edit.hidden = false;
+          message.textContent = "";
+        });
+        save.addEventListener("click", async () => {
+          if (!isAdmin) return;
+          const quantity = Number(input.value);
+          if (!Number.isSafeInteger(quantity) || quantity < 0) {
+            message.textContent = "০ বা তার বেশি পূর্ণসংখ্যা দিন।";
+            return;
+          }
+          save.disabled = true;
+          message.textContent = "সংরক্ষণ হচ্ছে...";
+          try {
+            await setDoc(doc(db, "settings", "diamondStock"), {
+              quantity, updatedAt: serverTimestamp(), updatedBy: auth.currentUser?.uid || ""
+            });
+            await loadDashboardStats();
+          } catch (error) {
+            console.error("Inline stock update error:", error);
+            message.textContent = "Stock সংরক্ষণ হয়নি। আবার চেষ্টা করুন।";
+            save.disabled = false;
+          }
+        });
+        editor.append(input, save, cancel, message);
+        controls.append(edit, editor);
+        card.appendChild(controls);
       }
       card.append(title, number);
       container.appendChild(card);
