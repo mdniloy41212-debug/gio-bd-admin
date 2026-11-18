@@ -67,11 +67,18 @@
   </section>
   <section id="adminPage" class="page">
     <div class="owner-home-top">
-      <div class="owner-home-brand"><span class="owner-diamond-mark">💎</span><div><strong>GIO BD OWNER</strong><small>OFFICIAL DASHBOARD</small></div></div>
-      <button id="ownerProfileButton" class="owner-profile-button" type="button" aria-label="Open verified Owner profile"><span class="admin-profile-avatar gio-owner-avatar"><span>GIO</span><b class="gio-owner-v-badge" aria-label="Official verified">✓</b></span></button>
+      <button id="ownerProfileButton" class="owner-profile-button" type="button" aria-label="Open verified profile">
+        <span class="admin-profile-avatar gio-owner-avatar"><img id="ownerHomeAvatar" alt="Profile"><span id="ownerHomeInitial">G</span><b class="gio-owner-v-badge" aria-label="Verified">✓</b></span>
+        <strong id="ownerHomeName">PROFILE</strong>
+      </button>
+      <div id="ownerAdBanner" class="owner-ad-banner" aria-label="Advertisement">
+        <div class="owner-ad-robot" aria-hidden="true"><span>🤖</span><small>📱</small></div>
+        <div class="owner-ad-copy"><strong>AD RUN</strong><small>৫ সেকেন্ড / ১০ সেকেন্ড</small>
+          <select id="ownerAdDuration" aria-label="Advertisement duration"><option value="5">৫ সেকেন্ড</option><option value="10" selected>১০ সেকেন্ড</option></select>
+          <button type="button" id="ownerRunAdButton">▶ Run Ad</button>
+        </div>
+      </div>
     </div>
-    <div id="ownerAdBanner" class="owner-ad-banner" aria-label="Advertisement"><span class="owner-ad-label">ADVERTISEMENT</span><strong>GIO BD • DIAMOND RECHARGE</strong><small>OFFICIAL OWNER DASHBOARD</small></div>
-    <div class="owner-dashboard-hero"><div class="owner-dashboard-kicker">✦ LIVE BUSINESS OVERVIEW ✦</div><h2>3D DASHBOARD</h2><p>GIO BD OWNER</p><div class="owner-dashboard-orbit"><span>💎</span></div></div>
     <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
     <p id="adminOrderAlert" class="form-message" hidden></p>
   </section>
@@ -115,9 +122,7 @@
     </details>
   </section>
 </main>
-<footer>
-  <p>© <span id="year"></span> GIO BD Owner</p>
-</footer>
+<footer class="gio-owner-footer"><p>Presented By <strong>Sajib</strong></p></footer>
 <script type="module" src="inbox.js"></script>
 <script type="module" src="admin-script.bundle.js"></script>
 </body>
