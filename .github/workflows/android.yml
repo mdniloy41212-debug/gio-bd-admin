@@ -34,8 +34,23 @@ jobs:
       - name: Build web app bundle
         run: npm run build
 
-      - name: Validate JavaScript
-        run: node --input-type=module --check < www/admin-script.bundle.js
+      - name: Validate Owner JavaScript modules
+        run: |
+          set -euo pipefail
+          node --input-type=module --check < www/admin-script.bundle.js
+          node --input-type=module --check < www/inbox.js
+          grep -q 'data-admin-tab="home"' www/inbox.js
+          grep -q 'data-admin-tab="orders"' www/inbox.js
+          grep -q 'data-admin-tab="inbox"' www/inbox.js
+          grep -q 'data-admin-tab="settings"' www/inbox.js
+          grep -q 'data-admin-tab="offers"' www/inbox.js
+          grep -q 'id="gioOwnerBackButton"' www/inbox.js
+          grep -q 'id="gioOwnerRefreshButton"' www/inbox.js
+
+      - name: Verify Owner app version
+        run: |
+          grep -q 'versionCode 8' android/app/build.gradle
+          grep -q 'versionName "1.6"' android/app/build.gradle
 
       - name: Sync Capacitor Android project
         run: npx cap sync android
@@ -91,8 +106,8 @@ jobs:
       - name: Publish verified Owner APK release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: owner-v1.6-${{ github.run_number }}
-          name: GIO BD Owner v1.6
+          tag_name: owner-v1.6-8-${{ github.run_number }}
+          name: GIO BD Owner v1.6 (Build ${{ github.run_number }})
           body: |
             GIO BD Owner APK.
             Package: com.giobd.admin
