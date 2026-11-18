@@ -34,7 +34,8 @@ adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"
 main?.appendChild(adminContactPage);
 let stopOwnerContacts = null;
 let stopOwnerChat = null;
-let activeContactUid = null;\n let activeContactProfile = {};
+let activeContactUid = null;
+ let activeContactProfile = {};
 function isContactOnline(data){const last=data.lastSeenAt?.toDate?.()?.getTime?.()||0;return data.isOnline===true&&last>0&&(Date.now()-last)<120000;}
 function attachOwnerMessageDelete(card,item) {
  let holdTimer=null;
@@ -48,8 +49,10 @@ function attachOwnerMessageDelete(card,item) {
  ["pointerup","pointercancel","pointerleave"].forEach(name=>card.addEventListener(name,cancelHold));
 }
 function openOwnerUserChat(uid, profile) {
- activeContactUid = uid;\n  activeContactProfile = profile || {};
- const panel = document.getElementById("gioOwnerUserChat");\n  panel?.querySelector("#gioOwnerChatRefresh")?.addEventListener("click",()=>{if(activeContactUid)openOwnerUserChat(activeContactUid,activeContactProfile);},{once:true});
+ activeContactUid = uid;
+  activeContactProfile = profile || {};
+ const panel = document.getElementById("gioOwnerUserChat");
+  panel?.querySelector("#gioOwnerChatRefresh")?.addEventListener("click",()=>{if(activeContactUid)openOwnerUserChat(activeContactUid,activeContactProfile);},{once:true});
  const voiceStatus=document.getElementById("gioOwnerChatVoiceStatus");
  const oldVoice=document.getElementById("gioOwnerChatVoiceButton");oldVoice?.remove();
  const voice=createOwnerContactVoice(uid,voiceStatus);voice.id="gioOwnerChatVoiceButton";voiceStatus?.insertAdjacentElement("afterend",voice);
