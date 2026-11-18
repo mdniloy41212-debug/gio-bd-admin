@@ -406,14 +406,95 @@ function createVoiceRecorder(onReady, statusElement) {
   return button;
 }
 
+function attachReactiveVoiceWaveform(player, canvas) {
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  const bars = 28;
+  const drawIdle = () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "#8bcfff";
+    for (let i = 0; i < bars; i++) {
+      const h = 3;
+      context.fillRect(i * (canvas.width / bars) + 1, (canvas.height - h) / 2, Math.max(1, canvas.width / bars - 3), h);
+    }
+  };
+  drawIdle();
+  let audioContext = null;
+  let frame = 0;
+  let analyser = null;
+  let source = null;
+  let bins = null;
+  let disposed = false;
+  const stopVisual = () => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    drawIdle();
+  };
+  player.addEventListener("play", async () => {
+    if (disposed) return;
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      if (!audioContext) {
+        audioContext = new AudioContextClass();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 128;
+        analyser.smoothingTimeConstant = 0.72;
+        bins = new Uint8Array(analyser.frequencyBinCount);
+        source = audioContext.createMediaElementSource(player);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+      }
+      if (audioContext.state === "suspended") await audioContext.resume();
+      if (disposed || player.paused) return;
+      const render = () => {
+        if (disposed || player.paused || player.ended) {
+          stopVisual();
+          return;
+        }
+        analyser.getByteFrequencyData(bins);
+        const peak = bins.reduce((sum, value) => sum + value, 0) / bins.length / 255;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        const width = canvas.width / bars;
+        for (let i = 0; i < bars; i++) {
+          const sample = bins[Math.min(bins.length - 1, Math.floor(i * bins.length / bars))] / 255;
+          const height = peak < 0.012 ? 2 : Math.max(2, sample * (canvas.height - 4));
+          context.fillStyle = peak < 0.012 ? "#8bcfff" : "#55d7ff";
+          context.fillRect(i * width + 1, (canvas.height - height) / 2, Math.max(1, width - 3), height);
+        }
+        frame = requestAnimationFrame(render);
+      };
+      stopVisual();
+      frame = requestAnimationFrame(render);
+    } catch (error) {
+      console.warn("Voice waveform unavailable; audio playback remains available:", error);
+    }
+  });
+  ["pause", "ended"].forEach(name => player.addEventListener(name, stopVisual));
+  player.addEventListener("emptied", () => {
+    disposed = true;
+    stopVisual();
+    if (audioContext && audioContext.state !== "closed") audioContext.close().catch(() => {});
+  }, { once: true });
+}
+
 function appendVoicePlayer(card, data) {
   if (!data.audioData) return;
+  const duration = document.createElement("small");
+  duration.className = "voice-message-duration";
+  duration.textContent = "🎙️ ভয়েস মেসেজ" + (Number(data.audioDuration) > 0 ? " • " + Number(data.audioDuration) + " সেকেন্ড" : "");
+  const canvas = document.createElement("canvas");
+  canvas.className = "voice-message-waveform";
+  canvas.width = 280;
+  canvas.height = 34;
+  canvas.setAttribute("aria-label", "শব্দ অনুযায়ী ভয়েস ওয়েভফর্ম");
   const player = document.createElement("audio");
   player.controls = true;
-  player.preload = "none";
+  player.preload = "metadata";
   player.className = "voice-message-player";
   player.src = data.audioData;
-  card.appendChild(player);
+  card.append(duration, canvas, player);
+  attachReactiveVoiceWaveform(player, canvas);
 }
 
 
