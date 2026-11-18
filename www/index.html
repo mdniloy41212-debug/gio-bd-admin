@@ -9,13 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<div class="gio-global-controls" aria-label="অ্যাপ নেভিগেশন">
-  <button id="gioGlobalBack" class="gio-global-control" type="button" aria-label="আগের স্ক্রিনে ফিরে যান" title="Back">←</button>
-  <button id="gioGlobalRefresh" class="gio-global-control" type="button" aria-label="অ্যাপ রিফ্রেশ করুন" title="Refresh">↻</button>
+<div class="gio-global-controls" aria-label="Owner shortcuts">
+  <button id="gioOwnerProfileShortcut" class="gio-global-control gio-profile-shortcut" type="button" aria-label="Owner Profile" title="Profile">👤</button>
+  <button id="gioOwnerAdShortcut" class="gio-global-control" type="button" aria-label="Ad System" title="Ad System">📢</button>
 </div>
 <header class="header">
   <div class="logo">GIO BD <span>OWNER</span></div>
-  <nav>
+  <nav class="owner-header-nav">
     <button data-page="loginPage" id="loginNav">ওনার লগইন</button>
     <button data-admin-tab="home" id="adminHomeNav" hidden>🏠 Home</button><button data-page="adminPage" id="adminNav" hidden>ড্যাশবোর্ড</button>
     <button id="logoutBtn" hidden>লগআউট</button>
@@ -80,37 +80,62 @@
     <h2>ওনার লগইন</h2>
     <p>শুধুমাত্র অনুমোদিত ওনার প্রবেশ করতে পারবেন।</p>
     <div id="loginForm" class="owner-otp-login">
-      <label for="adminEmail">ওনার Gmail</label>
-      <input id="adminEmail" type="email" placeholder="Owner Gmail" autocomplete="email" required>
-      <button id="ownerSendOtpBtn" type="button">Gmail-এ OTP পাঠান</button>
-      <div id="ownerOtpVerifySection" hidden>
-        <label for="ownerOtpCode">৬ সংখ্যার OTP</label>
-        <input id="ownerOtpCode" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Gmail থেকে পাওয়া OTP লিখুন" autocomplete="one-time-code">
-        <button id="ownerVerifyOtpBtn" type="button">OTP যাচাই করে লগইন</button>
+      <label for="adminEmail">Owner Gmail / Email</label>
+      <input id="adminEmail" type="email" placeholder="Owner Gmail লিখুন" autocomplete="email" required>
+      <div class="owner-login-methods" role="tablist" aria-label="লগইন পদ্ধতি">
+        <button id="ownerOtpTab" class="is-active" type="button" role="tab" aria-selected="true">Email + OTP</button>
+        <button id="ownerPasswordTab" type="button" role="tab" aria-selected="false">Email + Password</button>
       </div>
-      <div class="owner-login-divider" role="separator"><span>অথবা</span></div>
-      <label for="ownerPassword">Gmail Password</label>
-      <input id="ownerPassword" type="password" placeholder="Owner Password লিখুন" autocomplete="current-password">
-      <button id="ownerPasswordLoginBtn" type="button">Password দিয়ে লগইন</button>
+      <div id="ownerOtpLoginPane" class="owner-login-pane">
+        <button id="ownerSendOtpBtn" type="button">Gmail-এ OTP পাঠান</button>
+        <div id="ownerOtpVerifySection" hidden>
+          <label for="ownerOtpCode">৬ সংখ্যার OTP</label>
+          <input id="ownerOtpCode" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Gmail থেকে পাওয়া OTP লিখুন" autocomplete="one-time-code">
+          <button id="ownerVerifyOtpBtn" type="button">OTP যাচাই করে লগইন</button>
+        </div>
+      </div>
+      <div id="ownerPasswordLoginPane" class="owner-login-pane" hidden>
+        <label for="ownerPassword">Password</label>
+        <input id="ownerPassword" type="password" placeholder="Owner Password লিখুন" autocomplete="current-password">
+        <button id="ownerPasswordLoginBtn" type="button">Email দিয়ে Password Login</button>
+      </div>
     </div>
     <p id="loginMessage"></p>
   </section>
+  <script>
+(() => {
+ const otpTab=document.getElementById("ownerOtpTab"),passwordTab=document.getElementById("ownerPasswordTab");
+ const otpPane=document.getElementById("ownerOtpLoginPane"),passwordPane=document.getElementById("ownerPasswordLoginPane");
+ const setMode=mode=>{
+  const otp=mode==="otp";
+  otpPane.hidden=!otp;passwordPane.hidden=otp;
+  otpTab.classList.toggle("is-active",otp);passwordTab.classList.toggle("is-active",!otp);
+  otpTab.setAttribute("aria-selected",String(otp));passwordTab.setAttribute("aria-selected",String(!otp));
+ };
+ otpTab?.addEventListener("click",()=>setMode("otp"));
+ passwordTab?.addEventListener("click",()=>setMode("password"));
+ setMode("otp");
+})();
+</script>
   <section id="adminPage" class="page">
-<aside class="gio-flash-ad" aria-label="GIO BD OWNER animated welcome banner">
-  <div class="gio-ad-diamonds" aria-hidden="true"><span>💛</span><span>◆</span><span>💎</span><span>◆</span></div>
-  <div class="gio-ad-welcome"><small>WELCOME • স্বাগতম</small><strong>GIO BD <em>OWNER</em></strong><span class="gio-ad-tagline">DIAMOND RECHARGE</span></div>
-  <div class="gio-ad-person" aria-hidden="true"><span class="gio-ad-person-icon">🧍</span><span class="gio-ad-phone">📱<b>GIO BD</b></span></div>
-  <span class="gio-ad-glint" aria-hidden="true">✦</span>
-</aside>
-    <section class="gio-owner-profile" aria-label="GIO BD Owner verified profile">
-      <div class="gio-owner-frame-wrap">
-        <img class="gio-owner-frame" src="assets/owner-profile-frame.webp" alt="GIO BD official profile frame">
-        <span class="gio-frame-brand" aria-label="GIO BD">GIO BD</span>
-        <span class="gio-profile-verified" role="img" aria-label="Verified">✓</span>
-      </div>
-      <img class="gio-primary-reseller-badge" src="assets/primary-reseller.webp" alt="Primary Reseller">
-      <strong class="gio-owner-fixed-name">GIO BD</strong>
-      <span class="gio-owner-verified-label"><span aria-hidden="true">✓</span> Verified Owner</span>
+<div class="gio-owner-home-top">
+      <section class="gio-owner-profile" aria-label="GIO BD Owner verified profile">
+        <div class="gio-owner-frame-wrap">
+          <img class="gio-owner-frame" src="assets/owner-profile-frame.webp" alt="GIO BD official profile frame">
+          <img id="gioOwnerFramePhoto" class="gio-owner-frame-photo" alt="Owner profile photo" hidden>
+          <label class="gio-profile-upload" for="gioOwnerProfilePhotoInput" aria-label="প্রোফাইল ছবি যোগ করুন">＋</label>
+          <input id="gioOwnerProfilePhotoInput" class="gio-profile-photo-input" type="file" accept="image/*">
+          <span class="gio-frame-brand" aria-label="GIO BD">GIO BD</span>
+          <span class="gio-profile-verified" role="img" aria-label="Verified">✓</span>
+        </div>
+        <img class="gio-primary-reseller-badge" src="assets/primary-reseller.webp" alt="Primary Reseller">
+        <strong class="gio-owner-fixed-name">GIO BD</strong>
+        <span class="gio-owner-verified-label"><span aria-hidden="true">✓</span> Verified Owner</span>
+      </section>
+    </div>
+    <section class="gio-wallet-dashboard" aria-label="Wallet Dashboard">
+      <div class="gio-wallet-heading"><span>💎</span><div><strong>Wallet Dashboard</strong><small>Diamond Balance & Sales</small></div></div>
+      <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
     </section>
     <h2>ড্যাশবোর্ড</h2>
     <button id="adminSettingsButton" class="floating-settings-button" type="button">⚙️ Settings</button>
@@ -121,7 +146,6 @@
     <button type="submit">Stock সংরক্ষণ করুন</button>
     <p id="diamondStockMessage" class="form-message"></p>
   </form>
-  <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
     <div class="order-filters">
       <input id="orderSearch" type="search" placeholder="অর্ডার ID, কাস্টমার, IMO ID, ফোন বা Transaction ID খুঁজুন">
       <select id="orderStatusFilter">
