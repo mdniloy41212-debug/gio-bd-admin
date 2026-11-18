@@ -584,6 +584,26 @@ async function loadDashboardStats() {
       const number = document.createElement("p");
       number.textContent = String(value);
       card.append(title, number);
+      if (label === "অবশিষ্ট Black Diamond Stock") {
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "gio-stock-edit-button";
+        editButton.textContent = "✏️ Edit Diamond";
+        editButton.addEventListener("click", () => {
+          if (!isAdmin) return;
+          const input = $("diamondStockQuantity");
+          const current = input?.value || String(stock);
+          const next = window.prompt("নতুন Black Diamond Stock পরিমাণ লিখুন:", current);
+          if (next === null) return;
+          if (!/^\\d+$/.test(next.trim()) || !Number.isSafeInteger(Number(next))) {
+            alert("০ বা তার বেশি পূর্ণসংখ্যা Diamond দিন।");
+            return;
+          }
+          if (input) input.value = next.trim();
+          $("diamondStockForm")?.requestSubmit();
+        });
+        card.appendChild(editButton);
+      }
       container.appendChild(card);
     });
     const stockInput = $("diamondStockQuantity");
