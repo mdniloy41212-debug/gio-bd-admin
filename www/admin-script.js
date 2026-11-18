@@ -629,20 +629,44 @@ async function loadDashboardStats() {
       getDoc(doc(db, "settings", "diamondStock"))
     ]);
     let salesMoney = 0;
+    let totalDiamonds = 0;
     ordersSnapshot.forEach(item => {
       const data = item.data();
-      if (data.status === "Completed" && data.isArchived !== true) salesMoney += Number(data.price) || 0;
+      if (data.status === "Completed" && data.isArchived !== true) {
+        salesMoney += Number(data.price) || 0;
+        totalDiamonds += Number(data.diamondQuantity) || Number(String(data.packageName || "").match(/[0-9]+/)?.[0]) || 0;
+      }
     });
     salesLedgerSnapshot.forEach(item => { salesMoney += Number(item.data().amount) || 0; });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
     container.replaceChildren();
-    [["BLACK DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"], ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]].forEach(([label,value,kind]) => {
+    const cards = [
+      ["TOTAL DIAMOND", totalDiamonds.toLocaleString("en-BD") + " 💎", "total-diamonds"],
+      ["DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"],
+      ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]
+    ];
+    cards.forEach(([label,value,kind]) => {
       const card = document.createElement("div");
       card.className = "order-card dashboard-stat-card owner-diamond-card " + kind;
       const title = document.createElement("strong");
       title.textContent = label;
       const number = document.createElement("p");
       number.textContent = String(value);
+      if (kind === "current-diamonds") {
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "owner-stock-edit-button";
+        edit.textContent = "✎ Edit";
+        edit.addEventListener("click", () => {
+          document.querySelector('[data-admin-tab="settings"]')?.click();
+          setTimeout(() => {
+            const form = $("diamondStockForm");
+            form?.scrollIntoView({behavior:"smooth",block:"center"});
+            $("diamondStockQuantity")?.focus();
+          }, 120);
+        });
+        card.appendChild(edit);
+      }
       card.append(title, number);
       container.appendChild(card);
     });
