@@ -59,7 +59,7 @@ function openOwnerUserChat(uid, profile) {
  const profilePhoto=document.createElement("div");profilePhoto.className="gio-owner-profile-large-avatar";
  if(profile.photoURL){const image=document.createElement("img");image.src=profile.photoURL;image.alt="";profilePhoto.appendChild(image);}else profilePhoto.textContent=String(customerName).charAt(0).toUpperCase();
  const profileName=document.createElement("strong");profileName.textContent=customerName;
- const numericId=String(profile.profileId||"").replace(/\\D/g,"");
+ const numericId=(String(profile.profileId||"").match(/[0-9]+/g)||[]).join("");
  const profileId=document.createElement("small");profileId.textContent=numericId||"Numeric ID এখনো তৈরি হয়নি";
  profilePanel.append(profilePhoto,profileName,profileId);
  const messages = document.getElementById("gioOwnerUserChatMessages");
