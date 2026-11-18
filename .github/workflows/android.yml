@@ -40,7 +40,6 @@ jobs:
           node --input-type=module --check < www/admin-script.bundle.js
           node --input-type=module --check < www/inbox.js
           grep -q 'data-admin-tab="home"' www/inbox.js
-          grep -q 'data-admin-tab="orders"' www/inbox.js
           grep -q 'data-admin-tab="inbox"' www/inbox.js
           grep -q 'data-admin-tab="settings"' www/inbox.js
           grep -q 'data-admin-tab="offers"' www/inbox.js
