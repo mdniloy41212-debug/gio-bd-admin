@@ -24,6 +24,18 @@ adminBottomNav.className = "gio-admin-bottom-nav";
 adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="offers">🎁<span>Offers</span></button><button type="button" data-admin-tab="inbox">📥<span>Inbox</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button>';
 adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
+const ownerActionBar=document.createElement("div");
+ownerActionBar.className="gio-owner-action-bar";
+ownerActionBar.innerHTML='<button type="button" id="gioOwnerBackButton" aria-label="Back">← <span>Back</span></button><strong id="gioOwnerCurrentPage">GIO BD OWNER</strong><button type="button" id="gioOwnerRefreshButton" aria-label="Refresh">↻ <span>Refresh</span></button>';
+ownerActionBar.hidden=true;
+document.body.appendChild(ownerActionBar);
+let ownerTabHistory=[];
+let currentOwnerTab="home";
+document.getElementById("gioOwnerRefreshButton").addEventListener("click",()=>window.location.reload());
+document.getElementById("gioOwnerBackButton").addEventListener("click",()=>{
+ const previous=ownerTabHistory.pop()||"home";
+ showAdminTab(previous,false);
+});
 const adminProfilePage = document.createElement("section");
 adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
 adminProfilePage.innerHTML = '<div class="owner-profile-detail"><div class="admin-profile-avatar gio-owner-avatar"><span>GIO</span><b class="gio-owner-v-badge">✓</b></div><h2>GIO BD OWNER</h2><div class="owner-official-verified">🔵 OFFICIAL VERIFIED</div><p id="gioOwnerProfileEmail">Admin account</p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><button id="ownerProfileBack" type="button">← Home</button><button id="ownerProfileLogout" class="owner-profile-logout" type="button">Logout</button><p id="ownerProfileLogoutMessage" role="status"></p></div>';
@@ -36,6 +48,7 @@ adminNavStyle.textContent += '.gio-chat-list{display:flex;flex-direction:column;
 
 .owner-monitor-limits{margin:22px 0 18px;padding:16px;border:1px solid rgba(255,190,90,.5);border-radius:16px;background:linear-gradient(145deg,rgba(75,43,24,.72),rgba(34,24,58,.9));box-shadow:0 10px 26px rgba(0,0,0,.22)}.owner-monitor-limits h3{color:#ffd27a;margin:0 0 9px}.owner-monitor-limits p{color:#eee1d2;margin:0 0 10px}.owner-monitor-limits ul{padding-left:22px;margin:8px 0 14px}.owner-monitor-limits li{padding:5px 0;color:#fff;overflow-wrap:anywhere}.owner-monitor-can{padding:11px;border-radius:10px;background:rgba(14,105,77,.28);border:1px solid rgba(89,220,165,.35);color:#c9ffe7;font-weight:600}
 adminNavStyle.textContent += ".gio-customer-chat-item{display:flex;align-items:center;gap:12px;width:100%;padding:13px;margin:6px 0;text-align:left;border:1px solid #79dfff44;border-radius:15px;background:linear-gradient(135deg,#172c50,#10203c);color:#fff}.gio-customer-chat-avatar{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:50%;font-size:20px;font-weight:800;background:linear-gradient(135deg,#05a9d4,#6843c8)}.gio-customer-chat-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}.gio-customer-chat-info strong,.gio-customer-chat-info small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gio-customer-chat-info small{color:#b6cce4}.gio-customer-chat-meta{display:flex;flex-direction:column;align-items:center;gap:5px;color:#9db8d2}.gio-customer-unread{min-width:20px;padding:2px 6px;border-radius:20px;background:#00a8d2;color:white;text-align:center}.gio-chat-thread-header{display:flex;align-items:center;gap:12px;padding:8px 0 12px}.gio-chat-thread-header strong{font-size:16px}.gio-chat-thread{display:flex;flex-direction:column;gap:10px;max-height:48vh;overflow-y:auto;padding:10px;background:#08152a88;border-radius:15px}.gio-chat-composer{display:flex;flex-direction:column;gap:8px;padding-top:12px}.gio-chat-composer textarea{width:100%;min-height:64px}.gio-chat-composer audio{max-width:100%}";
+adminNavStyle.textContent += '.gio-admin-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}.gio-owner-action-bar{position:sticky;top:0;z-index:1080;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;margin:0 0 12px;border:1px solid #70ddff55;border-radius:14px;background:#091631f5;backdrop-filter:blur(12px);box-shadow:0 6px 18px #0007}.gio-owner-action-bar[hidden]{display:none!important}.gio-owner-action-bar strong{font-size:13px;color:#d9f8ff;text-align:center;flex:1}.gio-owner-action-bar button{min-width:76px;padding:8px 10px;margin:0;border-radius:10px;background:linear-gradient(135deg,#135c91,#482b83);font-size:13px}.gio-owner-action-bar button:disabled{opacity:.45}';
 document.head.appendChild(adminNavStyle);
 const adminHelp = document.createElement("button"); adminHelp.type="button"; adminHelp.className="gio-admin-help"; adminHelp.textContent="☎ Help";
 const adminHelpPanel = document.createElement("div"); adminHelpPanel.className="gio-admin-help-panel"; adminHelpPanel.hidden=true;
@@ -45,8 +58,13 @@ document.body.append(adminHelp,adminHelpPanel);
 adminHelp.addEventListener("click",()=>{adminHelpPanel.hidden=!adminHelpPanel.hidden;});
 async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settings","supportContact"));const num=snap.exists()?String(snap.data().whatsappNumber||"").replace(/\\D/g,""):"";const link=document.getElementById("gioOwnerWhatsApp");if(link)link.href=num?"https://wa.me/"+num:"#";}catch(e){console.warn("WhatsApp contact unavailable",e);}}
 refreshOwnerWhatsApp();
-function showAdminTab(tab){
+function showAdminTab(tab,remember=true){
  if(!auth.currentUser)return;
+ if(remember&&tab!==currentOwnerTab)ownerTabHistory.push(currentOwnerTab);
+ currentOwnerTab=tab;
+ const pageNames={home:"Home",offers:"Offers & Packages",inbox:"Inbox",settings:"Settings",profile:"Profile"};
+ const pageTitle=document.getElementById("gioOwnerCurrentPage");if(pageTitle)pageTitle.textContent=pageNames[tab]||"GIO BD OWNER";
+ const backButton=document.getElementById("gioOwnerBackButton");if(backButton)backButton.disabled=ownerTabHistory.length===0;
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), offers=document.getElementById("adminOffersPage"), inbox=document.getElementById("adminInboxPage");
  [login,dash,settings,offers,inbox,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
@@ -424,6 +442,8 @@ onAuthStateChanged(auth, async user => {
   readNotificationIds = new Set();
   if (!user) {
     adminBottomNav.hidden = true;
+    ownerActionBar.hidden = true;
+    ownerTabHistory=[];currentOwnerTab="home";
     adminHelp.hidden = true;
     if (button) button.hidden = true;
     [document.getElementById("adminInboxPage"),document.getElementById("adminOffersPage"),adminProfilePage].filter(Boolean).forEach(page=>{page.hidden=true;page.classList.remove("active");});
@@ -435,6 +455,7 @@ onAuthStateChanged(auth, async user => {
     const data = snap.exists() ? snap.data() : {};
     if (data.uid !== user.uid || String(data.role || "").toLowerCase() !== "admin") {
       adminBottomNav.hidden = true;
+      ownerActionBar.hidden = true;
       adminHelp.hidden = true;
       if (button) button.hidden = true;
       return;
@@ -442,6 +463,10 @@ onAuthStateChanged(auth, async user => {
 
     currentAdminUid = user.uid;
     adminBottomNav.hidden = false;
+    ownerActionBar.hidden = false;
+    ownerTabHistory=[];currentOwnerTab="home";
+    const pageTitle=document.getElementById("gioOwnerCurrentPage");if(pageTitle)pageTitle.textContent="Home";
+    const backButton=document.getElementById("gioOwnerBackButton");if(backButton)backButton.disabled=true;
     adminHelp.hidden = false;
     await refreshOwnerWhatsApp();
     readNotificationIds = readStorage(user.uid);
