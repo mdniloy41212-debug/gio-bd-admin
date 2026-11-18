@@ -1061,3 +1061,7 @@ body:has(#loginPage.active) main { padding-top:12px; }
 #gioOwnerChatSendStatus,#gioOwnerChatVoiceStatus{flex:0 0 auto;margin:2px 0!important}
 #gioOwnerChatClose{position:fixed!important;top:calc(env(safe-area-inset-top) + 7px);left:8px;z-index:4010;padding:5px 8px!important;font-size:11px!important}
 #gioOwnerCustomerProfilePanel,#gioOwnerChatSettingsPanel{flex:0 0 auto;max-height:22vh;overflow:auto}
+
+#gioOwnerUserChat[hidden]{display:none!important}
+#gioOwnerUserChat #gioOwnerChatRefresh{position:fixed!important;top:calc(env(safe-area-inset-top) + 7px);right:8px;z-index:4010}
+#gioOwnerUserChat .gio-owner-chat-header{padding-left:55px;padding-right:55px}
