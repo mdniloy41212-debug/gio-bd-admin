@@ -644,8 +644,7 @@ async function loadDashboardStats() {
     const cards = [
       ["TOTAL DIAMOND", totalDiamonds.toLocaleString("en-BD") + " 💎", "total-diamonds"],
       ["DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"],
-      ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"],
-      ["WALLET", "৳" + Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0).toLocaleString("en-BD"), "wallet-balance"]
+      ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]
     ];
     cards.forEach(([label,value,kind]) => {
       const card = document.createElement("div");
