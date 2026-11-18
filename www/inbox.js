@@ -30,11 +30,11 @@ adminProfilePage.innerHTML = '<h2>👤 Owner Profile</h2><section class="gio-own
 main?.appendChild(adminProfilePage);
 const adminContactPage = document.createElement("section");
 adminContactPage.id = "adminContactPage"; adminContactPage.className = "page"; adminContactPage.hidden = true;
-adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card gio-owner-chat-screen" hidden><header class="gio-owner-chat-header"><div id="gioOwnerChatAvatar" class="gio-owner-chat-avatar">U</div><div class="gio-owner-chat-heading"><strong id="gioOwnerChatTitle">Customer</strong><small>Customer Chat</small></div><button type="button" id="gioOwnerCustomerMore" aria-label="Customer profile">⋮</button><button type="button" id="gioOwnerChatSettings" aria-label="Owner settings">⚙</button></header><div id="gioOwnerCustomerProfilePanel" class="gio-owner-customer-profile" hidden></div><div id="gioOwnerChatSettingsPanel" class="gio-owner-chat-settings" hidden>GIO BD Agent Official</div><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="Type"></textarea><button type="button" id="gioOwnerChatSend">Send</button><p id="gioOwnerChatSendStatus" aria-live="polite"></p><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
+adminContactPage.innerHTML = '<h2>👥 Contact Users</h2><div class="order-card"><strong>মোট ইউজার</strong><p id="gioOwnerTotalCustomers">লোড হচ্ছে…</p><strong>অনলাইন ইউজার</strong><p id="gioOwnerOnlineCustomers">যাচাই হচ্ছে…</p></div><div id="gioOwnerContactList">কাস্টমার তালিকা লোড হচ্ছে…</div><section id="gioOwnerUserChat" class="order-card gio-owner-chat-screen" hidden><header class="gio-owner-chat-header"><div id="gioOwnerChatAvatar" class="gio-owner-chat-avatar">U</div><div class="gio-owner-chat-heading"><strong id="gioOwnerChatTitle">Customer</strong><small>Customer Chat</small></div><button type="button" id="gioOwnerChatRefresh" aria-label="Refresh chat">↻</button><button type="button" id="gioOwnerCustomerMore" aria-label="Customer profile">⋮</button><button type="button" id="gioOwnerChatSettings" aria-label="Owner settings">⚙</button></header><div id="gioOwnerCustomerProfilePanel" class="gio-owner-customer-profile" hidden></div><div id="gioOwnerChatSettingsPanel" class="gio-owner-chat-settings" hidden>GIO BD Agent Official</div><div id="gioOwnerUserChatMessages"></div><textarea id="gioOwnerChatText" placeholder="Type"></textarea><button type="button" id="gioOwnerChatSend">Send</button><p id="gioOwnerChatSendStatus" aria-live="polite"></p><div id="gioOwnerChatVoiceStatus" class="voice-status"></div><button type="button" id="gioOwnerChatClose">চ্যাট বন্ধ করুন</button></section>';
 main?.appendChild(adminContactPage);
 let stopOwnerContacts = null;
 let stopOwnerChat = null;
-let activeContactUid = null;
+let activeContactUid = null;\n let activeContactProfile = {};
 function isContactOnline(data){const last=data.lastSeenAt?.toDate?.()?.getTime?.()||0;return data.isOnline===true&&last>0&&(Date.now()-last)<120000;}
 function attachOwnerMessageDelete(card,item) {
  let holdTimer=null;
@@ -48,8 +48,8 @@ function attachOwnerMessageDelete(card,item) {
  ["pointerup","pointercancel","pointerleave"].forEach(name=>card.addEventListener(name,cancelHold));
 }
 function openOwnerUserChat(uid, profile) {
- activeContactUid = uid;
- const panel = document.getElementById("gioOwnerUserChat");
+ activeContactUid = uid;\n  activeContactProfile = profile || {};
+ const panel = document.getElementById("gioOwnerUserChat");\n  panel?.querySelector("#gioOwnerChatRefresh")?.addEventListener("click",()=>{if(activeContactUid)openOwnerUserChat(activeContactUid,activeContactProfile);},{once:true});
  const voiceStatus=document.getElementById("gioOwnerChatVoiceStatus");
  const oldVoice=document.getElementById("gioOwnerChatVoiceButton");oldVoice?.remove();
  const voice=createOwnerContactVoice(uid,voiceStatus);voice.id="gioOwnerChatVoiceButton";voiceStatus?.insertAdjacentElement("afterend",voice);
