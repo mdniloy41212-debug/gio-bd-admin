@@ -222,12 +222,15 @@ function createVoiceRecorder(onReady, statusElement) {
 
 function appendVoicePlayer(card, data) {
   if (!data.audioData) return;
+  const duration = document.createElement("small");
+  duration.className = "voice-message-duration";
+  duration.textContent = "🎙️ ভয়েস মেসেজ" + (Number(data.audioDuration) > 0 ? " • " + Number(data.audioDuration) + " সেকেন্ড" : "");
   const player = document.createElement("audio");
   player.controls = true;
-  player.preload = "none";
+  player.preload = "metadata";
   player.className = "voice-message-player";
   player.src = data.audioData;
-  card.appendChild(player);
+  card.append(duration, player);
 }
 
 
