@@ -623,10 +623,11 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const [ordersSnapshot, salesLedgerSnapshot, stockSnapshot] = await Promise.all([
+    const [ordersSnapshot, salesLedgerSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
       getDocs(collection(db, "orders")),
       getDocs(collection(db, "salesLedger")),
-      getDoc(doc(db, "settings", "diamondStock"))
+      getDoc(doc(db, "settings", "diamondStock")),
+      getDoc(doc(db, "settings", "mainBalance"))
     ]);
     let salesMoney = 0;
     let totalDiamonds = 0;
@@ -643,7 +644,8 @@ async function loadDashboardStats() {
     const cards = [
       ["TOTAL DIAMOND", totalDiamonds.toLocaleString("en-BD") + " 💎", "total-diamonds"],
       ["DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"],
-      ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]
+      ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"],
+      ["WALLET", "৳" + Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0).toLocaleString("en-BD"), "wallet-balance"]
     ];
     cards.forEach(([label,value,kind]) => {
       const card = document.createElement("div");
@@ -671,7 +673,6 @@ async function loadDashboardStats() {
       container.appendChild(card);
     });
     const balanceInput = $("mainBalanceAmount");
-    const balanceSnapshot = await getDoc(doc(db, "settings", "mainBalance"));
     if (balanceInput && document.activeElement !== balanceInput) balanceInput.value = String(Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0));
     const stockInput = $("diamondStockQuantity");
     if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
