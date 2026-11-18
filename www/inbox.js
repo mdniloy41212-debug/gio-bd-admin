@@ -1,5 +1,5 @@
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, query, orderBy,
   onSnapshot, doc, getDoc, serverTimestamp
@@ -26,7 +26,7 @@ adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const adminProfilePage = document.createElement("section");
 adminProfilePage.id = "adminProfilePage"; adminProfilePage.className = "page"; adminProfilePage.hidden = true;
-adminProfilePage.innerHTML = '<div class="owner-profile-detail"><div class="admin-profile-avatar gio-owner-avatar"><span>GIO</span><b class="gio-owner-v-badge">✓</b></div><h2>GIO BD OWNER</h2><div class="owner-official-verified">🔵 OFFICIAL VERIFIED</div><p id="gioOwnerProfileEmail">Admin account</p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><button id="ownerProfileBack" type="button">← Home</button></div>';
+adminProfilePage.innerHTML = '<div class="owner-profile-detail"><div class="admin-profile-avatar gio-owner-avatar"><span>GIO</span><b class="gio-owner-v-badge">✓</b></div><h2>GIO BD OWNER</h2><div class="owner-official-verified">🔵 OFFICIAL VERIFIED</div><p id="gioOwnerProfileEmail">Admin account</p><a href="mailto:mdniloy41212@gmail.com">Gmail Support</a><button id="ownerProfileBack" type="button">← Home</button><button id="ownerProfileLogout" class="owner-profile-logout" type="button">Logout</button><p id="ownerProfileLogoutMessage" role="status"></p></div>';
 main?.appendChild(adminProfilePage);
 const adminNavStyle = document.createElement("style");
 adminNavStyle.textContent = '.gio-admin-bottom-nav{position:fixed;z-index:1100;left:8px;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;border:1px solid #70ddff55;border-radius:18px;background:#0c1738f2;backdrop-filter:blur(14px);box-shadow:0 12px 32px #0009}.gio-admin-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px;min-height:52px;font-size:18px;background:linear-gradient(145deg,#174a83,#34206e)}.gio-admin-bottom-nav button span{font-size:10px}body{padding-bottom:90px}.gio-admin-help{position:fixed;right:14px;bottom:98px;z-index:1099;border:2px solid #9ef7ff;border-radius:40px;padding:13px 17px;background:linear-gradient(135deg,#00a6c7,#6534c9);font-weight:800;box-shadow:0 0 22px #00cfff88;animation:gioOwnerBounce 1.8s infinite}.gio-admin-help-panel{position:fixed;right:14px;bottom:155px;z-index:1100;width:min(260px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#101735f5;border:1px solid #78eaff66}.gio-admin-help-panel a{display:block;padding:11px;margin:7px 0;border-radius:10px;color:white;text-decoration:none;background:#176fba;text-align:center}@keyframes gioOwnerBounce{50%{transform:translateY(-8px)}}';
@@ -58,6 +58,12 @@ function showAdminTab(tab){
 adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
 document.getElementById("ownerProfileButton")?.addEventListener("click",()=>showAdminTab("profile"));
 document.getElementById("ownerProfileBack")?.addEventListener("click",()=>showAdminTab("home"));
+document.getElementById("ownerProfileLogout")?.addEventListener("click",async()=>{
+ const button=document.getElementById("ownerProfileLogout"),status=document.getElementById("ownerProfileLogoutMessage");
+ if(button)button.disabled=true;
+ try{await signOut(auth);}
+ catch(error){if(status)status.textContent="Logout করা যায়নি: "+(error.message||"আবার চেষ্টা করুন।");if(button)button.disabled=false;}
+});
 (function runOwnerAdBanner(){const banner=document.getElementById("ownerAdBanner");if(!banner)return;const cycle=()=>{banner.hidden=false;setTimeout(()=>{banner.hidden=true;setTimeout(cycle,2000);},10000);};cycle();})();
 let stopListening;
 let stopOrdersListening;
