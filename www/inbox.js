@@ -77,6 +77,7 @@ function openOwnerUserChat(uid, profile) {
  const profileId=document.createElement("small");profileId.textContent=numericId||"Numeric ID এখনো তৈরি হয়নি";
  profilePanel.append(profilePhoto,profileName,profileId);
  const messages = document.getElementById("gioOwnerUserChatMessages");
+ if(!panel.dataset.pullRefreshBound){let touchStartY=0;panel.addEventListener("touchstart",event=>{touchStartY=event.touches?.[0]?.clientY||0;},{passive:true});panel.addEventListener("touchend",event=>{const endY=event.changedTouches?.[0]?.clientY||0;if(endY-touchStartY>85&&messages?.scrollTop<=0&&activeContactUid)openOwnerUserChat(activeContactUid,activeContactProfile);},{passive:true});panel.dataset.pullRefreshBound="1";}
  messages.textContent = "চ্যাট লোড হচ্ছে…";
  if (stopOwnerChat) stopOwnerChat();
  const q = query(collection(db,"supportMessages"),where("userUid","==",uid));
