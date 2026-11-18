@@ -21,7 +21,7 @@ const db = getFirestore(app);
 const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
-adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="orders">📦<span>Order</span></button><button type="button" data-admin-tab="inbox">💬<span>Inbox</span></button><button type="button" data-admin-tab="settings">⚙️<span>Settings</span></button><button type="button" data-admin-tab="offers">💎<span>Package</span></button>';
+adminBottomNav.innerHTML = '<button type="button" data-admin-tab="inbox">▤<span>Inbox</span></button><button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="offers">◇<span>Package</span></button><button type="button" data-admin-tab="settings">⚙<span>Settings</span></button>';
 adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const ownerActionBar=document.createElement("div");
