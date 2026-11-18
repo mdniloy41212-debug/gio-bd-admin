@@ -53,11 +53,12 @@ function showAdminTab(tab){
  if((tab==="settings"||tab==="manage")&&settings){settings.hidden=false;settings.classList.add("active");}
  if(tab==="offers"&&offers){offers.hidden=false;offers.classList.add("active");}
  if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";}
- if(tab==="inbox"){const trigger=document.getElementById("adminInboxButton");if(trigger&&!trigger.hidden)trigger.click();else if(dash){dash.hidden=false;dash.classList.add("active");}}
+ if(tab==="inbox"&&inbox){inbox.hidden=false;inbox.classList.add("active");markIncomingAsRead();}
  adminBottomNav.querySelectorAll("[data-admin-tab]").forEach(button=>button.classList.toggle("active",button.dataset.adminTab===tab));
 }
 adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
-document.getElementById("ownerProfileButton")?.addEventListener("click",()=>showAdminTab("profile"));
+const ownerProfileButton=document.getElementById("ownerProfileButton");
+if(ownerProfileButton){ownerProfileButton.type="button";ownerProfileButton.style.position="relative";ownerProfileButton.style.zIndex="5";ownerProfileButton.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();showAdminTab("profile");});}
 document.getElementById("ownerProfileBack")?.addEventListener("click",()=>showAdminTab("home"));
 document.getElementById("ownerProfileLogout")?.addEventListener("click",async()=>{
  const button=document.getElementById("ownerProfileLogout"),status=document.getElementById("ownerProfileLogoutMessage");
@@ -422,6 +423,8 @@ onAuthStateChanged(auth, async user => {
   currentAdminUid = null;
   readNotificationIds = new Set();
   if (!user) {
+    adminBottomNav.hidden = true;
+    adminHelp.hidden = true;
     if (button) button.hidden = true;
     [document.getElementById("adminInboxPage"),document.getElementById("adminOffersPage"),adminProfilePage].filter(Boolean).forEach(page=>{page.hidden=true;page.classList.remove("active");});
     return;
@@ -431,11 +434,15 @@ onAuthStateChanged(auth, async user => {
     const snap = await getDoc(doc(db, "users", "admin"));
     const data = snap.exists() ? snap.data() : {};
     if (data.uid !== user.uid || String(data.role || "").toLowerCase() !== "admin") {
+      adminBottomNav.hidden = true;
+      adminHelp.hidden = true;
       if (button) button.hidden = true;
       return;
     }
 
     currentAdminUid = user.uid;
+    adminBottomNav.hidden = false;
+    adminHelp.hidden = false;
     await refreshOwnerWhatsApp();
     readNotificationIds = readStorage(user.uid);
     if (button) button.hidden = false;
