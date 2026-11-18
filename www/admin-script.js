@@ -576,7 +576,7 @@ async function loadDashboardStats() {
     });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
     container.replaceChildren();
-    [["অবশিষ্ট Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট Diamond বিক্রি", diamondsSold.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
+    [["অবশিষ্ট Black Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট Diamond বিক্রি", diamondsSold.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
       const card = document.createElement("div");
       card.className = "order-card dashboard-stat-card";
       const title = document.createElement("strong");
