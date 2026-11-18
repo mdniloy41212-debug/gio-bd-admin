@@ -57,7 +57,13 @@ let stopOwnerContacts = null;
 let stopOwnerChat = null;
 let activeContactUid = null;
  let activeContactProfile = {};
-function isContactOnline(data){const last=data.lastSeenAt?.toDate?.()?.getTime?.()||0;return data.isOnline===true&&last>0&&(Date.now()-last)<120000;}
+function isContactOnline(data){
+ const stamp=data.lastSeenAt;
+ const last=stamp?.toDate?.()?.getTime?.()||(typeof stamp==="number"?stamp:0);
+ if(data.isOnline!==true)return false;
+ if(!last)return true;
+ return (Date.now()-last)<180000;
+}
 function attachOwnerMessageDelete(card,item) {
  let holdTimer=null;
  const cancelHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}};
@@ -145,7 +151,7 @@ async function loadOwnerContacts(){
  const online=document.getElementById("gioOwnerOnlineCustomers");
  if(!list)return;
  if(stopOwnerContacts)stopOwnerContacts();
- list.textContent="কাস্টমার তালিকা লোড হচ্ছে…";
+ list.textContent="Agent তালিকা লোড হচ্ছে…";
  try{
   stopOwnerContacts=onSnapshot(collection(db,"customerProfiles"),snap=>{
    const users=snap.docs.map(item=>({id:item.id,data:item.data()}));
@@ -153,7 +159,7 @@ async function loadOwnerContacts(){
    const onlineCount=users.filter(u=>u.data.hideOnlineStatus!==true&&isContactOnline(u.data)).length;
    if(online)online.textContent=String(onlineCount);
    list.replaceChildren();
-   if(!users.length){list.textContent="এখনো কোনো কাস্টমার প্রোফাইল নেই।";return;}
+   if(!users.length){list.textContent="এখনো কোনো Agent প্রোফাইল পাওয়া যায়নি।";return;}
    const term=String(document.getElementById("gioOwnerContactSearch")?.value||"").trim().toLowerCase();
    users.sort((a,b)=>String(a.data.displayName||a.data.email||"").localeCompare(String(b.data.displayName||b.data.email||"")));
    users.filter(({id,data})=>!term||[id,data.profileId,data.displayName,data.email].some(value=>String(value||"").toLowerCase().includes(term))).forEach(({id,data})=>{
@@ -165,10 +171,10 @@ async function loadOwnerContacts(){
     const contactOnline=data.hideOnlineStatus!==true&&isContactOnline(data);
     if(contactOnline){const dot=document.createElement("i");dot.className="gio-contact-online-dot";dot.title="Online";avatar.appendChild(dot);}
     const info=document.createElement("div");info.className="gio-contact-user-info";
-    const name=document.createElement("strong");name.textContent=data.displayName||data.name||data.email||"GIO BD User";
-    const email=document.createElement("small");email.textContent=data.email||"ইমেইল পাওয়া যায়নি";
+    const name=document.createElement("strong");name.textContent=data.displayName||data.name||data.email||"GIO BD Agent";
+    const email=document.createElement("small");email.textContent=data.email||"Agent ইমেইল পাওয়া যায়নি";
     const profileId=document.createElement("small");profileId.textContent="Agent Profile ID: "+(data.profileId||"এখনো তৈরি হয়নি");
-    const state=document.createElement("small");state.textContent=data.hideOnlineStatus===true?"Online Status Hidden":(contactOnline?"Online":"Offline");
+    const state=document.createElement("small");state.textContent=data.hideOnlineStatus===true?"Online Status Hidden":(contactOnline?"🟢 Online":"⚫ Offline");
     info.append(name,email,profileId,state);
     const chat=document.createElement("button");chat.type="button";chat.textContent="Chat";chat.addEventListener("click",()=>openOwnerUserChat(id,data));
     card.append(avatar,info,chat);list.appendChild(card);
