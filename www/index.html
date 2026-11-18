@@ -66,110 +66,53 @@
     <p id="loginMessage" role="status" aria-live="polite"></p>
   </section>
   <section id="adminPage" class="page">
-    <div class="admin-profile-strip owner-dashboard-profile"><div class="admin-profile-avatar gio-owner-avatar" aria-label="GIO BD Owner Verified"><span>GIO</span><b class="gio-owner-v-badge">V</b></div><div class="gio-owner-identity"><strong>GIO BD OWNER</strong><p id="adminDisplayName">Admin</p><span class="gio-reseller-badge gio-primary-reseller">♛ PRIMARY RESELLER</span></div></div>
-    <h2>ড্যাশবোর্ড</h2>
-    <p id="adminOrderAlert" class="form-message">অর্ডার নোটিফিকেশন লোড হচ্ছে...</p>
-    
-  <h3>ড্যাশবোর্ড</h3>
-  <form id="mainBalanceForm" class="stock-settings-form">
-    <label for="mainBalanceAmount">Owner Main Balance (৳)</label>
-    <input id="mainBalanceAmount" type="number" min="0" step="1" placeholder="যেমন: 5000" required>
-    <button type="submit">Main Balance সংরক্ষণ করুন</button>
-    <p id="mainBalanceMessage" class="form-message"></p>
-  </form>
-  <form id="diamondStockForm" class="stock-settings-form owner-stock-editor" hidden>
-    <label for="diamondStockQuantity">বর্তমান Diamond Stock</label>
-    <input id="diamondStockQuantity" type="number" min="0" step="1" placeholder="বর্তমান মোট Diamond Stock" required>
-    <button type="submit">ডায়মন্ড সংরক্ষণ করুন</button>
-    <p id="diamondStockMessage" class="form-message"></p>
-  </form>
-  <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
-
-  <details class="inbox-folder owner-yellow-offers-editor">
-      <summary>💛 Yellow Diamond Offers পরিচালনা</summary>
-      <p class="muted">প্রতিটি প্যাকেজের Diamond পরিমাণ ও মূল্য দিন। চালু করলে Agent App-এ দেখাবে। Yellow Diamond-এর জন্য কোনো পেমেন্ট মাধ্যম নেই; Agent সরাসরি IMO-তে মেসেজ করবে।</p>
-      <form id="yellowPackageForm">
-        <div id="yellowDiamondAdminSlots">Yellow Diamond প্যাকেজ লোড হচ্ছে...</div>
-        <button type="submit">Yellow Diamond প্যাকেজ সংরক্ষণ করুন</button>
-      </form>
-      <p id="yellowPackageMessage" class="form-message" aria-live="polite"></p>
-  </details>
-    <div class="order-filters">
-      <input id="orderSearch" type="search" placeholder="অর্ডার ID, কাস্টমার, IMO ID, ফোন বা Transaction ID খুঁজুন">
-      <select id="orderStatusFilter">
-        <option value="all">সব Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Processing">Processing</option>
-        <option value="Approved">Approved</option>
-        <option value="Completed">Completed</option>
-        <option value="Rejected">Rejected</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
+    <div class="owner-home-top">
+      <div class="owner-home-brand"><span class="owner-diamond-mark">💎</span><div><strong>GIO BD OWNER</strong><small>OFFICIAL DASHBOARD</small></div></div>
+      <button id="ownerProfileButton" class="owner-profile-button" type="button" aria-label="Open verified Owner profile"><span class="admin-profile-avatar gio-owner-avatar"><span>GIO</span><b class="gio-owner-v-badge" aria-label="Official verified">✓</b></span></button>
     </div>
-    <h3>Pending / Processing Orders</h3>
-    <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
+    <div id="ownerAdBanner" class="owner-ad-banner" aria-label="Advertisement"><span class="owner-ad-label">ADVERTISEMENT</span><strong>GIO BD • DIAMOND RECHARGE</strong><small>OFFICIAL OWNER DASHBOARD</small></div>
+    <div class="owner-dashboard-hero"><div class="owner-dashboard-kicker">✦ LIVE BUSINESS OVERVIEW ✦</div><h2>3D DASHBOARD</h2><p>GIO BD OWNER</p><div class="owner-dashboard-orbit"><span>💎</span></div></div>
+    <div id="dashboardStats" class="dashboard-stats">তথ্য লোড হচ্ছে...</div>
+    <p id="adminOrderAlert" class="form-message" hidden></p>
   </section>
   <section id="adminSettingsPage" class="page">
-    <h2>⚙️ Settings</h2>
-    <button id="adminSettingsBack" type="button">← Dashboard-এ ফিরুন</button>
-    <details class="inbox-folder">
-      <summary>📥 Order History Inbox (Approved / Completed)</summary>
-      <div id="adminOrderHistory">হিস্টোরি লোড হচ্ছে...</div>
-    </details>
-    <details class="inbox-folder">
-      <summary>❌ Rejected Orders Inbox</summary>
-      <div id="adminRejectedOrders">Rejected অর্ডার লোড হচ্ছে...</div>
-    </details>
-    <details class="inbox-folder">
-      <summary>🗑 Deleted / Archived Orders Inbox</summary>
-      <p class="muted">Delete করলে অর্ডার স্থায়ীভাবে মুছবে না; এখান থেকে Restore করা যাবে।</p>
-      <div id="adminArchivedOrders">Archive লোড হচ্ছে...</div>
-    </details>
-
-    <details class="inbox-folder"><summary>💳 পেমেন্ট নম্বর সেটিংস</summary>
-  <form id="paymentSettingsForm">
-    <label>বিকাশ নম্বর</label>
-    <input id="bkashNumber" type="tel" placeholder="বিকাশ নম্বর">
-    <label><input id="bkashEnabled" type="checkbox" checked> বিকাশ চালু</label>
-
-    <label>নগদ নম্বর</label>
-    <input id="nagadNumber" type="tel" placeholder="নগদ নম্বর">
-    <label><input id="nagadEnabled" type="checkbox" checked> নগদ চালু</label>
-
-    <label>রকেট নম্বর</label>
-    <input id="rocketNumber" type="tel" placeholder="রকেট নম্বর">
-    <label><input id="rocketEnabled" type="checkbox" checked> রকেট চালু</label>
-
-    <button type="submit">নম্বর সংরক্ষণ করুন</button>
-  </form>
-  <p id="paymentMessage"></p>
-  </details>
-
-  <details class="inbox-folder"><summary>📞 WhatsApp সাপোর্ট সেটিংস</summary>
-  <form id="supportContactForm">
-    <label for="whatsappNumber">WhatsApp নম্বর (দেশের কোডসহ)</label>
-    <input id="whatsappNumber" type="tel" placeholder="যেমন: 8801XXXXXXXXX" required>
-    <button type="submit">WhatsApp নম্বর সংরক্ষণ করুন</button>
-  </form>
-  <p id="supportContactMessage"></p>
-  </details>
-
-  <details class="inbox-folder"><summary>💎 প্যাকেজ পরিচালনা</summary>
-  <h3>নতুন প্যাকেজ যোগ করুন</h3>
-    <form id="packageForm">
-      <label for="newPackageName">প্যাকেজের নাম</label>
-      <input id="newPackageName" type="text" placeholder="যেমন: 1000 Diamonds" required>
-      <label for="newPackageQuantity">Diamond পরিমাণ</label>
-      <input id="newPackageQuantity" type="number" min="1" step="1" placeholder="যেমন: 1000" required>
-      <label for="newPackagePrice">প্যাকেজের মূল্য</label>
-      <input id="newPackagePrice" type="number" min="1" placeholder="মূল্য লিখুন" required>
-      <button type="submit">প্যাকেজ যোগ করুন</button>
+    <h2>⚙️ Settings • Order Management</h2>
+    <form id="mainBalanceForm" class="stock-settings-form">
+      <label for="mainBalanceAmount">Owner Main Balance (৳)</label>
+      <input id="mainBalanceAmount" type="number" min="0" step="1" placeholder="যেমন: 5000" required>
+      <button type="submit">Main Balance সংরক্ষণ করুন</button><p id="mainBalanceMessage" class="form-message"></p>
     </form>
-    <p id="packageMessage"></p>
-    <h3>প্যাকেজ পরিচালনা</h3>
-    <div id="adminPackages">প্যাকেজ লোড হচ্ছে...</div>
-  </details>
-
+    <form id="diamondStockForm" class="stock-settings-form owner-stock-editor">
+      <label for="diamondStockQuantity">বর্তমান Diamond Stock</label>
+      <input id="diamondStockQuantity" type="number" min="0" step="1" placeholder="বর্তমান মোট Diamond Stock" required>
+      <button type="submit">ডায়মন্ড সংরক্ষণ করুন</button><p id="diamondStockMessage" class="form-message"></p>
+    </form>
+    <h3>⏳ Pending / Processing Orders</h3>
+    <div class="order-filters"><input id="orderSearch" type="search" placeholder="অর্ডার ID, কাস্টমার, IMO ID, ফোন বা Transaction ID খুঁজুন">
+      <select id="orderStatusFilter"><option value="all">সব Status</option><option value="Pending">Pending</option><option value="Processing">Processing</option><option value="Approved">Approved</option><option value="Completed">Completed</option><option value="Rejected">Rejected</option><option value="Cancelled">Cancelled</option></select>
+    </div>
+    <div id="adminOrders">অর্ডার লোড হচ্ছে...</div>
+    <details class="inbox-folder"><summary>✅ Approved / Completed Order History</summary><div id="adminOrderHistory">হিস্টোরি লোড হচ্ছে...</div></details>
+    <details class="inbox-folder"><summary>❌ Rejected Orders</summary><div id="adminRejectedOrders">Rejected অর্ডার লোড হচ্ছে...</div></details>
+    <details class="inbox-folder"><summary>🗑 Deleted / Archived Orders</summary><p class="muted">Delete করলে অর্ডার স্থায়ীভাবে মুছবে না; এখান থেকে Restore করা যাবে।</p><div id="adminArchivedOrders">Archive লোড হচ্ছে...</div></details>
+    <details class="inbox-folder"><summary>💳 Payment Numbers</summary>
+      <form id="paymentSettingsForm"><label>বিকাশ নম্বর</label><input id="bkashNumber" type="tel" placeholder="বিকাশ নম্বর"><label><input id="bkashEnabled" type="checkbox" checked> বিকাশ চালু</label>
+      <label>নগদ নম্বর</label><input id="nagadNumber" type="tel" placeholder="নগদ নম্বর"><label><input id="nagadEnabled" type="checkbox" checked> নগদ চালু</label>
+      <label>রকেট নম্বর</label><input id="rocketNumber" type="tel" placeholder="রকেট নম্বর"><label><input id="rocketEnabled" type="checkbox" checked> রকেট চালু</label>
+      <button type="submit">নম্বর সংরক্ষণ করুন</button></form><p id="paymentMessage"></p>
+    </details>
+    <details class="inbox-folder"><summary>📞 WhatsApp Support</summary><form id="supportContactForm"><label for="whatsappNumber">WhatsApp নম্বর (দেশের কোডসহ)</label><input id="whatsappNumber" type="tel" placeholder="যেমন: 8801XXXXXXXXX" required><button type="submit">WhatsApp নম্বর সংরক্ষণ করুন</button></form><p id="supportContactMessage"></p></details>
+  </section>
+  <section id="adminOffersPage" class="page">
+    <h2>🎁 Offers & Packages</h2>
+    <details class="inbox-folder owner-yellow-offers-editor" open><summary>💛 Yellow Diamond Offers</summary>
+      <p class="muted">প্রতিটি প্যাকেজের Diamond পরিমাণ ও মূল্য দিন। Yellow Diamond-এর পেমেন্টে শুধু নির্ধারিত IMO লিংক ব্যবহার হবে।</p>
+      <form id="yellowPackageForm"><div id="yellowDiamondAdminSlots">Yellow Diamond প্যাকেজ লোড হচ্ছে...</div><button type="submit">Yellow Diamond প্যাকেজ সংরক্ষণ করুন</button></form>
+      <p id="yellowPackageMessage" class="form-message" aria-live="polite"></p>
+    </details>
+    <details class="inbox-folder" open><summary>🖤 Black Diamond Packages</summary>
+      <h3>নতুন প্যাকেজ যোগ করুন</h3><form id="packageForm"><label for="newPackageName">প্যাকেজের নাম</label><input id="newPackageName" type="text" placeholder="যেমন: 1000 Diamonds" required><label for="newPackageQuantity">Diamond পরিমাণ</label><input id="newPackageQuantity" type="number" min="1" step="1" placeholder="যেমন: 1000" required><label for="newPackagePrice">প্যাকেজের মূল্য</label><input id="newPackagePrice" type="number" min="1" placeholder="মূল্য লিখুন" required><button type="submit">প্যাকেজ যোগ করুন</button></form><p id="packageMessage"></p><h3>প্যাকেজ পরিচালনা</h3><div id="adminPackages">প্যাকেজ লোড হচ্ছে...</div>
+    </details>
   </section>
 </main>
 <footer>
