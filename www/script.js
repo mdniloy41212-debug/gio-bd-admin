@@ -542,20 +542,22 @@ async function loadAdminOrders() {
       card.className = "order-card";
 
       const details = document.createElement("p");
+      const rechargeValue = data.rechargeTargetValue || data.imoId || data.customerPhone || "";
+      const rechargeLabel = data.rechargeTargetType === "phone" || (!data.rechargeTargetType && !data.imoId)
+        ? "রিচার্জ ফোন নম্বর" : "রিচার্জ IMO ID";
 
       details.textContent =
         "Order ID: " + item.id +
         " | Email: " + (data.customerEmail || "") +
-        " | নাম: " + data.customerName +
-        " | ফোন: " + data.customerPhone +
-        " | IMO ID: " + data.imoId +
-        " | প্যাকেজ: " + data.packageName +
-        " | মূল্য: ৳" + data.price +
-        " | Payment: " + data.paymentMethod +
-        " | TrxID: " + data.transactionId +
-        " | Status: " + data.status;
+        " | নাম: " + (data.customerName || "") +
+        " | " + rechargeLabel + ": " + rechargeValue +
+        " | প্যাকেজ: " + (data.packageName || "") +
+        " | মূল্য: ৳" + (data.price || "") +
+        " | Payment: " + (data.paymentMethod || "") +
+        " | TrxID: " + (data.transactionId || "") +
+        " | Status: " + (data.status || "Pending");
 
-      const approve = document.createElement("button");
+            const approve = document.createElement("button");
       approve.textContent = "Approve";
 
       approve.addEventListener("click", () => {
