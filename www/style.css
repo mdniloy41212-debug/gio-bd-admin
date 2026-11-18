@@ -859,3 +859,18 @@ body>.header{display:none!important}
 
 /* Keep the blue verified tick on the lower-right edge on both dashboard and profile */
 .gio-owner-avatar>.gio-owner-v-badge{top:auto!important;right:-4px!important;bottom:1px!important;background:linear-gradient(145deg,#29a8ff,#0755d9)!important;color:#fff!important;border:2px solid #fff!important;box-shadow:0 0 12px #168dff!important}
+
+
+/* GIO Owner footer — bold colorful Presented By credit */
+.gio-owner-footer{position:relative;margin:22px 0 112px;padding:13px 12px;text-align:center;border:1px solid rgba(104,224,255,.65);border-radius:16px;background:linear-gradient(105deg,#081a43,#173d86 42%,#4a1979 72%,#09284b);box-shadow:0 0 18px rgba(25,177,255,.28),inset 0 1px 0 rgba(255,255,255,.2);overflow:hidden}
+.gio-owner-footer p{margin:0;color:#a9efff;font-size:15px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;text-shadow:0 0 9px #20cfff,0 2px 2px #000}
+.gio-owner-footer strong{font-size:20px;font-weight:1000;letter-spacing:2px;background:linear-gradient(90deg,#fff3a5,#ffd34d 35%,#ff8adf 68%,#7ceaff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 7px #e7aaff99)}
+.owner-stock-inline-controls{width:100%;margin-top:10px}
+.owner-stock-edit-button,.owner-stock-save-button,.owner-stock-cancel-button{min-height:34px;padding:7px 12px;border:1px solid #7beaff;border-radius:9px;background:linear-gradient(135deg,#087dbb,#3545a7);color:#fff;font-size:12px;font-weight:900;box-shadow:0 0 10px #19bfff44}
+.owner-stock-inline-editor{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center;margin-top:7px}
+.owner-stock-inline-editor[hidden]{display:none!important}
+.owner-stock-inline-editor input{min-width:0;width:100%;margin:0;padding:8px 9px;border:1px solid #61dfff;border-radius:8px;background:#06152f;color:#fff;font-weight:800}
+.owner-stock-inline-message{grid-column:1/-1;color:#a8f4ff;font-size:11px;text-align:left}
+.owner-stock-save-button{background:linear-gradient(135deg,#087d59,#0d9c78)}
+.owner-stock-cancel-button{background:linear-gradient(135deg,#4b5672,#27334f);border-color:#9cb7d8}
+@media(max-width:380px){.owner-stock-inline-editor{grid-template-columns:1fr 1fr}.owner-stock-inline-editor input{grid-column:1/-1}}
