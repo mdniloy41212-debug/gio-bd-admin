@@ -424,15 +424,17 @@ async function loadAdminOrders() {
           link.rel = "noopener noreferrer"; link.textContent = "পেমেন্ট স্ক্রিনশট দেখুন";
           card.appendChild(link);
         }
-        if (canChange) ["Pending","Processing","Approved","Completed","Rejected","Cancelled"].forEach(status =>
-          card.appendChild(makeButton(status, () => updateOrderStatus(id, status))));
+        if (canChange) {
+          card.appendChild(makeButton("Approve", () => updateOrderStatus(id, "Approved")));
+          card.appendChild(makeButton("Reject", () => updateOrderStatus(id, "Rejected")));
+        }
         if (canArchive) card.appendChild(makeButton("Delete / Archive", () => archiveOrder(id)));
         if (box === archivedBox) card.appendChild(makeButton("Restore", () => restoreOrder(id)));
         box.appendChild(card);
       });
     };
     renderRows(activeBox, active, "কোনো Pending বা Processing অর্ডার নেই।", true, true);
-    renderRows(historyBox, history, "এখনো কোনো Approved / Completed অর্ডার নেই।", true, true);
+    renderRows(historyBox, history, "এখনো কোনো Approved / Completed অর্ডার নেই।", false, true);
     renderRows(rejectedBox, rejected, "Rejected অর্ডার নেই।", false, true);
     renderRows(archivedBox, archived, "Deleted / Archived অর্ডার নেই।", false, false);
   } catch (error) {
@@ -563,58 +565,78 @@ async function loadDashboardStats() {
       getDoc(doc(db, "settings", "diamondStock"))
     ]);
     let sales = 0;
-    let diamondsSold = 0;
     ordersSnapshot.forEach(item => {
       const data = item.data();
       if (data.status === "Completed") sales += Number(data.price) || 0;
-      if (data.stockDeducted === true) {
-        diamondsSold += Number(data.stockDeductedQuantity)
-          || Number(data.diamondQuantity)
-          || Number(String(data.packageName || "").match(/[0-9]+/)?.[0])
-          || 0;
-      }
     });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
     container.replaceChildren();
-    [["অবশিষ্ট Black Diamond Stock", stock.toLocaleString("en-BD") + " 💎"], ["মোট Diamond বিক্রি", diamondsSold.toLocaleString("en-BD") + " 💎"], ["মোট বিক্রয় (Completed)", "৳" + sales.toLocaleString("en-BD")]].forEach(([label,value]) => {
-      const card = document.createElement("div");
-      card.className = "order-card dashboard-stat-card";
-      const title = document.createElement("strong");
-      title.textContent = label;
-      const number = document.createElement("p");
-      number.textContent = String(value);
-      card.append(title, number);
-      if (label === "অবশিষ্ট Black Diamond Stock") {
-        const controls = document.createElement("div");
-        controls.className = "gio-stock-controls";
-        const minus = document.createElement("button");
-        minus.type = "button"; minus.textContent = "−"; minus.setAttribute("aria-label","এক Diamond কমান");
-        const edit = document.createElement("input");
-        edit.type = "number"; edit.min = "0"; edit.step = "1"; edit.inputMode = "numeric";
-        edit.setAttribute("aria-label","Black Diamond Stock সংখ্যা");
-        edit.value = String(stock);
-        const plus = document.createElement("button");
-        plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label","এক Diamond বাড়ান");
-        const save = document.createElement("button");
-        save.type = "button"; save.className = "gio-stock-save"; save.textContent = "Save";
-        const updateEdit = delta => {
-          const next = Math.max(0, Number(edit.value || 0) + delta);
-          edit.value = String(next);
-        };
-        minus.addEventListener("click",()=>updateEdit(-1));
-        plus.addEventListener("click",()=>updateEdit(1));
-        save.addEventListener("click",()=>{
-          if(!isAdmin)return;
-          const target=$("diamondStockQuantity");
-          if(!target)return;
-          target.value=edit.value;
-          $("diamondStockForm")?.requestSubmit();
-        });
-        controls.append(minus,edit,plus,save);
-        card.appendChild(controls);
-      }
-      container.appendChild(card);
+
+    const stockCard = document.createElement("article");
+    stockCard.className = "dashboard-stat-card gio-diamond-tile gio-stock-tile";
+    const stockTop = document.createElement("div");
+    stockTop.className = "gio-diamond-tile-top";
+    const stockTitle = document.createElement("strong");
+    stockTitle.textContent = "STOCK";
+    const editToggle = document.createElement("button");
+    editToggle.type = "button";
+    editToggle.className = "gio-stock-edit-toggle";
+    editToggle.textContent = "Edit";
+    editToggle.setAttribute("aria-label", "Stock সম্পাদনা");
+    const stockGem = document.createElement("div");
+    stockGem.className = "gio-dashboard-gem";
+    stockGem.setAttribute("aria-hidden", "true");
+    stockGem.textContent = "💎";
+    const stockValue = document.createElement("p");
+    stockValue.className = "gio-diamond-value";
+    stockValue.textContent = stock.toLocaleString("en-BD");
+    const controls = document.createElement("div");
+    controls.className = "gio-stock-controls gio-stock-edit-panel";
+    controls.hidden = true;
+    const minus = document.createElement("button");
+    minus.type = "button"; minus.textContent = "−"; minus.setAttribute("aria-label","এক Diamond কমান");
+    const edit = document.createElement("input");
+    edit.type = "number"; edit.min = "0"; edit.step = "1"; edit.inputMode = "numeric";
+    edit.setAttribute("aria-label","Black Diamond Stock সংখ্যা");
+    edit.value = String(stock);
+    const plus = document.createElement("button");
+    plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label","এক Diamond বাড়ান");
+    const save = document.createElement("button");
+    save.type = "button"; save.className = "gio-stock-save"; save.textContent = "Save";
+    const updateEdit = delta => { edit.value = String(Math.max(0, Number(edit.value || 0) + delta)); };
+    minus.addEventListener("click",()=>updateEdit(-1));
+    plus.addEventListener("click",()=>updateEdit(1));
+    save.addEventListener("click",()=>{
+      if(!isAdmin)return;
+      const target=$("diamondStockQuantity");
+      if(!target)return;
+      target.value=edit.value;
+      $("diamondStockForm")?.requestSubmit();
     });
+    editToggle.addEventListener("click",()=>{
+      controls.hidden = !controls.hidden;
+      editToggle.textContent = controls.hidden ? "Edit" : "Close";
+      if (!controls.hidden) edit.focus();
+    });
+    stockTop.append(stockTitle, editToggle);
+    controls.append(minus,edit,plus,save);
+    stockCard.append(stockTop,stockGem,stockValue,controls);
+    container.appendChild(stockCard);
+
+    const salesCard = document.createElement("article");
+    salesCard.className = "dashboard-stat-card gio-diamond-tile gio-sales-tile";
+    const salesTitle = document.createElement("strong");
+    salesTitle.textContent = "SALES";
+    const salesGem = document.createElement("div");
+    salesGem.className = "gio-dashboard-gem";
+    salesGem.setAttribute("aria-hidden", "true");
+    salesGem.textContent = "💎";
+    const salesValue = document.createElement("p");
+    salesValue.className = "gio-diamond-value";
+    salesValue.textContent = "৳" + sales.toLocaleString("en-BD");
+    salesCard.append(salesTitle,salesGem,salesValue);
+    container.appendChild(salesCard);
+
     const stockInput = $("diamondStockQuantity");
     if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
   } catch(error) {
