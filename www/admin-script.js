@@ -520,7 +520,7 @@ function renderCustomerManagement() {
   if (!box) return;
   const term = ($("customerManagementSearch")?.value || "").trim().toLowerCase();
   const rows = customerProfilesCache.filter(({uid,data}) =>
-    [uid,data.displayName,data.name,data.email,data.phone,data.mobile].join(" ").toLowerCase().includes(term)
+    [uid,data.profileId,data.displayName,data.name,data.email,data.phone,data.mobile].join(" ").toLowerCase().includes(term)
   );
   box.replaceChildren();
   if (!rows.length) { box.textContent = "কোনো কাস্টমার পাওয়া যায়নি।"; return; }
@@ -530,7 +530,7 @@ function renderCustomerManagement() {
     const title = document.createElement("strong");
     title.textContent = data.displayName || data.name || "নাম দেওয়া হয়নি";
     const info = document.createElement("p");
-    info.textContent = "ইমেইল: " + (data.email || "—") + " | ফোন: " + (data.phone || data.mobile || "—") + " | Customer ID: " + uid;
+    info.textContent = "ইমেইল: " + (data.email || "—") + " | ফোন: " + (data.phone || data.mobile || "—") + " | Agent Profile ID: " + (data.profileId || "এখনো তৈরি হয়নি") + " | Customer ID: " + uid;
     const history = makeButton("এই কাস্টমারের অর্ডার দেখুন", async () => {
       if (!isAdmin) return;
       try {
