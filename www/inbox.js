@@ -348,6 +348,8 @@ orderAlertButton.className = "admin-order-alert";
 orderAlertButton.hidden = true;
 orderAlertButton.innerHTML = '🛎️ New Orders <span id="adminOrderAlertBadge" class="notification-count" hidden>0</span>';
 document.getElementById("adminPage")?.insertBefore(orderAlertButton, document.getElementById("adminPage").firstChild);
+const ownerOrderOnly=[document.querySelector("#adminPage .order-filters"),document.querySelector("#adminPage #adminOrders"),...[...document.querySelectorAll("#adminPage h2,#adminPage h3")].filter(el=>/ড্যাশবোর্ড|Pending \/ Processing Orders/.test(el.textContent||""))].filter(Boolean);
+ownerOrderOnly.forEach(el=>{el.hidden=true;});
 const orderReadKey = uid => "gioAdminReadOrders:" + uid;
 function renderOrderAlertBadge() {
   const badge = document.getElementById("adminOrderAlertBadge");
@@ -736,7 +738,7 @@ onAuthStateChanged(auth, async user => {
       }
     }catch(error){console.warn("Owner profile cloud sync unavailable:",error);}
     readNotificationIds = readStorage(user.uid);
-    orderAlertButton.hidden = false;
+    orderAlertButton.hidden = activeOwnerTab !== "orders";
     startOrderAlerts(user.uid);
     if (button) button.hidden = false;
     const list = document.getElementById("adminInboxList");
