@@ -991,3 +991,32 @@ body:has(#loginPage.active) main { padding-top:12px; }
 .gio-owner-verified-label{display:inline-flex;align-items:center;gap:5px;color:#bceaff;font-size:12px;font-weight:700}
 .gio-owner-verified-label span{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#168bea;color:#fff;font:900 10px Arial}
 @media(prefers-reduced-motion:reduce){.gio-frame-brand{animation:none}}
+
+
+/* Owner Home v2: compact profile, side shortcut icons and wallet dashboard */
+.owner-header-nav{display:none!important}
+.gio-global-controls{top:calc(env(safe-area-inset-top,0px) + 9px);left:10px;right:10px;justify-content:space-between}
+.gio-global-control{pointer-events:auto;width:62px;height:62px;border-radius:20px;border:1px solid #f6d67b99;background:linear-gradient(145deg,#1a6996dd,#9b7129dd);color:#fff;font-size:26px;box-shadow:0 5px 18px #0006}
+.gio-owner-home-top{display:flex;align-items:flex-start;justify-content:flex-start;width:100%;margin:12px 0 14px}
+.gio-owner-profile{width:min(48%,190px);margin:0;padding:8px 6px 10px;gap:5px;border-radius:18px}
+.gio-owner-frame-wrap{width:min(42vw,165px);aspect-ratio:360/367}
+.gio-owner-frame-photo{position:absolute;left:24%;top:35%;width:52%;height:48%;border-radius:50%;object-fit:cover;z-index:2;clip-path:ellipse(47% 48% at 50% 50%)}
+.gio-profile-upload{position:absolute;z-index:5;right:7%;bottom:12%;width:30px;height:30px;display:grid;place-items:center;border:2px solid #fff;border-radius:50%;background:linear-gradient(145deg,#12b9ed,#0874df);color:white;font-size:23px;font-weight:900;box-shadow:0 2px 10px #007bff88;cursor:pointer}
+.gio-profile-photo-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.gio-primary-reseller-badge{width:100%;max-width:185px}
+.gio-owner-fixed-name{font-size:clamp(25px,7vw,34px);font-weight:1000;letter-spacing:2px;background:linear-gradient(90deg,#fff3a2,#ffc928,#65e8ff,#fff);background-size:240% auto;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;animation:gioOwnerNameGlow 3.2s linear infinite}
+@keyframes gioOwnerNameGlow{to{background-position:240% center}}
+.gio-wallet-dashboard{width:100%;margin:0 auto 16px;padding:14px 13px 12px;border:1px solid #f5d36d99;border-radius:20px;background:linear-gradient(120deg,#0a1832ed,#1d2b4ced 55%,#11162ded);box-shadow:0 10px 28px #0007,inset 0 0 22px #e5bd4c12}
+.gio-wallet-heading{display:flex;align-items:center;gap:10px;margin-bottom:9px;color:#fff}
+.gio-wallet-heading>span{font-size:28px}
+.gio-wallet-heading div{display:flex;flex-direction:column;gap:1px}
+.gio-wallet-heading strong{font-size:19px;color:#ffe28a}
+.gio-wallet-heading small{font-size:11px;color:#b8d9f5}
+.gio-wallet-dashboard .dashboard-stats{margin:0}
+.gio-wallet-dashboard .dashboard-stats>div{min-width:0}
+.admin-order-alert,#adminInboxButton{display:none!important}
+.owner-login-methods{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.owner-login-methods button{padding:11px 8px;border:1px solid #62dfff77;border-radius:12px;background:#102a4e;color:#fff;font-weight:800}
+.owner-login-methods button.is-active{background:linear-gradient(135deg,#166c9c,#78521d);border-color:#ffe08b;box-shadow:0 0 13px #e9bd5b55}
+.owner-login-pane[hidden]{display:none!important}
+@media(max-width:380px){.gio-owner-profile{width:52%}.gio-owner-frame-wrap{width:46vw}.gio-primary-reseller-badge{max-width:165px}}
