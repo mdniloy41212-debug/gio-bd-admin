@@ -1031,3 +1031,7 @@ body:has(#loginPage.active) main { padding-top:12px; }
 .gio-owner-ad-slot strong{font-size:clamp(24px,7vw,38px);font-weight:1000;letter-spacing:3px;color:#f7d77d;text-shadow:0 0 14px #e8b84d66}
 .gio-stock-edit-button{display:inline-flex;align-items:center;justify-content:center;margin-top:8px;padding:7px 14px;border:1px solid #f5d36d;border-radius:10px;background:linear-gradient(135deg,#176c9c,#8a6225);color:#fff;font-weight:800;font-size:13px}
 @media(max-width:380px){.gio-owner-home-top{gap:8px}.gio-owner-ad-slot{min-height:190px}.gio-owner-profile{width:100%}.gio-owner-frame-wrap{width:100%;max-width:165px}.gio-primary-reseller-badge{max-width:230px}}
+
+/* Remove white rays/background from the supplied frame while retaining its colored artwork */
+.gio-owner-frame{mix-blend-mode:multiply}
+.gio-frame-official{position:absolute;z-index:4;left:31%;top:17%;width:43%;height:10%;display:flex;align-items:center;justify-content:center;border:2px solid #70d9ff;border-radius:4px 12px 4px 12px;background:linear-gradient(110deg,#1468bd,#183e94);color:#fff;font-size:clamp(10px,3vw,16px);font-weight:1000;text-shadow:0 1px 2px #001c55;box-shadow:0 2px 5px #002b7a77}
