@@ -101,8 +101,16 @@ function showAdminTab(tab,remember=true){
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), offers=document.getElementById("adminOffersPage"), inbox=document.getElementById("adminInboxPage");
  [login,dash,settings,offers,inbox,adminOrdersPage,adminProfilePage].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
- if(tab==="orders"&&adminOrdersPage){adminOrdersPage.hidden=false;adminOrdersPage.classList.add("active");renderOwnerOrders();}
- if((tab==="settings"||tab==="manage")&&settings){settings.hidden=false;settings.classList.add("active");}
+ // Orders opens the real order-management panel (filters, approve/reject,
+ // completed/rejected history and archive controls), not a read-only duplicate.
+ if(tab==="orders"&&settings){
+  settings.hidden=false;settings.classList.add("active");
+  requestAnimationFrame(()=>{document.getElementById("adminOrders")?.scrollIntoView({behavior:"smooth",block:"start"});});
+ }
+ if((tab==="settings"||tab==="manage")&&settings){
+  settings.hidden=false;settings.classList.add("active");
+  requestAnimationFrame(()=>settings.scrollTo?.({top:0,behavior:"smooth"}));
+ }
  if(tab==="offers"&&offers){offers.hidden=false;offers.classList.add("active");}
  if(tab==="profile"){adminProfilePage.hidden=false;adminProfilePage.classList.add("active");const email=document.getElementById("gioOwnerProfileEmail");if(email)email.textContent=auth.currentUser?.email||"Admin account";loadOwnerProfile();}
  if(tab==="inbox"&&inbox){inbox.hidden=false;inbox.classList.add("active");markIncomingAsRead();}
