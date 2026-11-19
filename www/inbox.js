@@ -297,44 +297,73 @@ let readNotificationIds = new Set();
 let activeInboxTab = "customer";
 
 function createVoiceRecorder(onReady, statusElement) {
+  const wrap = document.createElement("div");
+  wrap.className = "owner-voice-composer";
   const button = document.createElement("button");
   button.type = "button";
   button.className = "voice-record-button";
   button.textContent = "🎙️ ভয়েস রেকর্ড";
-  let recorder = null;
-  let stream = null;
-  let chunks = [];
-  let timer = null;
-  let busy = false;
+  const preview = document.createElement("audio");
+  preview.className = "voice-message-preview";
+  preview.controls = true;
+  preview.preload = "metadata";
+  preview.hidden = true;
+  const sendButton = document.createElement("button");
+  sendButton.type = "button";
+  sendButton.textContent = "📤 ভয়েস Send";
+  sendButton.hidden = true;
+  const cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.textContent = "✖ বাতিল";
+  cancelButton.hidden = true;
+  wrap.append(button, preview, sendButton, cancelButton);
 
+  let recorder = null, stream = null, chunks = [], timer = null;
+  let startedAt = 0, pendingData = null, pendingMime = "", pendingDuration = 0;
+  let previewUrl = null, busy = false;
+
+  const status = value => { if (statusElement) statusElement.textContent = value; };
+  const clearPending = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = null; pendingData = null; pendingMime = ""; pendingDuration = 0;
+    preview.pause(); preview.removeAttribute("src"); preview.load(); preview.hidden = true;
+    sendButton.hidden = true; cancelButton.hidden = true;
+  };
+  cancelButton.addEventListener("click", () => {
+    clearPending(); button.hidden = false; button.disabled = false;
+    button.textContent = "🎙️ আবার রেকর্ড"; status("রেকর্ড বাতিল করা হয়েছে।");
+  });
+  sendButton.addEventListener("click", async () => {
+    if (!pendingData || busy) return;
+    busy = true; sendButton.disabled = true; cancelButton.disabled = true;
+    status("ভয়েস মেসেজ পাঠানো হচ্ছে...");
+    try {
+      await onReady(pendingData, pendingMime, pendingDuration);
+      clearPending(); button.hidden = false; button.disabled = false;
+      button.textContent = "🎙️ আবার রেকর্ড"; status("ভয়েস মেসেজ পাঠানো হয়েছে।");
+    } catch (error) {
+      status("ভয়েস মেসেজ পাঠানো যায়নি: " + (error.message || error));
+      sendButton.disabled = false; cancelButton.disabled = false;
+    } finally { busy = false; }
+  });
   button.addEventListener("click", async () => {
     if (busy) return;
     if (recorder && recorder.state === "recording") {
-      recorder.stop();
-      button.textContent = "অডিও তৈরি হচ্ছে...";
-      button.disabled = true;
-      return;
+      recorder.stop(); button.textContent = "অডিও তৈরি হচ্ছে..."; button.disabled = true; return;
     }
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      statusElement.textContent = "এই ডিভাইসে ভয়েস রেকর্ডিং সমর্থিত নয়।";
-      return;
+      status("এই অ্যাপ/ব্রাউজারে ভয়েস রেকর্ডিং সমর্থিত নয়। Microphone permission দিন।"); return;
     }
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       chunks = [];
       const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
       const mimeType = preferred.find(type => MediaRecorder.isTypeSupported(type));
-      recorder = mimeType
-        ? new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 24000 })
-        : new MediaRecorder(stream, { audioBitsPerSecond: 24000 });
-      recorder.ondataavailable = event => {
-        if (event.data && event.data.size) chunks.push(event.data);
-      };
+      recorder = mimeType ? new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 24000 }) : new MediaRecorder(stream, { audioBitsPerSecond: 24000 });
+      recorder.ondataavailable = event => { if (event.data && event.data.size) chunks.push(event.data); };
       recorder.onstop = async () => {
-        clearTimeout(timer);
-        stream?.getTracks().forEach(track => track.stop());
-        stream = null;
-        busy = true;
+        clearTimeout(timer); stream?.getTracks().forEach(track => track.stop()); stream = null;
+        const duration = Math.min(15, Math.max(1, Math.round((Date.now() - startedAt) / 1000)));
         try {
           const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
           if (!blob.size) throw new Error("কোনো অডিও রেকর্ড হয়নি।");
@@ -344,32 +373,25 @@ function createVoiceRecorder(onReady, statusElement) {
             reader.onerror = () => reject(new Error("অডিও পড়া যায়নি।"));
             reader.readAsDataURL(blob);
           });
-          if (dataUrl.length > 180000) throw new Error("অডিও ফাইলটি বড় হয়েছে। আবার ছোট করে রেকর্ড করুন।");
-          await onReady(dataUrl, blob.type || recorder.mimeType || "audio/webm");
-          statusElement.textContent = "ভয়েস মেসেজ পাঠানো হয়েছে।";
+          if (dataUrl.length > 180000) throw new Error("অডিও ফাইলটি বড় হয়েছে। সর্বোচ্চ ১৫ সেকেন্ড রেকর্ড করুন।");
+          clearPending(); pendingData = dataUrl; pendingMime = blob.type || recorder.mimeType || "audio/webm"; pendingDuration = duration;
+          previewUrl = URL.createObjectURL(blob); preview.src = previewUrl; preview.hidden = false;
+          sendButton.hidden = false; cancelButton.hidden = false; button.hidden = true; button.disabled = false;
+          status("ভয়েস রেকর্ড হয়েছে (" + duration + " সেকেন্ড)। Send করার আগে Play করে শুনুন।");
         } catch (error) {
-          statusElement.textContent = "ভয়েস মেসেজ পাঠানো যায়নি: " + error.message;
-        } finally {
-          busy = false;
-          button.disabled = false;
-          button.textContent = "🎙️ আবার রেকর্ড";
-          recorder = null;
-          chunks = [];
-        }
+          button.disabled = false; button.textContent = "🎙️ আবার রেকর্ড"; status("ভয়েস তৈরি হয়নি: " + error.message);
+        } finally { recorder = null; chunks = []; }
       };
-      recorder.start();
-      button.textContent = "⏹️ রেকর্ড বন্ধ করুন";
-      statusElement.textContent = "রেকর্ড হচ্ছে... সর্বোচ্চ ১৫ সেকেন্ড।";
-      timer = setTimeout(() => {
-        if (recorder?.state === "recording") recorder.stop();
-      }, 15000);
+      startedAt = Date.now(); recorder.start();
+      button.textContent = "⏹️ রেকর্ড বন্ধ করুন"; status("রেকর্ড হচ্ছে... সর্বোচ্চ ১৫ সেকেন্ড।");
+      timer = setTimeout(() => { if (recorder?.state === "recording") recorder.stop(); }, 15000);
     } catch (error) {
-      stream?.getTracks().forEach(track => track.stop());
-      stream = null;
-      statusElement.textContent = "মাইক্রোফোন চালু হয়নি: " + error.message;
+      stream?.getTracks().forEach(track => track.stop()); stream = null;
+      button.disabled = false; button.textContent = "🎙️ ভয়েস রেকর্ড";
+      status(error.name === "NotAllowedError" ? "Microphone permission বন্ধ আছে। ফোনের App permissions থেকে Microphone Allow করুন।" : "মাইক্রোফোন চালু হয়নি: " + (error.message || error));
     }
   });
-  return button;
+  return wrap;
 }
 
 function appendVoicePlayer(card, data) {
@@ -379,6 +401,8 @@ function appendVoicePlayer(card, data) {
   player.preload = "none";
   player.className = "voice-message-player";
   player.src = data.audioData;
+  player.addEventListener("error", () => { player.insertAdjacentText("afterend", " অডিও চালানো যাচ্ছে না—ফাইল ফরম্যাট বা ডেটা পরীক্ষা করুন।"); }, { once: true });
+  player.addEventListener("loadedmetadata", () => { if (Number.isFinite(player.duration) && player.duration > 0) player.setAttribute("aria-label", "ভয়েস মেসেজ, " + Math.round(player.duration) + " সেকেন্ড"); }, { once: true });
   card.appendChild(player);
 }
 
