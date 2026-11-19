@@ -603,7 +603,7 @@ onAuthStateChanged(auth, async user => {
     await refreshOwnerWhatsApp();
     readNotificationIds = readStorage(user.uid);
     if (button) button.hidden = false;
-    if(restoredTab!=="home")showAdminTab(restoredTab,false);
+    showAdminTab(restoredTab,false);
     const list = document.getElementById("adminInboxList");
     if (!list) return;
 
