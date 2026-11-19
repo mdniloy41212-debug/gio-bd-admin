@@ -112,6 +112,46 @@ function renderOwnerOrders(){
 }
 const ownerProfileButton=document.getElementById("ownerProfileButton");
 if(ownerProfileButton){ownerProfileButton.type="button";ownerProfileButton.style.position="relative";ownerProfileButton.style.zIndex="5";ownerProfileButton.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();showAdminTab("profile");});}
+const ownerHomeFooter=document.querySelector(".gio-owner-footer");
+const ownerHomeDashboard=document.getElementById("adminPage");
+if(ownerHomeFooter&&ownerHomeDashboard&&!ownerHomeDashboard.contains(ownerHomeFooter)){
+  const stats=document.getElementById("dashboardStats");
+  if(stats)stats.after(ownerHomeFooter);else ownerHomeDashboard.appendChild(ownerHomeFooter);
+}
+const ownerHomeAdStyle=document.createElement("style");
+ownerHomeAdStyle.textContent=`
+  #adminPage{height:calc(100dvh - 174px)!important;min-height:0!important;max-height:calc(100dvh - 174px)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:8px!important;box-sizing:border-box!important}
+  #adminPage .owner-home-top{display:block!important;flex:0 0 auto!important;width:100%!important;margin:0 0 8px!important;padding:0!important}
+  #adminPage #ownerProfileButton{display:flex!important;position:absolute!important;z-index:5!important;top:8px!important;left:8px!important;width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important;padding:0!important;overflow:hidden!important;opacity:.96}
+  #adminPage #ownerProfileButton strong{display:none!important}
+  #adminPage .owner-ad-banner{width:100%!important;min-height:150px!important;margin:0!important;box-sizing:border-box!important}
+  #adminPage .owner-ad-copy{width:100%!important}
+  #adminPage #dashboardStats{flex:1 1 auto!important;min-height:0!important;align-content:center!important;overflow:hidden!important;margin:0!important}
+  #adminPage .gio-owner-footer{flex:0 0 auto!important;margin:8px 0 0!important;padding:10px 7px!important;border:1px solid #65eaff!important;border-radius:15px!important;background:linear-gradient(105deg,#071a43,#124b85 45%,#42166e)!important;box-shadow:0 0 18px #23dfff99,inset 0 1px 0 #ffffff55!important;text-align:center!important}
+  #adminPage .gio-owner-footer p{font-size:13px!important;letter-spacing:1px!important;color:#80f4ff!important}
+  #adminPage .gio-owner-footer strong{font-size:clamp(17px,5vw,22px)!important;font-weight:1000!important;letter-spacing:1px!important;color:#ffe36a!important;text-shadow:0 0 12px #ffe36a,0 2px 0 #6b3a14!important}
+  body:has(#adminPage.active){overflow:hidden!important}
+  body:has(#adminPage.active) main{overflow:hidden!important}
+`;
+document.head.appendChild(ownerHomeAdStyle);
+const ownerAdSlides=[
+  ["LIVE AD • GIO BD","DIAMOND RECHARGE"],
+  ["দ্রুত • নিরাপদ • নির্ভরযোগ্য","GIO BD PREMIUM"],
+  ["আপনার বিশ্বস্ত রিচার্জ বাজার","SHINE BRIGHTER"]
+];
+let ownerAdSlideIndex=0;
+const rotateOwnerAd=()=>{
+  const copy=document.querySelector("#ownerAdBanner .owner-ad-copy");
+  if(!copy)return;
+  const title=copy.querySelector("strong"),subtitle=copy.querySelector("small");
+  const slide=ownerAdSlides[ownerAdSlideIndex%ownerAdSlides.length];
+  if(title)title.textContent=slide[0];
+  if(subtitle)subtitle.textContent=slide[1];
+  ownerAdSlideIndex++;
+};
+rotateOwnerAd();
+if(!window.__gioOwnerHomeAdTimer)window.__gioOwnerHomeAdTimer=window.setInterval(rotateOwnerAd,5000);
+
 document.getElementById("ownerProfileBack")?.addEventListener("click",()=>showAdminTab("home"));
 let ownerProfileData={displayName:"GIO BD",photoData:""};
 async function loadOwnerProfile(){
