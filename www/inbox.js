@@ -164,7 +164,10 @@ function createVoiceRecorder(onReady, statusElement) {
   const sendButton = document.createElement("button");
   sendButton.type = "button";
   sendButton.textContent = "📤 ভয়েস Send";
-  sendButton.hidden = true;
+  sendButton.hidden = false;
+  sendButton.disabled = true;
+  sendButton.className = "voice-send-button";
+  sendButton.textContent = "➤ Voice Send";
   const cancelButton = document.createElement("button");
   cancelButton.type = "button";
   cancelButton.textContent = "✖ বাতিল";
@@ -191,7 +194,8 @@ function createVoiceRecorder(onReady, statusElement) {
     pendingDuration = 0;
     preview.removeAttribute("src");
     preview.hidden = true;
-    sendButton.hidden = true;
+    sendButton.hidden = false;
+    sendButton.disabled = true;
     cancelButton.hidden = true;
   }
 
@@ -272,6 +276,7 @@ function createVoiceRecorder(onReady, statusElement) {
           preview.src = previewUrl;
           preview.hidden = false;
           sendButton.hidden = false;
+          sendButton.disabled = false;
           cancelButton.hidden = false;
           button.hidden = true;
           button.disabled = false;
@@ -359,7 +364,7 @@ function renderMessages() {
   const list = document.getElementById("adminInboxList");
   const button = document.getElementById("adminInboxButton");
   if (!list || !button) return;
-  const unread = currentMessages.filter(item => item.data().senderRole === "customer" && !readNotificationIds.has(item.id)).length + currentPendingOrders.length;
+  const unread = currentMessages.filter(item => item.data().directMessage !== true && item.data().senderRole === "customer" && !readNotificationIds.has(item.id)).length + currentPendingOrders.length;
   button.innerHTML = "📥 Inbox" + (unread ? ' <span class="notification-count">' + unread + "</span>" : "");
 
   const messages = [...currentMessages].sort((a,b) =>
