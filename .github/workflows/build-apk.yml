@@ -32,10 +32,26 @@ jobs:
       - name: Build Owner web bundle
         run: npm run build
 
+      - name: Save regenerated Owner login bundle
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add www/admin-script.bundle.js
+          if ! git diff --cached --quiet; then
+            git commit -m "Rebuild Owner login bundle from source"
+            git push
+          else
+            echo "Owner bundle is already up to date."
+          fi
+
       - name: Validate Owner JavaScript modules
         run: |
           set -euo pipefail
           node --input-type=module --check < www/admin-script.bundle.js
+          grep -q 'ownerPasswordResetBtn' www/admin-script.bundle.js
+          grep -q 'ownerSendOtpBtn' www/admin-script.bundle.js
+          grep -q 'ownerVerifyOtpBtn' www/admin-script.bundle.js
           node --input-type=module --check < www/inbox.js
           grep -q 'data-admin-tab="home"' www/inbox.js
           grep -q 'data-admin-tab="inbox"' www/inbox.js
