@@ -28,7 +28,7 @@ window.gioRequestMicPermission = async () => {
 const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
-adminBottomNav.innerHTML = '<button type="button" data-admin-tab="inbox">▤<span>Inbox</span></button><button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="offers">◇<span>Package</span></button><button type="button" data-admin-tab="settings">⚙<span>Settings</span></button>';
+adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="inbox">▤<span>Inbox</span></button><button type="button" data-admin-tab="orders">📦<span>Orders</span></button><button type="button" data-admin-tab="offers">◇<span>Package</span></button><button type="button" data-admin-tab="settings">⚙<span>Settings</span></button>';
 adminBottomNav.hidden = true;
 document.body.appendChild(adminBottomNav);
 const ownerActionBar=document.createElement("div");
@@ -563,7 +563,7 @@ onAuthStateChanged(auth, async user => {
   try {
     const snap = await getDoc(doc(db, "users", "admin"));
     const data = snap.exists() ? snap.data() : {};
-    if (data.uid !== user.uid || String(data.role || "").toLowerCase() !== "admin") {
+    if (data.uid !== user.uid || !["admin", "owner"].includes(String(data.role || "").trim().toLowerCase())) {
       adminBottomNav.hidden = true;
       ownerActionBar.hidden = true;
       adminHelp.hidden = true;
