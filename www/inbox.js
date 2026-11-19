@@ -373,7 +373,7 @@ function renderMessages() {
   const customers = new Map();
   messages.forEach(item => {
     const data = item.data();
-    if (!data.userUid) return;
+    if (data.directMessage === true || !data.userUid) return;
     if (!customers.has(data.userUid)) customers.set(data.userUid, { uid: data.userUid, name: data.senderRole === "customer" ? (data.senderName || data.senderEmail || "কাস্টমার") : (data.customerName || "কাস্টমার"), messages: [], lastAt: data.createdAt?.toMillis?.() || 0, unread: 0 });
     const entry = customers.get(data.userUid);
     entry.messages.push(item);
