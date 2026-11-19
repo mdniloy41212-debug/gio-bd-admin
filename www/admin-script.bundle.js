@@ -10549,6 +10549,7 @@ import { getApps, initializeApp as initializeApp2 } from "https://www.gstatic.co
 import {
   getAuth as getAuth2,
   signInWithEmailAndPassword as signInWithEmailAndPassword2,
+  sendPasswordResetEmail as sendPasswordResetEmail2,
   signInWithCustomToken as signInWithCustomToken2,
   onAuthStateChanged as onAuthStateChanged2,
   signOut as signOut2,
@@ -10914,10 +10915,10 @@ var adminTranslations = [
   ["#ownerPasswordLoginBtn", "Gmail \u0993 Password \u09A6\u09BF\u09AF\u09BC\u09C7 \u09B2\u0997\u0987\u09A8 \u09B8\u09BE\u09AC\u09AE\u09BF\u099F", "Submit Gmail & Password Login"],
   ["#ownerPasswordLogin h3", "Gmail \u0993 Password \u09A6\u09BF\u09AF\u09BC\u09C7 \u09B2\u0997\u0987\u09A8", "Sign in with Gmail & Password"],
   ["#ownerOtpLogin h3", "Gmail OTP \u09A6\u09BF\u09AF\u09BC\u09C7 \u09B2\u0997\u0987\u09A8", "Sign in with Gmail OTP"],
-  ["#ownerOtpLogin p", "\u098F\u0987 \u09B2\u0997\u0987\u09A8 \u09AA\u09A6\u09CD\u09A7\u09A4\u09BF\u099F\u09BF \u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0\u09A4\u09C7 \u09B8\u0995\u09CD\u09B0\u09BF\u09AF\u09BC \u0995\u09B0\u09BE \u09B9\u09AC\u09C7\u0964", "This login method will be enabled later."],
+  ["#ownerOtpLogin p", "\u0986\u09AA\u09A8\u09BE\u09B0 Owner Gmail-\u098F \u09EC \u09B8\u0982\u0996\u09CD\u09AF\u09BE\u09B0 OTP \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB \u09B9\u09AC\u09C7\u0964", "A 6-digit OTP will be sent to your Owner Gmail."],
   ["#ownerSendOtpBtn", "OTP \u09AA\u09BE\u09A0\u09BE\u09A8", "Send OTP"],
   ["#ownerVerifyOtpBtn", "OTP \u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09C1\u09A8 \u0993 \u09B2\u0997\u0987\u09A8 \u09B8\u09BE\u09AC\u09AE\u09BF\u099F", "Verify OTP & Submit Login"],
-  ["#ownerOtpLogin small", "OTP Login \u09AC\u09B0\u09CD\u09A4\u09AE\u09BE\u09A8\u09C7 \u09A8\u09BF\u09B7\u09CD\u0995\u09CD\u09B0\u09BF\u09AF\u09BC\u0964 Password Login \u09AC\u09CD\u09AF\u09AC\u09B9\u09BE\u09B0 \u0995\u09B0\u09C1\u09A8\u0964", "OTP Login is currently disabled. Please use Password Login."],
+  ["#ownerOtpLogin small", "OTP \u09AA\u09BE\u0993\u09AF\u09BC\u09BE\u09B0 \u09AA\u09B0 \u09EC \u09B8\u0982\u0996\u09CD\u09AF\u09BE\u09B0 \u0995\u09CB\u09A1 \u09A6\u09BF\u09AF\u09BC\u09C7 \u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09C1\u09A8\u0964", "Enter the 6-digit code sent to your email."],
   ["#adminPage > h2", "\u09A1\u09CD\u09AF\u09BE\u09B6\u09AC\u09CB\u09B0\u09CD\u09A1", "Dashboard"],
   ["#adminSettingsPage > h2", "\u0985\u09CD\u09AF\u09BE\u09A1\u09AE\u09BF\u09A8 \u09B8\u09C7\u099F\u09BF\u0982\u09B8", "Owner Settings"],
   ['label[for="diamondStockQuantity"]', "\u09AE\u09CB\u099F Diamond Stock", "Total Diamond Stock"],
@@ -10946,9 +10947,53 @@ adminLanguageToggle?.addEventListener("click", () => {
   adminLanguage = adminLanguage === "bn" ? "en" : "bn";
   applyAdminLanguage();
 });
+var ownerLoginMethodButtons = [...document.querySelectorAll("[data-owner-login-method]")];
+function setOwnerLoginMethod(method) {
+  const useOtp = method === "otp";
+  const passwordPanel = $("ownerPasswordLogin");
+  const otpPanel = $("ownerOtpLogin");
+  if (passwordPanel) passwordPanel.hidden = useOtp;
+  if (otpPanel) otpPanel.hidden = !useOtp;
+  ownerLoginMethodButtons.forEach((button) => {
+    const active = button.dataset.ownerLoginMethod === method;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+}
+ownerLoginMethodButtons.forEach((button) => {
+  button.addEventListener("click", () => setOwnerLoginMethod(button.dataset.ownerLoginMethod));
+});
+setOwnerLoginMethod("password");
 var ownerEmailInput = $("adminEmail");
 var ownerPasswordInput = $("ownerPassword");
 var ownerPasswordLoginButton = $("ownerPasswordLoginBtn");
+var ownerPasswordResetButton = $("ownerPasswordResetBtn");
+if (ownerPasswordResetButton) {
+  ownerPasswordResetButton.addEventListener("click", async () => {
+    const email = ownerEmailInput?.value.trim().toLowerCase();
+    if (email !== "mdniloy41212@gmail.com") {
+      showMessage(loginMessage, "\u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09BF\u09A4 Owner Gmail \u09B2\u09BF\u0996\u09C1\u09A8\u0964");
+      ownerEmailInput?.focus();
+      return;
+    }
+    ownerPasswordResetButton.disabled = true;
+    showMessage(loginMessage, "Firebase \u0985\u09CD\u09AF\u09BE\u09AA Password \u09AA\u09B0\u09BF\u09AC\u09B0\u09CD\u09A4\u09A8\u09C7\u09B0 \u09B2\u09BF\u0982\u0995 \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB \u09B9\u099A\u09CD\u099B\u09C7...", true);
+    try {
+      await sendPasswordResetEmail2(auth, email);
+      showMessage(loginMessage, "Password \u09AA\u09B0\u09BF\u09AC\u09B0\u09CD\u09A4\u09A8\u09C7\u09B0 \u09B2\u09BF\u0982\u0995 Gmail-\u098F \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB \u09B9\u09DF\u09C7\u099B\u09C7\u0964 Inbox/Spam \u09A6\u09C7\u0996\u09C7 \u09A8\u09A4\u09C1\u09A8 Firebase \u0985\u09CD\u09AF\u09BE\u09AA Password \u09B8\u09C7\u099F \u0995\u09B0\u09C1\u09A8\u0964", true);
+    } catch (error) {
+      console.error("Owner password reset error:", error);
+      const messages = {
+        "auth/user-not-found": "\u098F\u0987 Gmail-\u098F\u09B0 Firebase \u0985\u09CD\u09AF\u09BE\u0995\u09BE\u0989\u09A8\u09CD\u099F \u09AA\u09BE\u0993\u09DF\u09BE \u09AF\u09BE\u09DF\u09A8\u09BF\u0964",
+        "auth/operation-not-allowed": "Firebase Email/Password provider \u099A\u09BE\u09B2\u09C1 \u09A8\u09C7\u0987\u0964",
+        "auth/too-many-requests": "\u0985\u09A8\u09C7\u0995\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u09B9\u09DF\u09C7\u099B\u09C7\u0964 \u0995\u09BF\u099B\u09C1\u0995\u09CD\u09B7\u09A3 \u09AA\u09B0\u09C7 \u0986\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09C1\u09A8\u0964"
+      };
+      showMessage(loginMessage, messages[error.code] || error.message || "Password reset link \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB \u09AF\u09BE\u09DF\u09A8\u09BF\u0964");
+    } finally {
+      ownerPasswordResetButton.disabled = false;
+    }
+  });
+}
 if (ownerPasswordLoginButton) {
   ownerPasswordLoginButton.addEventListener("click", async () => {
     const email = ownerEmailInput?.value.trim().toLowerCase();
@@ -10975,7 +11020,7 @@ if (ownerPasswordLoginButton) {
     } catch (error) {
       console.error("Owner email/password login error:", error);
       const messages = {
-        "auth/invalid-credential": "Gmail \u0985\u09A5\u09AC\u09BE Password \u09B8\u09A0\u09BF\u0995 \u09A8\u09DF\u0964",
+        "auth/invalid-credential": "Firebase \u0985\u09CD\u09AF\u09BE\u09AA\u09C7\u09B0 Password \u09AE\u09C7\u09B2\u09C7\u09A8\u09BF\u0964 Gmail-\u098F\u09B0 \u0986\u09B8\u09B2 Password \u09A8\u09DF\u2014Firebase \u0985\u09CD\u09AF\u09BE\u09AA Password \u09A6\u09BF\u09DF\u09C7 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09C1\u09A8 \u0985\u09A5\u09AC\u09BE \u09A8\u09BF\u099A\u09C7\u09B0 Reset Password \u09AC\u09CD\u09AF\u09AC\u09B9\u09BE\u09B0 \u0995\u09B0\u09C1\u09A8.",
         "auth/user-not-found": "\u098F\u0987 Gmail \u09A6\u09BF\u09DF\u09C7 Firebase Owner \u0985\u09CD\u09AF\u09BE\u0995\u09BE\u0989\u09A8\u09CD\u099F \u09AA\u09BE\u0993\u09DF\u09BE \u09AF\u09BE\u09DF\u09A8\u09BF\u0964",
         "auth/wrong-password": "Password \u09B8\u09A0\u09BF\u0995 \u09A8\u09DF\u0964",
         "auth/too-many-requests": "\u0985\u09A8\u09C7\u0995\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u09B9\u09DF\u09C7\u099B\u09C7\u0964 \u0995\u09BF\u099B\u09C1\u0995\u09CD\u09B7\u09A3 \u09AA\u09B0\u09C7 \u0986\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09C1\u09A8\u0964",
