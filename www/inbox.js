@@ -137,13 +137,25 @@ ownerProfileShortcut?.addEventListener("click",()=>{showAdminTab("profile");cons
 const ownerPhotoInput=document.getElementById("gioOwnerProfilePhotoInput");
 const ownerFramePhoto=document.getElementById("gioOwnerFramePhoto");
 try{const savedPhoto=localStorage.getItem("gioOwnerProfilePhoto");if(savedPhoto&&ownerFramePhoto){ownerFramePhoto.src=savedPhoto;ownerFramePhoto.hidden=false;}}catch(error){console.warn("Owner profile photo restore failed",error);}
-ownerPhotoInput?.addEventListener("change",()=>{
+async function compressOwnerProfilePhoto(file) {
+ if(!file || !file.type.startsWith("image/")) throw new Error("শুধু ছবি নির্বাচন করুন।");
+ if(file.size>5*1024*1024) throw new Error("প্রোফাইল ছবি সর্বোচ্চ ৫ MB হতে পারবে।");
+ const source=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error("ছবি পড়া যায়নি।"));reader.readAsDataURL(file);});
+ const img=await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error("ছবিটি খোলা যায়নি।"));image.src=source;});
+ const scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight));
+ const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+ const ctx=canvas.getContext("2d");if(!ctx)throw new Error("ছবি প্রসেস করা যাচ্ছে না।");
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
+ return canvas.toDataURL("image/jpeg",0.78);
+}
+ownerPhotoInput?.addEventListener("change",async()=>{
  const file=ownerPhotoInput.files?.[0];if(!file||!ownerFramePhoto)return;
- if(!file.type.startsWith("image/")){alert("শুধু ছবি নির্বাচন করুন।");return;}
- if(file.size>5*1024*1024){alert("প্রোফাইল ছবি সর্বোচ্চ ৫ MB হতে পারবে। ৫ MB-এর ছোট ছবি নির্বাচন করুন।");ownerPhotoInput.value="";return;}
- const reader=new FileReader();
- reader.onload=()=>{try{localStorage.setItem("gioOwnerProfilePhoto",String(reader.result));ownerFramePhoto.src=String(reader.result);ownerFramePhoto.hidden=false;}catch(error){alert("ছবিটি সংরক্ষণ করা যায়নি। ছোট ছবি দিয়ে চেষ্টা করুন।");}};
- reader.readAsDataURL(file);
+ try{
+  const photo=await compressOwnerProfilePhoto(file);
+  localStorage.setItem("gioOwnerProfilePhoto",photo);
+  ownerFramePhoto.src=photo;ownerFramePhoto.hidden=false;
+  const detailPhoto=document.getElementById("gioOwnerDetailPhoto");if(detailPhoto){detailPhoto.src=photo;detailPhoto.hidden=false;}
+ }catch(error){alert(error.message||"ছবিটি সংরক্ষণ করা যায়নি।");}
 });
 
 const contactStyle=document.createElement("style");contactStyle.textContent=".gio-contact-user-card{display:flex;align-items:center;gap:11px;padding:12px;margin:9px 0;border:1px solid #71dfff44;border-radius:15px;background:#101a3dcc}.gio-contact-avatar{position:relative;flex:0 0 48px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#1b80a7,#51318d);font-size:20px;font-weight:800}.gio-contact-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}.gio-contact-online-dot{position:absolute;width:13px;height:13px;right:-1px;bottom:0;border:2px solid #101a3d;border-radius:50%;background:#21df70;box-shadow:0 0 9px #21df70}.gio-contact-user-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}.gio-contact-user-info small{font-size:11px;overflow-wrap:anywhere;color:#b9d8f5}.gio-contact-user-card button{padding:9px 12px}.gio-owner-page-back{position:relative}";document.head.appendChild(contactStyle);
