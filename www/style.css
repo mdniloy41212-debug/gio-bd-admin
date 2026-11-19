@@ -1049,3 +1049,14 @@ body:has(#loginPage.active) main { padding-top:12px; }
 .gio-stock-controls input{width:90px;min-width:70px;padding:7px 5px;border:1px solid #7ddcff;border-radius:8px;background:#0b1c37;color:#fff;text-align:center;font-weight:800}
 .gio-stock-controls .gio-stock-save{font-size:12px;min-width:auto}
 @media(max-width:380px){.gio-home-ad-slot,.gio-home-ad-slot .gio-five-second-ad{min-height:190px}}
+
+/* Premium leather-lighting creator credit on both app home screens */
+.gio-presented-home{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;margin:14px auto 18px;padding:19px 12px 17px;border:1px solid rgba(255,220,133,.85);border-radius:20px;background:linear-gradient(145deg,#120f24 0%,#35233a 22%,#15172c 48%,#57412a 72%,#171323 100%);box-shadow:0 12px 28px #0008,inset 0 2px 2px #fff5,inset 0 -5px 12px #0009,0 0 22px #ffd66b35;text-align:center}
+.gio-presented-home:before{content:"";position:absolute;inset:-50% -80%;z-index:-1;background:linear-gradient(105deg,transparent 38%,#fff2 46%,#fff9 49%,#f6d77b66 51%,transparent 60%);transform:translateX(-55%) rotate(8deg);animation:gioLeatherSweep 4.2s ease-in-out infinite}
+.gio-presented-home-kicker{font:800 10px/1.2 Arial,sans-serif;letter-spacing:3px;color:#ffe8a0;text-shadow:0 0 8px #ffd36b}
+.gio-presented-home>strong{font:700 clamp(15px,4vw,19px)/1.2 Georgia,'Times New Roman',serif;letter-spacing:1.2px;color:#fff5d5;text-shadow:0 2px 2px #000,0 0 12px #f6d77b88}
+.gio-presented-home>b{font:900 clamp(27px,8vw,39px)/1.15 Georgia,'Times New Roman',serif;letter-spacing:1.5px;background:linear-gradient(100deg,#fff8d8 0%,#e7bd61 18%,#fff4c1 32%,#a97935 48%,#fff0ad 65%,#f5d47d 80%,#fff 100%);background-size:240% auto;-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 1px #000) drop-shadow(0 0 8px #f3cb6d99);animation:gioLeatherName 3.6s linear infinite}
+.gio-presented-home-shine{font:700 10px/1.3 Arial,sans-serif;letter-spacing:2px;color:#e9d8ae;text-shadow:0 0 9px #ffdf8b88}
+@keyframes gioLeatherSweep{0%,15%{transform:translateX(-65%) rotate(8deg)}65%,100%{transform:translateX(65%) rotate(8deg)}}
+@keyframes gioLeatherName{to{background-position:240% center}}
+@media(prefers-reduced-motion:reduce){.gio-presented-home:before,.gio-presented-home>b{animation:none}}
