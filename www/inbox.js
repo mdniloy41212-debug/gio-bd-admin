@@ -140,7 +140,7 @@ try{const savedPhoto=localStorage.getItem("gioOwnerProfilePhoto");if(savedPhoto&
 ownerPhotoInput?.addEventListener("change",()=>{
  const file=ownerPhotoInput.files?.[0];if(!file||!ownerFramePhoto)return;
  if(!file.type.startsWith("image/")){alert("শুধু ছবি নির্বাচন করুন।");return;}
- if(file.size>2*1024*1024){alert("ছবিটি 2 MB-এর মধ্যে নির্বাচন করুন।");ownerPhotoInput.value="";return;}
+ if(file.size>5*1024*1024){alert("প্রোফাইল ছবি সর্বোচ্চ ৫ MB হতে পারবে। ৫ MB-এর ছোট ছবি নির্বাচন করুন।");ownerPhotoInput.value="";return;}
  const reader=new FileReader();
  reader.onload=()=>{try{localStorage.setItem("gioOwnerProfilePhoto",String(reader.result));ownerFramePhoto.src=String(reader.result);ownerFramePhoto.hidden=false;}catch(error){alert("ছবিটি সংরক্ষণ করা যায়নি। ছোট ছবি দিয়ে চেষ্টা করুন।");}};
  reader.readAsDataURL(file);
