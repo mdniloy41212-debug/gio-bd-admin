@@ -1060,3 +1060,18 @@ body:has(#loginPage.active) main { padding-top:12px; }
 @keyframes gioLeatherSweep{0%,15%{transform:translateX(-65%) rotate(8deg)}65%,100%{transform:translateX(65%) rotate(8deg)}}
 @keyframes gioLeatherName{to{background-position:240% center}}
 @media(prefers-reduced-motion:reduce){.gio-presented-home:before,.gio-presented-home>b{animation:none}}
+
+
+/* Owner photo: cover the complete inner photo window, without the old white inset */
+.gio-owner-frame-wrap{isolation:isolate;overflow:visible}
+.gio-owner-frame-photo{position:absolute!important;left:21%!important;top:29%!important;width:58%!important;height:54%!important;object-fit:cover!important;object-position:center!important;border:0!important;border-radius:50%!important;clip-path:ellipse(50% 50% at 50% 50%)!important;background:transparent!important;z-index:3!important;display:block}
+.gio-owner-frame-photo[hidden]{display:none!important}
+.gio-owner-profile{background:linear-gradient(145deg,#07162e,#11183a 55%,#17102e)!important}
+.gio-presented-home{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;margin:8px auto 16px;padding:19px 12px 17px;border:1px solid #e6c77b;border-radius:20px;background:linear-gradient(145deg,#17110e 0%,#49321d 22%,#171b35 52%,#5b3b20 78%,#15101b 100%);box-shadow:0 12px 28px #0008,inset 0 1px 0 #fff7c4aa,inset 0 -5px 12px #0009}
+.gio-presented-home:before{content:"";position:absolute;inset:5px;border:1px solid #f6d98b55;border-radius:15px;pointer-events:none}
+.gio-presented-home-kicker{color:#ffe7a3;font:800 10px Arial,sans-serif;letter-spacing:3px;text-shadow:0 0 9px #ffd66b}
+.gio-presented-home strong{color:#fff4d2;font:700 15px Georgia,serif;letter-spacing:1.5px;text-shadow:0 2px 2px #000,0 0 10px #ffdf91}
+.gio-presented-home b{font-family:Georgia,'Times New Roman',serif;font-size:clamp(25px,7vw,36px);font-weight:900;letter-spacing:1.5px;background:linear-gradient(180deg,#fffde8 0%,#ffe08a 22%,#b77a28 47%,#fff1b5 62%,#9b641e 82%,#fff4c9 100%);background-size:100% 220%;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 0 #4b2b0d,0 4px 9px #000b;filter:drop-shadow(0 0 8px #ffd56a99);animation:gioPresentedLeatherShine 3.8s ease-in-out infinite}
+.gio-presented-home-shine{color:#d9c8a2;font:700 10px Arial,sans-serif;letter-spacing:2px;text-shadow:0 0 8px #e4b85b}
+@keyframes gioPresentedLeatherShine{0%,100%{background-position:0 0;filter:brightness(1) drop-shadow(0 0 6px #dcae4c66)}50%{background-position:0 100%;filter:brightness(1.35) drop-shadow(0 0 13px #ffe7a0)}}
+@media(prefers-reduced-motion:reduce){.gio-presented-home b{animation:none}}
