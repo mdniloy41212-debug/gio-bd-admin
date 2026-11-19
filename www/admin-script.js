@@ -2,6 +2,7 @@ import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14
 import {
   getAuth,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithCustomToken,
   onAuthStateChanged,
   signOut,
@@ -110,10 +111,10 @@ const adminTranslations = [
   ['#ownerPasswordLoginBtn', "Gmail ও Password দিয়ে লগইন সাবমিট", "Submit Gmail & Password Login"],
   ['#ownerPasswordLogin h3', "Gmail ও Password দিয়ে লগইন", "Sign in with Gmail & Password"],
   ['#ownerOtpLogin h3', "Gmail OTP দিয়ে লগইন", "Sign in with Gmail OTP"],
-  ['#ownerOtpLogin p', "এই লগইন পদ্ধতিটি পরবর্তীতে সক্রিয় করা হবে।", "This login method will be enabled later."],
+  ['#ownerOtpLogin p', "আপনার Owner Gmail-এ ৬ সংখ্যার OTP পাঠানো হবে।", "A 6-digit OTP will be sent to your Owner Gmail."],
   ['#ownerSendOtpBtn', "OTP পাঠান", "Send OTP"],
   ['#ownerVerifyOtpBtn', "OTP যাচাই করুন ও লগইন সাবমিট", "Verify OTP & Submit Login"],
-  ['#ownerOtpLogin small', "OTP Login বর্তমানে নিষ্ক্রিয়। Password Login ব্যবহার করুন।", "OTP Login is currently disabled. Please use Password Login."],
+  ['#ownerOtpLogin small', "OTP পাওয়ার পর ৬ সংখ্যার কোড দিয়ে যাচাই করুন।", "Enter the 6-digit code sent to your email."],
   ["#adminPage > h2", "ড্যাশবোর্ড", "Dashboard"],
   ["#adminSettingsPage > h2", "অ্যাডমিন সেটিংস", "Owner Settings"],
   ['label[for="diamondStockQuantity"]', "মোট Diamond Stock", "Total Diamond Stock"],
@@ -143,10 +144,58 @@ adminLanguageToggle?.addEventListener("click", () => {
   applyAdminLanguage();
 });
 
+// Switch between the two Owner login methods.
+const ownerLoginMethodButtons = [...document.querySelectorAll("[data-owner-login-method]")];
+function setOwnerLoginMethod(method) {
+  const useOtp = method === "otp";
+  const passwordPanel = $("ownerPasswordLogin");
+  const otpPanel = $("ownerOtpLogin");
+  if (passwordPanel) passwordPanel.hidden = useOtp;
+  if (otpPanel) otpPanel.hidden = !useOtp;
+  ownerLoginMethodButtons.forEach(button => {
+    const active = button.dataset.ownerLoginMethod === method;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+}
+ownerLoginMethodButtons.forEach(button => {
+  button.addEventListener("click", () => setOwnerLoginMethod(button.dataset.ownerLoginMethod));
+});
+setOwnerLoginMethod("password");
+
+
 
 const ownerEmailInput = $("adminEmail");
 const ownerPasswordInput = $("ownerPassword");
 const ownerPasswordLoginButton = $("ownerPasswordLoginBtn");
+
+const ownerPasswordResetButton = $("ownerPasswordResetBtn");
+if (ownerPasswordResetButton) {
+  ownerPasswordResetButton.addEventListener("click", async () => {
+    const email = ownerEmailInput?.value.trim().toLowerCase();
+    if (email !== "mdniloy41212@gmail.com") {
+      showMessage(loginMessage, "অনুমোদিত Owner Gmail লিখুন।");
+      ownerEmailInput?.focus();
+      return;
+    }
+    ownerPasswordResetButton.disabled = true;
+    showMessage(loginMessage, "Firebase অ্যাপ Password পরিবর্তনের লিংক পাঠানো হচ্ছে...", true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showMessage(loginMessage, "Password পরিবর্তনের লিংক Gmail-এ পাঠানো হয়েছে। Inbox/Spam দেখে নতুন Firebase অ্যাপ Password সেট করুন।", true);
+    } catch (error) {
+      console.error("Owner password reset error:", error);
+      const messages = {
+        "auth/user-not-found": "এই Gmail-এর Firebase অ্যাকাউন্ট পাওয়া যায়নি।",
+        "auth/operation-not-allowed": "Firebase Email/Password provider চালু নেই।",
+        "auth/too-many-requests": "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
+      };
+      showMessage(loginMessage, messages[error.code] || error.message || "Password reset link পাঠানো যায়নি।");
+    } finally {
+      ownerPasswordResetButton.disabled = false;
+    }
+  });
+}
 
 if (ownerPasswordLoginButton) {
   ownerPasswordLoginButton.addEventListener("click", async () => {
@@ -176,7 +225,7 @@ if (ownerPasswordLoginButton) {
     } catch (error) {
       console.error("Owner email/password login error:", error);
       const messages = {
-        "auth/invalid-credential": "Gmail অথবা Password সঠিক নয়।",
+        "auth/invalid-credential": "Firebase অ্যাপের Password মেলেনি। Gmail-এর আসল Password নয়—Firebase অ্যাপ Password দিয়ে চেষ্টা করুন অথবা নিচের Reset Password ব্যবহার করুন.",
         "auth/user-not-found": "এই Gmail দিয়ে Firebase Owner অ্যাকাউন্ট পাওয়া যায়নি।",
         "auth/wrong-password": "Password সঠিক নয়।",
         "auth/too-many-requests": "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
