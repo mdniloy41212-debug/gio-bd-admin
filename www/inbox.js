@@ -30,6 +30,8 @@ const adminBottomNav = document.createElement("nav");
 adminBottomNav.className = "gio-admin-bottom-nav";
 adminBottomNav.innerHTML = '<button type="button" data-admin-tab="home">⌂<span>Home</span></button><button type="button" data-admin-tab="inbox">▤<span>Inbox</span></button><button type="button" data-admin-tab="orders">📦<span>Orders</span></button><button type="button" data-admin-tab="offers">◇<span>Package</span></button><button type="button" data-admin-tab="settings">⚙<span>Settings</span></button>';
 adminBottomNav.hidden = true;
+adminBottomNav.style.setProperty("pointer-events","auto","important");
+adminBottomNav.style.setProperty("touch-action","manipulation","important");
 document.body.appendChild(adminBottomNav);
 const ownerActionBar=document.createElement("div");
 ownerActionBar.className="gio-owner-action-bar";
@@ -83,6 +85,13 @@ async function refreshOwnerWhatsApp(){try{const snap=await getDoc(doc(db,"settin
 refreshOwnerWhatsApp();
 function showAdminTab(tab,remember=true){
  if(!auth.currentUser)return;
+ adminBottomNav.hidden=false;
+ adminBottomNav.removeAttribute("hidden");
+ adminBottomNav.style.setProperty("display","grid","important");
+ adminBottomNav.style.setProperty("visibility","visible","important");
+ adminBottomNav.style.setProperty("opacity","1","important");
+ adminBottomNav.style.setProperty("pointer-events","auto","important");
+ adminBottomNav.style.setProperty("z-index","2147483000","important");
  if(remember&&tab!==currentOwnerTab)ownerTabHistory.push(currentOwnerTab);
  currentOwnerTab=tab;
  const pageNames={home:"GIO BD",orders:"Order",offers:"Package",inbox:"Inbox",settings:"Settings",profile:"Profile"};
@@ -98,7 +107,7 @@ function showAdminTab(tab,remember=true){
  if(tab==="inbox"&&inbox){inbox.hidden=false;inbox.classList.add("active");markIncomingAsRead();}
  adminBottomNav.querySelectorAll("[data-admin-tab]").forEach(button=>button.classList.toggle("active",button.dataset.adminTab===tab));
 }
-adminBottomNav.addEventListener("click",event=>{const button=event.target.closest("[data-admin-tab]");if(button)showAdminTab(button.dataset.adminTab);});
+adminBottomNav.addEventListener("click",event=>{const button=event.target instanceof Element?event.target.closest("button[data-admin-tab]"):null;if(!button)return;event.preventDefault();event.stopPropagation();showAdminTab(button.dataset.adminTab);},true);
 let ownerOrderDocs=[];
 function renderOwnerOrders(){
  const box=document.getElementById("ownerOrderList");if(!box)return;box.replaceChildren();
