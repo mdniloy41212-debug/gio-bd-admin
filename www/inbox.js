@@ -1,4 +1,5 @@
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, query, orderBy,
@@ -17,6 +18,12 @@ const config = {
 const app = getApps().length ? getApps()[0] : initializeApp(config);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const OwnerMicrophonePermission = registerPlugin("MicrophonePermission");
+window.gioRequestMicPermission = async () => {
+  if (!Capacitor.isNativePlatform()) return true;
+  const result = await OwnerMicrophonePermission.request();
+  return result?.granted === true;
+};
 
 const main = document.querySelector("main");
 const adminBottomNav = document.createElement("nav");
@@ -242,6 +249,8 @@ function createVoiceRecorder(onReady, statusElement) {
       return;
     }
     try {
+      const permissionGranted = await window.gioRequestMicPermission?.();
+      if (permissionGranted === false) { const denied = new Error("ফোনের Microphone permission Allow করুন।"); denied.name = "NotAllowedError"; throw denied; }
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       chunks = [];
       const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
