@@ -734,9 +734,10 @@ async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
   try {
-    const [ordersSnapshot, salesLedgerSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
+    // Keep dashboard reads limited to collections/documents already used by the Owner dashboard.
+    // A separate salesLedger read previously caused the entire Promise.all to fail when unreadable.
+    const [ordersSnapshot, stockSnapshot, balanceSnapshot] = await Promise.all([
       getDocs(collection(db, "orders")),
-      getDocs(collection(db, "salesLedger")),
       getDoc(doc(db, "settings", "diamondStock")),
       getDoc(doc(db, "settings", "mainBalance"))
     ]);
@@ -749,13 +750,14 @@ async function loadDashboardStats() {
         totalDiamonds += Number(data.diamondQuantity) || Number(String(data.packageName || "").match(/[0-9]+/)?.[0]) || 0;
       }
     });
-    salesLedgerSnapshot.forEach(item => { salesMoney += Number(item.data().amount) || 0; });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
+    const balance = Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0);
     container.replaceChildren();
     const cards = [
+      ["MAIN BALANCE", "৳" + balance.toLocaleString("en-BD"), "main-balance"],
+      ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"],
       ["TOTAL DIAMOND", totalDiamonds.toLocaleString("en-BD") + " 💎", "total-diamonds"],
-      ["DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"],
-      ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"]
+      ["DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"]
     ];
     cards.forEach(([label,value,kind]) => {
       const card = document.createElement("div");
@@ -830,7 +832,7 @@ async function loadDashboardStats() {
       container.appendChild(card);
     });
     const balanceInput = $("mainBalanceAmount");
-    if (balanceInput && document.activeElement !== balanceInput) balanceInput.value = String(Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0));
+    if (balanceInput && document.activeElement !== balanceInput) balanceInput.value = String(balance);
     const stockInput = $("diamondStockQuantity");
     if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
   } catch(error) {
