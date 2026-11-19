@@ -573,6 +573,16 @@ onAuthStateChanged(auth, async user => {
 
     currentAdminUid = user.uid;
     adminBottomNav.hidden = false;
+    adminBottomNav.removeAttribute("hidden");
+    adminBottomNav.style.setProperty("display","grid","important");
+    adminBottomNav.style.setProperty("position","fixed","important");
+    adminBottomNav.style.setProperty("left","8px","important");
+    adminBottomNav.style.setProperty("right","8px","important");
+    adminBottomNav.style.setProperty("bottom","max(8px, env(safe-area-inset-bottom))","important");
+    adminBottomNav.style.setProperty("z-index","2147483000","important");
+    adminBottomNav.style.setProperty("visibility","visible","important");
+    adminBottomNav.style.setProperty("opacity","1","important");
+    adminBottomNav.style.setProperty("grid-template-columns","repeat(5,minmax(0,1fr))","important");
     ownerActionBar.hidden = false;
     ownerTabHistory=[];
     let restoredTab="home";try{const saved=sessionStorage.getItem("gioOwnerLastTab");if(["home","orders","offers","inbox","settings","profile"].includes(saved))restoredTab=saved;sessionStorage.removeItem("gioOwnerLastTab");}catch(e){}
