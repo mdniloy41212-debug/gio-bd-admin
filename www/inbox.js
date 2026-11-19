@@ -77,8 +77,8 @@ function openOwnerUserChat(uid, profile) {
  },err=>messages.textContent="চ্যাট লোড হয়নি: "+err.message);
 }
 function createOwnerContactVoice(uid,status){
- return createVoiceRecorder(async(audioData,audioMimeType)=>{
-  await addDoc(collection(db,"supportMessages"),{userUid:uid,senderRole:"admin",senderName:"GIO BD Owner",text:"🎤 ভয়েস মেসেজ",audioData,audioMimeType,audioDurationLimit:15,createdAt:serverTimestamp()});
+ return createVoiceRecorder(async(audioData,audioMimeType,audioDuration)=>{
+  await addDoc(collection(db,"supportMessages"),{userUid:uid,senderRole:"admin",senderName:"GIO BD Owner",text:"🎤 ভয়েস মেসেজ",audioData,audioMimeType,audioDuration,audioDurationLimit:15,createdAt:serverTimestamp()});
  },status);
 }
 async function loadOwnerContacts(){
@@ -490,11 +490,11 @@ function renderMessages() {
       });
       const voiceStatus = document.createElement("p");
       voiceStatus.className = "voice-status";
-      const voiceButton = createVoiceRecorder(async (audioData, audioMimeType) => {
+      const voiceButton = createVoiceRecorder(async (audioData, audioMimeType, audioDuration) => {
         if (!data.userUid) throw new Error("কাস্টমার UID পাওয়া যায়নি।");
         await addDoc(collection(db, "supportMessages"), {
-          userUid: data.userUid, senderRole: "admin", senderName: "GIO BD Admin",
-          text: "🎤 ভয়েস মেসেজ", audioData, audioMimeType, audioDurationLimit: 15,
+          userUid: data.userUid, senderRole: "admin", senderName: "GIO BD Owner",
+          text: "🎤 ভয়েস মেসেজ", audioData, audioMimeType, audioDuration, audioDurationLimit: 15,
           createdAt: serverTimestamp()
         });
         activeInboxTab = "admin";
