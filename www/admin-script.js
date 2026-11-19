@@ -733,6 +733,12 @@ async function restoreOrder(orderId) {
 async function loadDashboardStats() {
   const container = $("dashboardStats");
   if (!container || !isAdmin) return;
+  if (!document.getElementById("gio-owner-dashboard-focus-style")) {
+    const style = document.createElement("style");
+    style.id = "gio-owner-dashboard-focus-style";
+    style.textContent = "#dashboardStats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;margin:14px 0 20px!important;width:100%!important}#dashboardStats .dashboard-stat-card{position:relative!important;display:flex!important;flex-direction:column!important;justify-content:center!important;min-width:0!important;min-height:124px!important;padding:18px 12px!important;border:1px solid #79eaff!important;border-radius:20px!important;background:linear-gradient(145deg,#12345d,#25164d 70%,#101d3a)!important;box-shadow:0 8px 24px #0007,0 0 16px #24cfff44!important;text-align:center!important}#dashboardStats .dashboard-stat-card strong{font-size:clamp(12px,3.5vw,16px)!important;color:#b9f4ff!important;letter-spacing:.6px!important}#dashboardStats .dashboard-stat-card p{font-size:clamp(24px,7vw,34px)!important;font-weight:1000!important;color:#fff!important;margin:8px 0 0!important;overflow-wrap:anywhere!important;text-shadow:0 0 14px #28cfff88!important}#dashboardStats .dashboard-stat-card:nth-child(-n+2){min-height:150px!important;border-width:2px!important;background:linear-gradient(145deg,#075b82,#1c3f80 52%,#452071)!important}#dashboardStats .owner-stock-inline-controls{position:absolute!important;top:7px!important;right:7px!important}#dashboardStats .owner-stock-edit-button{min-height:25px!important;padding:3px 7px!important;font-size:10px!important;border-radius:8px!important}";
+    document.head.appendChild(style);
+  }
   try {
     // Keep dashboard reads limited to collections/documents already used by the Owner dashboard.
     // A separate salesLedger read previously caused the entire Promise.all to fail when unreadable.
@@ -754,10 +760,10 @@ async function loadDashboardStats() {
     const balance = Number(balanceSnapshot.exists() ? balanceSnapshot.data().amount : 0);
     container.replaceChildren();
     const cards = [
-      ["MAIN BALANCE", "৳" + balance.toLocaleString("en-BD"), "main-balance"],
+      ["DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"],
       ["TOTAL SALES", "৳" + salesMoney.toLocaleString("en-BD"), "sales-money"],
-      ["TOTAL DIAMOND", totalDiamonds.toLocaleString("en-BD") + " 💎", "total-diamonds"],
-      ["DIAMOND STOCK", stock.toLocaleString("en-BD") + " 💎", "current-diamonds"]
+      ["MAIN BALANCE", "৳" + balance.toLocaleString("en-BD"), "main-balance"],
+      ["TOTAL DIAMOND", totalDiamonds.toLocaleString("en-BD") + " 💎", "total-diamonds"]
     ];
     cards.forEach(([label,value,kind]) => {
       const card = document.createElement("div");
