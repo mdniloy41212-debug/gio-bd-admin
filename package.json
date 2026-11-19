@@ -12,10 +12,11 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@capacitor-firebase/authentication": "^8.6.0",
     "@capacitor/android": "^8.6.0",
     "@capacitor/cli": "^8.6.0",
     "@capacitor/core": "^8.6.0",
-    "@capacitor-firebase/authentication": "^8.6.0",
+    "@capgo/capacitor-updater": "^8.54.2",
     "firebase": "^12.19.0"
   }
 }

@@ -6,8 +6,15 @@ import {
   onAuthStateChanged,
   signOut,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  GoogleAuthProvider,
+  signInWithCredential,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
+import { CapacitorUpdater } from "@capgo/capacitor-updater";
 
 import {
   getFirestore,
@@ -37,6 +44,10 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+CapacitorUpdater.notifyAppReady().catch(error => {
+  console.warn("Capgo app ready notification:", error);
+});
 const OWNER_AUTH_API_BASE_URL = "https://gio-bd-owner-auth.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -64,7 +75,7 @@ async function checkAdmin(user) {
 
     return (
       data.uid === user.uid &&
-      String(data.role || "").toLowerCase() === "admin"
+      ["admin", "owner"].includes(String(data.role || "").trim().toLowerCase())
     );
   } catch (error) {
     console.error("Admin check:", error);
@@ -255,6 +266,57 @@ if (ownerVerifyOtpButton) {
       showMessage(loginMessage, error.message || "OTP যাচাই করে লগইন করা যায়নি।");
     } finally {
       ownerVerifyOtpButton.disabled = false;
+    }
+  });
+}
+
+
+const ownerGoogleLoginButton = $("ownerGoogleLoginBtn");
+
+if (ownerGoogleLoginButton) {
+  ownerGoogleLoginButton.addEventListener("click", async () => {
+    ownerGoogleLoginButton.disabled = true;
+    showMessage(loginMessage, "Google দিয়ে Owner Login হচ্ছে...", true);
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const nativeResult = await FirebaseAuthentication.signInWithGoogle();
+        const idToken = nativeResult.credential?.idToken;
+
+        if (!idToken) {
+          throw new Error("Google ID Token পাওয়া যায়নি। Firebase Android configuration পরীক্ষা করুন।");
+        }
+
+        const credential = GoogleAuthProvider.credential(idToken);
+        await signInWithCredential(auth, credential);
+      } else {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        await signInWithPopup(auth, provider);
+      }
+
+      const user = auth.currentUser;
+
+      if (!user || user.email?.trim().toLowerCase() !== "mdniloy41212@gmail.com") {
+        showMessage(loginMessage, "এই Gmail Owner Login-এর জন্য অনুমোদিত নয়।");
+        await signOut(auth);
+        return;
+      }
+
+      const allowed = await checkAdmin(user);
+
+      if (!allowed) {
+        showMessage(loginMessage, "এই অ্যাকাউন্টের Owner অনুমতি নেই।");
+        await signOut(auth);
+        return;
+      }
+
+      showMessage(loginMessage, "Owner Google Login সফল হয়েছে।", true);
+    } catch (error) {
+      console.error("Owner Google Login error:", error);
+      showMessage(loginMessage, error.message || "Google দিয়ে Login করা যায়নি।");
+    } finally {
+      ownerGoogleLoginButton.disabled = false;
     }
   });
 }
