@@ -564,12 +564,16 @@ async function loadDashboardStats() {
       getDocs(collection(db, "orders")),
       getDoc(doc(db, "settings", "diamondStock"))
     ]);
-    let sales = 0;
+    let salesDiamond = 0;
     ordersSnapshot.forEach(item => {
       const data = item.data();
-      if (data.status === "Completed") sales += Number(data.price) || 0;
+      if (data.status === "Completed") {
+        salesDiamond += Number(data.diamondQuantity)
+          || Number(String(data.packageName || "").match(/[0-9]+/)?.[0]) || 0;
+      }
     });
     const stock = Number(stockSnapshot.exists() ? stockSnapshot.data().quantity : 0);
+    const totalDiamond = stock + salesDiamond;
     container.replaceChildren();
 
     const stockCard = document.createElement("article");
@@ -577,7 +581,7 @@ async function loadDashboardStats() {
     const stockTop = document.createElement("div");
     stockTop.className = "gio-diamond-tile-top";
     const stockTitle = document.createElement("strong");
-    stockTitle.textContent = "STOCK";
+    stockTitle.textContent = "CURRENT DIAMOND";
     const editToggle = document.createElement("button");
     editToggle.type = "button";
     editToggle.className = "gio-stock-edit-toggle";
@@ -626,16 +630,30 @@ async function loadDashboardStats() {
     const salesCard = document.createElement("article");
     salesCard.className = "dashboard-stat-card gio-diamond-tile gio-sales-tile";
     const salesTitle = document.createElement("strong");
-    salesTitle.textContent = "SALES";
+    salesTitle.textContent = "SALES DIAMOND";
     const salesGem = document.createElement("div");
     salesGem.className = "gio-dashboard-gem";
     salesGem.setAttribute("aria-hidden", "true");
     salesGem.textContent = "💎";
     const salesValue = document.createElement("p");
     salesValue.className = "gio-diamond-value";
-    salesValue.textContent = "৳" + sales.toLocaleString("en-BD");
+    salesValue.textContent = salesDiamond.toLocaleString("en-BD");
     salesCard.append(salesTitle,salesGem,salesValue);
     container.appendChild(salesCard);
+
+    const totalCard = document.createElement("article");
+    totalCard.className = "dashboard-stat-card gio-diamond-tile gio-total-tile";
+    const totalTitle = document.createElement("strong");
+    totalTitle.textContent = "TOTAL DIAMOND";
+    const totalGem = document.createElement("div");
+    totalGem.className = "gio-dashboard-gem";
+    totalGem.setAttribute("aria-hidden", "true");
+    totalGem.textContent = "💎";
+    const totalValue = document.createElement("p");
+    totalValue.className = "gio-diamond-value";
+    totalValue.textContent = totalDiamond.toLocaleString("en-BD");
+    totalCard.append(totalTitle,totalGem,totalValue);
+    container.appendChild(totalCard);
 
     const stockInput = $("diamondStockQuantity");
     if (stockInput && document.activeElement !== stockInput) stockInput.value = String(stock);
