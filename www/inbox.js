@@ -300,6 +300,8 @@ window.addEventListener("popstate", () => goBackOwnerPage());
 function showAdminTab(tab, options = {}){
  const login=document.getElementById("loginPage"), dash=document.getElementById("adminPage"), settings=document.getElementById("adminSettingsPage"), inbox=document.getElementById("adminInboxPage"), contacts=adminContactPage;
  adminBottomNav.querySelectorAll("[data-admin-tab]").forEach(button=>button.classList.toggle("is-active",button.dataset.adminTab===tab));
+ adminBottomNav.hidden = tab !== "home";
+ adminBottomNav.style.display = tab === "home" ? "grid" : "none";
  [login,dash,settings,inbox,adminProfilePage,contacts].filter(Boolean).forEach(p=>{p.classList.remove("active");p.hidden=true;});
  if(tab==="home"&&dash){dash.hidden=false;dash.classList.add("active");}
  if(tab==="orders"&&dash){dash.hidden=false;dash.classList.add("active");document.getElementById("adminOrders")?.scrollIntoView({behavior:"smooth",block:"start"});}
@@ -319,7 +321,7 @@ function showAdminTab(tab, options = {}){
  orderOnly.forEach(el=>{el.hidden=tab!=="orders";el.style.display=tab==="orders"?"":"none";});
  if(orderAlertButton)orderAlertButton.hidden=tab!=="orders";
  const visiblePage = [dash, settings, inbox, adminProfilePage, contacts].find(page => page && !page.hidden && page.classList.contains("active"));
- if (visiblePage && visiblePage.id !== "adminPage" && !visiblePage.querySelector(".gio-owner-page-back")) {
+ if (visiblePage && tab !== "home" && !visiblePage.querySelector(".gio-owner-page-back")) {
    const back = document.createElement("button");
    back.type = "button";
    back.className = "gio-owner-page-back";
