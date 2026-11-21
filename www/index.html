@@ -7,6 +7,17 @@
   <title>GIO BD Owner</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.gio-laser-brand{position:relative;isolation:isolate;overflow:hidden;width:100%;max-width:560px;min-height:124px;margin:12px auto 18px;padding:19px 12px 17px;border:2px solid transparent;border-radius:26px;text-align:center;background:linear-gradient(110deg,#16003d,#370080 45%,#12002f) padding-box,linear-gradient(90deg,#ff1744,#ffea00,#00ff91,#00d9ff,#bd00ff,#ff1744) border-box;box-shadow:0 0 14px #c13cff,0 0 32px #8c00ff99,inset 0 0 25px #a500ff66}
+.gio-laser-brand:before{content:"";position:absolute;inset:-90%;z-index:-1;background:conic-gradient(from 0deg,transparent 0 20%,#ff1744 25%,#ffea00 30%,#00ff91 35%,#00d9ff 40%,#bd00ff 45%,transparent 50% 75%,#ff1744 80%,transparent 86%);animation:gioLaserSpin 3.5s linear infinite;filter:blur(3px)}
+.gio-laser-brand:after{content:"";position:absolute;inset:3px;z-index:-1;border-radius:22px;background:linear-gradient(110deg,#16003d,#370080 45%,#12002f)}
+.gio-laser-brand strong,.gio-laser-brand small{position:relative;z-index:1;display:block;font-weight:1000}
+.gio-laser-brand strong{font-size:clamp(36px,10vw,54px);letter-spacing:2px;color:#fff;text-shadow:0 0 6px #fff,0 0 15px #00eaff,0 0 26px #ff00e6,0 0 36px #ffe600}
+.gio-laser-brand small{margin-top:5px;font-size:clamp(17px,5vw,24px);letter-spacing:.7px;color:#fff;text-shadow:0 0 7px #fff,0 0 16px #ffdf00,0 0 24px #00eaff}
+.gio-laser-brand small b{background:linear-gradient(90deg,#ffec00,#ff4a9e,#00f4ff,#54ff83,#ffec00);background-size:250% auto;background-clip:text;-webkit-background-clip:text;color:transparent;animation:gioBrandText 3s linear infinite}
+@keyframes gioLaserSpin{to{transform:rotate(360deg)}}
+@keyframes gioBrandText{to{background-position:250% center}}
+</style>
 </head>
 <body>
 <header class="header">
@@ -71,7 +82,7 @@
       <p id="loginMessage" role="status" aria-live="polite"></p>
   </section>
   <section id="adminPage" class="page">
-    <div class="gio-laser-brand"><span class="gio-laser-orbit"></span><strong>GIO BD <em>OWNER</em></strong><small>presented by <b>Sojib মাহমুদ</b></small></div>
+    <div class="gio-laser-brand"><span class="gio-laser-orbit"></span><strong>GIO BD</strong><small>PRESENTED BY <b>সজীব মাহমুদ</b></small></div>
     <div class="owner-home-top">
       <button id="ownerProfileButton" class="owner-profile-button" type="button" aria-label="Open verified profile">
         <span class="admin-profile-avatar gio-owner-avatar"><img id="ownerHomeAvatar" alt="Profile"><span id="ownerHomeInitial">G</span><b class="gio-owner-v-badge" aria-label="Verified">✓</b></span>
